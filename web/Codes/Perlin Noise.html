@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+	<script>
+		
+		var yVal = [];
+		var nextVal = [];
+		
+		var maxMin = 2;
+		
+		window.onload = function() {
+			cs = document.getElementById("canvas");
+			ctx = cs.getContext("2d");
+			
+			resetValues();
+			
+			setInterval(draw, 1000/60);
+		}
+		
+		function draw() {
+	 ctx.fillStyle = "grey";		
+		ctx.fillRect(0,0,cs.width,cs.height);
+			
+			for(var i=yVal.length; i>=0; i--) {
+				ctx.beginPath();
+				ctx.lineWidth = 0.5;
+				ctx.strokeStyle = "lightgreen";
+				ctx.moveTo(i, cs.height/2 + yVal[i]);
+		  ctx.lineTo(i, cs.height);
+				ctx.stroke();
+				ctx.closePath();
+			}
+			
+		ctx.font = "bold 15px arial";
+		ctx.justifyContent = "center";
+		ctx.textAlign = "center";
+		ctx.textBaseline = "middle";
+		ctx.fillStyle = "black";
+		ctx.fillText("Range: " + maxMin, cs.width/2, 25);
+		}
+		
+		function resetValues() {
+		 for(i=yVal.length; i>=0; i--) {
+		 	yVal.splice(0,i);
+		 }
+			for(i=0;i<cs.width;i++) {
+				yVal[0] = 0;
+				var value = maxMin-Math.random()*(maxMin*2);
+				var data = yVal[i-1] + value;
+				yVal.push(data);
+			}
+		}
+		
+		function increment() {
+			maxMin ++;
+		}
+		function decrement() {
+			maxMin --;
+		}
+	</script>
+	<style>
+		body {
+			background: teal;
+		}
+		div {
+			display: flex;
+			justify-content: center;
+		}
+		canvas {
+			border: 2px solid black;
+			border-radius: 5px;
+		}
+		button {
+			border-radius: 5px;
+			margin: 10px 10px;
+			background: rgb(110,110,110);
+			width: 25%;
+			height: 70px;
+			font: bold 25px arial;
+		}
+		button:focus {
+			outline: none;
+		}
+	</style>
+	<body> 
+	<div>
+		<canvas id="canvas" width="350px" height="400px"></canvas>
+		</div>
+		<div>
+			<button onclick="decrement()">-</button>
+			<button onclick="resetValues()">Reset</button>
+			<button onclick="increment()">+</button>
+			</div>
+	</body>
+</html>

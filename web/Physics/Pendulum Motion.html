@@ -1,0 +1,185 @@
+<DOCTYPE HTML>
+<html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+
+var canvas;
+var ctx;
+
+var gravity = 9.81/60; //Divide by framerate
+
+var object = [];
+
+var startAngle = 163.058; //Degrees
+
+var oX;
+var oY;
+var oA;
+
+var rX;
+var rY;
+var rA;
+
+var length = 150;
+
+var timer = 0;
+
+window.onload = function() {
+	canvas = document.getElementById("canvas");
+	ctx = canvas.getContext("2d");
+
+	createObjects();
+
+	setInterval(simulation, 1000/60);
+}
+
+function simulation() {
+	rect(0, 0, canvas.width, canvas.height, "grey", 0, "black");
+	
+	
+	ctx.fillStyle = "black";
+	ctx.fillText("Green Angle: " + Math.round(object[0].angle*(180/Math.PI)*100)/100 + "°", 20, 20);
+	ctx.fillText("Orange Angle: " + Math.round(oA*(180/Math.PI*100))/100 + "°", 20, 40);
+	ctx.fillText("Red Angle: " + Math.round(rA*180/Math.PI *100)/100 + "°", 20, 60);
+	ctx.fillText("Timer: " + Math.round(timer/60*100)/100 + " sec.", 20, 80);
+
+	simulateObjects();
+}
+
+function createObjects() {
+	var greenPend = new bobClass();
+	greenPend.color = "#21E729";
+	greenPend.iAngle = startAngle* (Math.PI/180);
+	greenPend.angle = startAngle * (Math.PI/180);
+	greenPend.length = length;
+
+	object.push(greenPend);
+}
+
+function simulateObjects() {
+	
+	for(i=0; i<object.length; i++) {
+		object[i].move();
+		object[i].draw();
+	}
+	
+	timer += 1;
+	startAngle *= (Math.PI/180);
+	
+	oA = (startAngle) * Math.cos((Math.sqrt((gravity*(Math.sin(startAngle))) / (length*(startAngle))))*timer);
+	
+	oX = canvas.width/2 + (length*Math.sin(oA));
+	
+	oY = (160 + length) - (length - length*Math.cos(oA));
+	
+	line(canvas.width/2, 160, oX, oY, 2, "orange");
+	arc(oX,oY,5, "orange", 1.5, "black", 0, Math.PI*2);
+	
+	rA = (startAngle) * Math.cos((Math.sqrt(gravity / length))*timer);
+	
+	rX = canvas.width/2 + (length*Math.sin(rA));
+	
+	rY = (160 + length) - (length - length*Math.cos(rA));
+	
+	line(canvas.width/2, 160, rX, rY, 2, "crimson");
+	arc(rX,rY,5, "crimson", 1.5, "black", 0, Math.PI*2);
+	
+	startAngle *= (180/Math.PI);
+
+	if(greenPend.angle > Math.PI*2) {
+		var newAng = greenPend.angle - (Math.PI*2 * (Math.floor(greenPend.angle/Math.PI*2)));
+		greenPend.angle = newAng;
+	}
+	
+}
+
+function bobClass() {
+	this.x = 0;
+	this.y = 0;
+	this.color = "black";
+	this.angle = 0;
+	this.length = 0;
+	this.aVel = 0;
+	this.aAccel = 0;
+	this.originX = canvas.width/2;
+	this.originY = 160;
+	this.radius = 5;
+	this.iAngle = 0;
+
+	this.move = function() {
+		this.zeroVel = Math.sqrt(2 * gravity * (this.length - this.length*Math.cos(this.iAngle)));
+
+		this.angle += this.aVel;
+		this.aVel += this.aAccel;
+		this.aAccel = (-gravity * Math.sin(this.angle))/this.length;
+		this.x = this.originX + (this.length * Math.sin(this.angle));
+		this.y = this.originY + this.length - (this.length - this.length*Math.cos(this.angle));
+
+		if(Math.abs((this.aVel * this.length)) > this.zeroVel &&
+			this.aVel < 0) {
+			this.aVel = -(this.zeroVel/this.length);
+		}
+		if(Math.abs((this.aVel * this.length)) > this.zeroVel &&
+			this.aVel > 0) {
+			this.aVel = (this.zeroVel/this.length);
+		}
+	}
+	this.draw = function() {
+		line(this.originX, this.originY, this.x, this.y, 2, this.color);
+		arc(this.x, this.y, this.radius, this.color, 1.5, "black", 0, Math.PI*2, true);
+		arc(this.originX, this.originY, 2, "black", 1, "black", 0, Math.PI*2, true);
+	}
+}
+
+function rect(x, y, width, height, color, strokeWidth, strokeColor) {
+	ctx.beginPath();
+	ctx.fillStyle = color;
+	ctx.strokeStyle = strokeColor;
+	ctx.lineWidth = strokeWidth;
+	ctx.rect(x, y, width, height);
+	ctx.fill();
+	ctx.stroke();
+	ctx.closePath();
+}
+function arc(x, y, radius, color, strokeWidth, strokeColor, start, end, direction) {
+	ctx.beginPath();
+	ctx.fillStyle = color;
+	ctx.strokeStyle = strokeColor;
+	ctx.lineWidth = strokeWidth;
+	ctx.arc(x, y, radius, start, end, direction);
+	ctx.fill();
+	ctx.stroke();
+	ctx.closePath();
+}
+function line(startX, startY, endX, endY, width, color) {
+	ctx.beginPath();
+	ctx.strokeStyle = color;
+	ctx.lineWidth = width; 
+	ctx.moveTo(startX, startY);
+	ctx.lineTo(endX, endY);
+	ctx.stroke();
+	ctx.closePath();
+}
+
+</script>
+<style>
+
+body {
+	background: skyblue;
+}
+div {
+	display: flex;
+	justify-content: center;
+}
+canvas {
+	border: 2px solid black;
+	border-radius: 5px;
+}
+
+</style>
+<body>
+	<div>
+	<canvas id="canvas" width="350px" height = "400px"></canvas>
+	</div>
+</body>
+</html>

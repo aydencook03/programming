@@ -1,0 +1,154 @@
+<html>
+<script>
+	
+	var fps = 60;
+	var particle = [];
+	
+	window.onload = function() {
+		canvas = document.getElementById("canvas");
+		ctx = canvas.getContext("2d");
+		
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+		
+		//Simulation Variables
+		particleCount = 60;
+		gravity = 500.81;
+		tensionConstant = 500;
+		dampen = 1;
+		
+		//Starting Shape
+		multipleSine = false;
+		squareWave = false;
+		
+		startingHeight = canvas.height/2;
+		initializeString();
+		
+		setInterval(main, 1000/fps);
+	}
+	
+	function main() {
+		ctx.beginPath();
+		ctx.fillStyle = "grey";
+		ctx.fillRect(0,0,canvas.width,canvas.height);
+		ctx.closePath();
+		
+		stringPhysics();
+		drawString();
+	}
+	
+	function stringPhysics() {
+		for(i=1; i<(particle.length -1); i++) {
+			var leftPx = particle[i-1].x;
+			var leftPy = particle[i-1].y;
+			var rightPx = particle[i+1].x;
+			var rightPy = particle[i+1].y;
+			var thisPx = particle[i].x;
+			var thisPy = particle[i].y;
+			
+			var leftXdif = thisPx - leftPx;
+			var leftYdif = thisPy - leftPy;
+			var leftDist = Math.sqrt(Math.pow(leftXdif,2) + Math.pow(leftYdif,2));
+			
+			var rightXdif = rightPx - thisPx;
+			var rightYdif = rightPy - thisPy;
+			var rightDist = Math.sqrt(Math.pow(rightXdif,2) + Math.pow(rightYdif,2));
+			
+			//Vectors pointing to side particles
+			var leftVx = (leftPx-thisPx)/leftDist;
+			var leftVy = (leftPy-thisPy)/leftDist;
+			var rightVx = (rightPx-thisPx)/rightDist;
+			var rightVy = (rightPy-thisPy)/rightDist;
+			
+			var leftAccX = tensionConstant*leftDist*leftVx;
+			var leftAccY = tensionConstant*leftDist*leftVy;
+			var rightAccX = tensionConstant*rightDist*rightVx;
+			var rightAccY = tensionConstant*rightDist*rightVy;
+			
+			particle[i].xA = (leftAccX + rightAccX);
+			particle[i].yA = (leftAccY + rightAccY) - gravity;
+		}
+	}
+	
+	function initializeString() {
+		var seperation = canvas.width/(particleCount-1);
+		
+		for(i=0; i<particleCount; i++) {
+			var dot = new particleClass(
+						i * seperation, startingHeight,
+						0,0
+			);
+			
+			if(multipleSine) {
+			dot.y = startingHeight + (60*Math.sin(2*Math.PI*dot.x/canvas.width*3) + 40*Math.cos(10+ 2*Math.PI*dot.x/canvas.width*2));
+			}
+			
+			particle.push(dot);
+		}
+		
+		if(squareWave) {
+				for(i=Math.floor(particle.length/2 -particle.length/7); i<Math.floor(particle.length/2 + particle.length/7); i++) {
+					particle[i].y = startingHeight + 80;
+				}
+			}
+	}
+	
+	function drawString() {
+		
+		for(i=0; i<particle.length; i++) {
+		particle[i].move();
+			/*
+			ctx.beginPath();
+			ctx.fillStyle = particle[i].c;
+			ctx.arc(particle[i].x, canvas.height-particle[i].y, 2, 0, Math.PI*2);
+			ctx.fill();
+			ctx.closePath();
+			*/
+		} 
+		
+		for(i=1; i<particle.length; i++) {
+			ctx.beginPath();
+			ctx.strokeStyle = "black";
+			ctx.lineWidth = 2;
+			ctx.moveTo(particle[i-1].x,canvas.height-particle[i-1].y);
+			ctx.lineTo(particle[i].x, canvas.height-particle[i].y);
+			ctx.stroke();
+			ctx.closePath();
+		}
+	}
+	
+	function particleClass(x, y, xV, yV) {
+		this.x = x;
+		this.y = y;
+		this.xV = xV;
+		this.yV = yV;
+		this.xA = 0;
+		this.yA = 0;
+		
+		this.c = "black";
+		
+		this.move = function() {
+			this.xV += this.xA/fps;
+			this.yV += this.yA/fps;
+			this.x += this.xV/fps;
+			this.y += this.yV/fps;
+		}
+	}
+	
+</script>
+<style>
+	
+	body {
+		padding: 0;
+		margin: 0;
+	}
+	canvas {
+		padding: 0;
+		margin: 0;
+	}
+	
+</style>
+<body>
+<canvas id="canvas" width="350px" height="350px"></canvas>
+</body>
+</html>

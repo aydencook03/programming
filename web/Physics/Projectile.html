@@ -1,0 +1,151 @@
+<html>
+<meta name="viewport" content="width=device-width, height=device-height">
+<script>
+
+window.onload = function() {
+	canvas = document.getElementById("canvas");
+	ctx = canvas.getContext("2d");
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
+
+	groundHeight = canvas.height/4; //height of ground
+
+	angle = 45 * (Math.PI/180); //angle of launch
+	velocity = 80; //velocity of launch
+	isLaunched = false;
+
+	radius = 6; //radius of projectile
+	color = "crimson" //color of projectile
+
+	x = 15 + radius; //x position
+	y = groundHeight + radius; //y position
+	xV = 0; //x veloctiy
+	yV = 0; //y velocity
+	xA = 0; //x acceleration
+	yA = 0; //y acceleration
+
+	c = 0.002; //drag constant
+	g = 9.81; //gravity constant
+	
+	positions = [];
+
+	frame = 60;
+
+	setInterval(main, 1000/frame);
+}
+
+function main() {
+	//background
+	ctx.beginPath();
+	ctx.fillStyle = "skyblue";
+	ctx.fillRect(0,0,canvas.width,canvas.height);
+	ctx.closePath();
+
+	//draw ground
+	drawRect(0, canvas.height - groundHeight, canvas.width, canvas.height/3, "lightgreen");
+	//sun
+	drawCircle(canvas.width,0, 30, "yellow");
+
+	moveProjectile();
+	
+
+	//projectile
+	drawCircle(x,canvas.height - y,radius,color);
+	
+	//path
+	path();
+	}
+	
+	function path() {
+		for(i=0; i<positions.length; i++) {
+			ctx.beginPath();
+			ctx.strokeStyle = "black";
+			ctx.lineWidth = 1.5;
+			ctx.moveTo(positions[i].x, canvas.height - positions[i].y);
+			ctx.lineTo(positions[i+1].x, canvas.height - positions[i+1].y);
+			ctx.stroke();
+			ctx.closePath();
+		}
+	}
+
+function moveProjectile() {
+	var pos = new pClass(x, y);
+	positions.push(pos);
+	
+	if(isLaunched == false) {
+		xV = Math.cos(angle) * velocity;
+		yV = Math.sin(angle) * velocity;
+	}
+	if(isLaunched == true) {
+		xV += xA/frame;
+		yV += yA/frame;
+		x += xV/frame;
+		y += yV/frame;
+	}
+
+	yA = -c*Math.pow(yV,2) - g;
+	xA = -c*Math.pow(xV,2);
+
+	if(y - radius < groundHeight) {
+		yV *= -0.4;
+		xV *= 0.7;
+		y = groundHeight + radius;
+	}
+	if(x + radius > canvas.width) {
+		xV *= -0.3;
+		x = canvas.width - radius;
+	}
+	if(x - radius < 0) {
+		xV *= -0.3;
+		x = radius;
+	}
+}
+
+function pClass(ax,ay) {
+	this.x = ax
+	this.y = ay;
+}
+
+document.addEventListener("click", mouseDown);
+function mouseDown() {
+		isLaunched = true;
+}
+
+function drawCircle(x,y,r,c) {
+	ctx.beginPath();
+	ctx.strokeStyle = "black";
+	ctx.fillStyle = c;
+	ctx.lineWidth = 2;
+	ctx.arc(x,y,r,0, Math.PI*2);
+	ctx.fill();
+	ctx.stroke();
+	ctx.closePath();
+}
+function drawRect(x,y,w,h,c) {
+	ctx.beginPath();
+	ctx.strokeStyle = "black";
+	ctx.fillStyle = c;
+	ctx.lineWidth = 2;
+	ctx.rect(x,y,w,h);
+	ctx.fill();
+	ctx.stroke();
+	ctx.closePath();
+}
+
+</script>
+<style>
+
+	body {
+		padding: 0;
+		margin: 0;
+	}
+	canvas {
+		padding: 0;
+		margin: 0;
+	}
+
+</style> 
+<body>
+	<canvas id="canvas"></canvas>
+</body>
+</html>

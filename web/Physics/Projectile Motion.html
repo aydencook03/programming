@@ -1,0 +1,237 @@
+<html>
+	<meta name="viewport" content="width=device-width,initial-scale=1.0">
+		<script>
+			
+			var c;
+			var ctx;
+			
+			var v0;
+			var ang;
+			var xPos;
+			var xSlide;
+			
+			var gravity = -9.81;
+			
+			var groundHeight = 25;
+			
+			window.onload = function() {
+				
+				c = document.getElementById("canvas");
+				ctx = c.getContext("2d");
+				
+				setInterval(simulation, 1000/60);
+			}
+			
+			function simulation() {
+				values();
+				drawScenery();
+				drawPath();
+				drawVectors();
+				info();
+			}
+			
+			function values() {
+				v0 = Number(document.getElementById("v0").value);
+				
+				ang = Number(document.getElementById("ang").value)*(Math.PI/180);
+				
+				xSlide = document.getElementById("xSlide");
+				
+				xSlide.max = range(v0, ang);
+				
+				xPos = Number(xSlide.value);
+			}
+			
+			function drawScenery() {
+				var groundGrad = ctx.createLinearGradient(c.width/2,c.height-groundHeight,c.width/2,c.height);
+				
+				groundGrad.addColorStop(0.5, "#63EA15");
+				groundGrad.addColorStop(1, "#B87C13");
+				
+				ctx.beginPath();
+				ctx.strokeStyle = "black";
+				ctx.fillStyle = groundGrad;
+				ctx.lineWidth = 0.5;
+				ctx.rect(-1,c.height-groundHeight,c.width+2, groundHeight+1);
+				ctx.fill();
+				ctx.stroke();
+				ctx.closePath();
+				
+				var skyGrad = ctx.createLinearGradient(0,0,0,c.height-groundHeight);
+				
+				skyGrad.addColorStop(0, "#E7E4E4");
+				skyGrad.addColorStop(0.2, "#469AD0");
+				skyGrad.addColorStop(1, "#1BD9DA");
+				
+				ctx.fillStyle = skyGrad;
+				ctx.fillRect(0,0,c.width,c.height-groundHeight-1);
+			}
+			function drawPath() {
+				ctx.beginPath();
+				ctx.strokeStyle = "crimson";
+				ctx.lineWidth = 1.5;
+				ctx.moveTo(25,c.height-groundHeight);
+				ctx.quadraticCurveTo(25+range(v0,ang)/2, c.height-groundHeight-(height(v0,ang)*2), 25+range(v0,ang), c.height-groundHeight);
+				ctx.stroke();
+				ctx.closePath();
+				
+				ctx.beginPath();
+				ctx.strokeStyle = "black";
+				ctx.lineWidth = 2;
+				ctx.fillStyle = "lightgreen";
+				ctx.arc(25+xPos,c.height-groundHeight-yPos(xPos,v0,ang), 5,0,Math.PI*2,true);
+				ctx.stroke();
+				ctx.fill();
+				ctx.closePath();
+			}
+			function drawVectors() {
+				ctx.beginPath();
+				ctx.strokeStyle = "orange";
+				ctx.lineWidth = 2;
+				ctx.moveTo(25+xPos, c.height-groundHeight-yPos(xPos,v0,ang));
+				ctx.lineTo(25+xPos+vVector("x",0,v0,ang),c.height-groundHeight-yPos(xPos,v0,ang));
+				ctx.stroke();
+				ctx.closePath();
+				
+				ctx.beginPath();
+				ctx.strokeStyle = "#165CB8";
+				ctx.lineWidth = 2;
+				ctx.moveTo(25+xPos, c.height-groundHeight-yPos(xPos,v0,ang));
+				ctx.lineTo((25+xPos),(c.height-groundHeight-yPos(xPos,v0,ang)-vVector("y",yPos(xPos,v0,ang),v0,ang)));
+				ctx.stroke();
+				ctx.closePath();
+				
+				ctx.beginPath();
+				ctx.strokeStyle = "#2EA500";
+				ctx.lineWidth = 2;
+				ctx.moveTo(25+xPos, c.height-groundHeight-yPos(xPos,v0,ang));
+				ctx.lineTo(25+xPos+vVector("x",0,v0,ang), (c.height-groundHeight-yPos(xPos,v0,ang)-vVector("y",yPos(xPos,v0,ang),v0,ang)));
+				ctx.stroke();
+				ctx.closePath();
+				
+			}
+			function info() {
+				ctx.textAlign = "left";
+				ctx.fillStyle = "black";
+				ctx.font = "bold 11px arial";
+				
+				ctx.fillText("Launch Velocity: " + v0 + " m/s", 10, 20);
+				
+				ctx.fillText("Launch Angle: " + Math.round((ang*(180/Math.PI))) + "°", 10, 40);
+				
+				ctx.fillText("Range: " + (Math.round((range(v0, ang)*100))/100) + " m", 10, 60);
+				
+				ctx.fillText("Max Height: " + (Math.round((height(v0,ang)*100))/100) + " m", 10, 80);
+				
+				ctx.fillText("(" + Math.round(xPos*100)/100 + " m , " + Math.round(yPos(xPos,v0,ang)*100)/100 + " m)", 10, 100);
+				
+				ctx.fillText("(" + Math.round((vVector("x",0,v0,ang)*100))/100 + " m/s , " + Math.round((vVector("y",yPos(xPos,v0,ang),v0,ang)*100))/100 + " m/s)", 10, 120);
+				
+				ctx.textAlign = "center";
+				ctx.fillText("Ballistics Simulation By Ayden Cook", c.width/2,c.height-10);
+			}
+
+
+			function height(vel,angle) {
+				var height = 
+				 (Math.pow(vel* Math.sin(angle),2))/(-2*gravity);
+				 
+				 return height;
+			}
+			function range(vel,angle) {
+				var range = 
+				 (Math.pow(vel, 2)/gravity*-1)*(Math.sin(2*angle));
+				 
+				 return range;
+			}
+			function yPos(x,vel,angle) {
+				var yPos =
+				 (Math.tan(angle)*x) + (((gravity)/(2*(Math.pow(vel*Math.cos(angle),2))))*Math.pow(x,2));
+				 
+				 return yPos;
+			}
+			function vVector(axis,pos,vel,angle) {
+				var vVector;
+				if(axis == "x") {
+					vVector =
+					 vel*(Math.cos(angle));
+				}
+				if(axis == "y") {
+					if(xPos <= range(v0,ang)/2) {
+					vVector =  Math.sqrt((Math.pow(vel*Math.sin(angle),2)) + (2*gravity*pos));
+					} else {
+						vVector =  Math.sqrt((Math.pow(vel*Math.sin(angle),2)) + (2*gravity*pos)) * -1;
+					}
+				}
+				
+				return vVector;
+			}
+			
+		</script>
+		<style>
+		
+			body {
+				background: #666666;
+			}
+			div {
+				display: flex;
+				justify-content: center;
+			}
+			canvas {
+				border: 2px solid black;
+				background: white;
+				border-radius: 5px;
+			}
+			input {
+				-webkit-appearance: none;
+				-moz-appearance: none;
+				width: 315px;
+				height: 12px;
+				border: 2px solid black;
+				margin: 5px;
+				margin-top: 20px;
+				border-radius: 5px;
+				margin-bottom: 25px;
+			}
+			input::-webkit-slider-thumb {
+				-webkit-appearance: none;
+				width: 10px;
+				height: 25px;
+				background: #17B0DA;
+				border: 1px solid black;
+				border-radius: 5px;
+			}
+			input::-webkit-slider-thumb {
+				-webkit-appearance: none;
+				width: 10px;
+				height: 25px;
+				background: #17B0DA;
+				border: 1px solid black;
+				border-radius: 5px;
+			}
+			.half {
+				width: 152.5px;
+			}
+			
+		</style>
+		<body>
+			
+			<div>
+				<canvas id="canvas" width="325px" height="300px"></canvas>
+			</div>
+			
+			<div>
+				
+				<input class="half" id="v0" type="range" min="0.01" max="53" value="40">
+					
+					<input class="half" id="ang" type="range" min="0" max="90">
+						
+			</div>
+			<div>
+				
+				<input id="xSlide" type="range" step="0.01" min="0" max="10" value="0">
+				
+			</div>
+			
+		</body>
+</html>

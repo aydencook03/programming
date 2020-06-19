@@ -1,0 +1,39 @@
+<script>
+
+var canvas;
+var ctx;
+
+window.onload = function() {
+	canvas = document.getElementById("test");
+	ctx = canvas.getContext("2d");
+	setInterval(draw, 1000/30);
+}
+
+function draw() {
+ctx.beginPath();
+ctx.fillStyle = "red";
+ctx.strokeStyle = "black";
+ctx.lineWidth = 2;
+
+ctx.moveTo(60,60);
+ctx.lineTo(85,60);
+ctx.lineTo(100,80);
+ctx.lineTo(115,60);
+ctx.lineTo(140,60);
+ctx.lineTo(150,85);
+ctx.lineTo(130,115);
+ctx.lineTo(100,140);
+ctx.lineTo(70,115);
+ctx.lineTo(50,85);
+ctx.lineTo(60,60);
+
+ctx.stroke();
+ctx.fill();
+ctx.closePath();
+}
+
+
+</script>
+
+
+<canvas id="test" width="200" height="200" style="border: 3px solid black; display: block; margin: 30px auto"></canvas>

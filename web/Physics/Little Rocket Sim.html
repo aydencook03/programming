@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<meta name="viewport" content="width=device-width, initial-scale= 1.0">
+    <script>
+        
+        window.onload = function() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext("2d");
+            
+            rW = 10;
+            rH = 25;
+            rX = canvas.width/2 - rW/2;
+            rY = canvas.height - rH;
+            vM = 0; // m/s
+            vX = 0;
+            vY = 0;
+            aVel = 0;
+            left = false;
+            right = false;
+            rA = 90 * (Math.PI/180);
+            value = 0;
+
+            gravity = true;
+            
+            thrust = false;
+            
+            dryMass = 20; // kg
+            fuelMass = 5; // kg
+            initialMass = fuelMass;
+            wetMass = dryMass + fuelMass;
+            vE = 3; // m/s
+            
+            setInterval(sim, 1000/60);
+        }
+        
+        function sim() {
+            ctx.beginPath();
+            ctx.fillStyle = "grey";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.closePath();
+
+            rA += aVel;
+            
+            if(gravity) {
+            vY -= 9.81/60;
+            }
+
+            vM = Math.sqrt(Math.pow(vX, 2) + Math.pow(vY, 2));
+            
+            rX += vX;
+            rY -= vY;
+            
+            ctx.fillStyle = "black";
+            ctx.fillText(Math.round(vM *100)/100 + " m/s", 20, 20);
+            if(fuelMass > 0) {
+            ctx.fillText(Math.round(fuelMass/initialMass * 100 * 100)/100 + " %", 20, 30);
+            } else {
+                ctx.fillText("0 %", 20, 30);
+            }
+            
+            if(rA > Math.PI * 2) {
+                rA = 0;
+            }
+            
+            ctx.save();
+            
+            ctx.translate(rX + rW/2, rY + rH/2);
+            ctx.rotate(-rA + Math.PI/2);
+            
+            ctx.fillStyle = "silver";
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "black";
+            ctx.rect(-rW/2, -rH/2, rW, rH);
+            ctx.fill();
+            ctx.stroke();
+            ctx.closePath();
+            ctx.fillStyle = 'crimson';
+            ctx.fillRect(-rW/2, rH * 1/4, rW, rH/4);
+
+
+            
+            ctx.restore();
+            
+            dist = Math.sqrt(Math.pow(rW/2, 2) + Math.pow(rH/2, 2));
+            
+            ang = [];
+            point = [];
+            ang[0] = (rA - Math.PI/2) + Math.atan((rH/2) / (rW/2));
+            ang[1] = ang[0] + 2 * Math.acos((rH/2) / (dist));
+            ang[2] = ang[1] + 2 * Math.atan((rH/2) / (rW/2));
+            ang[3] = ang[2] + ang[1] - ang[0];
+            
+            for(i=0; i<ang.length; i++) {
+                var nx = (rX + rW/2) + dist * Math.cos(ang[i]);
+                var ny = (rY + rH/2) - dist*Math.sin(ang[i]);
+                point.push({x: nx, y: ny});
+                
+                ctx.fillStyle = "orange";
+                ctx.fillRect(point[i].x, point[i].y, 2, 2);
+                
+                if(point[i].y > canvas.height) {
+                    rY = canvas.height - Math.abs((point[i].y - (rY)));
+                    vY *= -0.2;
+                    if(gravity) {
+                        vX *= 0.5;
+                        aVel *= 0.5;
+                    }
+            } 
+            
+                if(point[i].y < 0) {
+                    rY = rY - point[i].y;
+                    value = rY - point[i].y;
+                    vY *= -0.2;
+                    
+                }
+                if(point[i].x > canvas.width) {
+                    rX = canvas.width - Math.abs((point[i].x - rX));
+                    vX *= -0.2;
+                    
+                }
+                if(point[i].x < 0) {
+                    rX = Math.abs(point[i].x - rX);
+                    vX *= -0.2;
+                    
+                }
+                ctx.fillText(value, 20, 60);
+
+            }
+            
+            if(thrust == true &&
+               fuelMass > 0) {
+             fuelMass -= 0.01;
+             vM += vE * Math.log(wetMass/ (dryMass + fuelMass));
+
+             vX += (vE * Math.log(wetMass/ (dryMass + fuelMass))) * Math.cos(rA);
+             vY += (vE * Math.log(wetMass/ (dryMass + fuelMass))) * Math.sin(rA);
+            }
+            if(left == true) {
+                aVel += 0.001;
+                fuelMass -= 0.0001;
+            }
+            if(right == true) {
+                aVel -= 0.001;
+                fuelMass -= 0.0001;
+            }
+
+            ctx.beginPath();
+            ctx.fillStyle = "black";
+            ctx.fillRect(rX, rY, 4, 4);
+            ctx.closePath();
+        }
+        
+        document.addEventListener("keydown", keyDown);
+        document.addEventListener("keyup", keyUp);
+        
+        function keyDown(e) {
+            if(e.keyCode == "38") {
+                thrust = true;
+            }
+            if(e.keyCode == "37") {
+                left = true;
+            }
+            if(e.keyCode == "39") {
+                right = true;
+            }
+            //console.log(e.keyCode);
+        }
+        function keyUp(e) {
+            if(e.keyCode == "38") {
+                thrust = false;
+            }
+            if(e.keyCode == "37") {
+                left = false;
+            }
+            if(e.keyCode == "39") {
+                right = false;
+            }
+        }
+        
+    </script>
+    <style>
+        
+        canvas {
+            border: 2px solid black;
+            border-radius: 5px;
+        }
+        div {
+            display: flex;
+            justify-content: center;
+        }
+        
+    </style>
+	<body>
+	    <div>
+		<canvas id='canvas' width = "350px" height = '350px'></canvas>
+		</div>
+	</body>
+</html>

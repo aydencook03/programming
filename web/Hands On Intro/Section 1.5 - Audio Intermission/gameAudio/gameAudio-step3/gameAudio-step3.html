@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+</head>
+<body>
+<script>
+  var audioFormat; ////
+  
+  function setFormat() { ////
+    var audio = new Audio(); ////
+    if (audio.canPlayType("audio/mp3")) { ////
+        audioFormat = ".mp3"; ////
+    } else { ////
+        audioFormat = ".ogg"; ////
+    } ////
+  } ////
+  
+  setFormat(); // remember, we've still got to call the function for the code in it to run ////
+
+  var someSound = new Audio("../gameAudio-effects/bloop"+audioFormat); ////
+  someSound.play();
+</script>
+
+</body>
+</html>

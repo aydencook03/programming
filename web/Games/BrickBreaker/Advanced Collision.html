@@ -1,0 +1,849 @@
+<!-- This game only used HTML, CSS, and JavaScript code, no cheating using JQuery -->
+
+<!-- Check out my profile for a bunch of other stuff like this one -->
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<script>
+			
+	//paddle variables
+			var paddleX;
+			var paddleY;
+			var paddleW = 60;
+			var paddleH = 10;
+			var velPaddle = 0;
+			
+ //ball variables
+			var ballX = 0;
+			var ballY = 0;
+			var ballR = 4.5;
+			var xVel = 0;
+			var yVel = 0;
+			var gameStarted = false;
+			
+	//brick variables
+	  var brickW = 35;
+	  var brickH = 25;
+	  var colCount = 10;
+	  var rowCount = 7;
+	  var brick = [];
+	  var bricksLeft;
+	  
+ //game mechanic variables
+	  var lives = 3;
+	  var resetting = false;
+	  var delay = false;
+	  
+	  var debrisArray = [];
+			
+	//Set up page when window loads
+			window.onload = function() {
+				canvas = document.getElementById("canvas");
+				ctx = canvas.getContext("2d");
+				
+				gameReset();
+				
+				setInterval(mainFunc, 1000/60);
+			}
+			
+	//cheat function, helps collision tests
+//document.addEventListener("mousemove", cheatFunc);
+   function cheatFunc(e) {
+   	ballX = e.clientX;
+   	ballY = e.clientY;
+   	
+   	xVel = -0.1;
+   	yVel = -0.1;
+   }
+   
+ //Keyboard Controls
+   document.addEventListener("keydown", keyDown);
+   document.addEventListener("keyup", keyUp);
+   function keyDown(evt) {
+   	startGame();
+   	if(evt.keyCode == "37") {
+   		left();
+   	}
+   	if(evt.keyCode == "39") {
+   		right();
+   	}
+   	if(evt.keyCode == "37" || 
+   	   evt.keyCode == "38" ||
+   	   evt.keyCode == "37" ||
+   	   evt.keyCode == "40" ||
+   	   evt.keyCode == "32") {
+   	   	evt.preventDefault();
+   	   }
+   }
+   function keyUp(evt) {
+   	clearMove();
+   }
+			
+	//Calls every other game function
+			function mainFunc() {
+				rect(0,0, canvas.width,canvas.height, "#999");
+				
+				drawGameInfo();
+				drawPaddle();
+				
+				drawBall();
+				wallCollision();
+				paddleBallCollision();
+				drawBricks();
+				ballBrickCollision();
+				drawDebris();
+				
+				if(lives <= 0 &&
+				   resetting == false) {
+				 resetting = true;
+					setTimeout(gameReset, 2000);
+					document.getElementById("body").style.background = "crimson";
+				}
+			}
+			
+	//draws and moves debris
+	  function drawDebris() {
+	  	for(i=debrisArray.length-1; i>=0; i--) {
+					debrisArray[i].draw();
+					debrisArray[i].move();
+					if(debrisArray[i].timer <= 0) {
+						debrisArray.splice(i,1);
+					}
+				}
+	  }
+			
+	//Object class for paddle debris
+	  function paddleDebris() {
+	  	this.scale = 40;
+	  	this.x = ballX;
+	  	this.y = ballY + ballR;
+	  	this.xVel = Math.random()*xVel;
+	   this.yVel = Math.random()*-2;
+	   this.color = "#42f492";
+	  	this.timer = 20+(Math.random()*this.scale);
+	  	
+	  	this.move = function() {
+	  		if(this.xVel <= 0.9 &&
+	  	      this.xVel >= 0 ||
+	  	      this.xVel >= -0.9 &&
+	  	      this.xVel <= 0) {
+	  	      	this.xVel = 2-Math.random()*4;
+	  	      }
+	  		this.x += this.xVel;
+	  		this.y += this.yVel;
+	  		this.yVel += 0.1;
+	  		this.timer--;
+	  		if(this.y > paddleY &&
+	  		   this.x > paddleX &&
+	  		   this.x < paddleX + paddleW) {
+	  		   this.y = paddleY;
+	  		   this.yVel *= -0.6;
+	  		   }
+	  	}
+	  	
+	  	this.draw = function() {
+	  		rect(this.x, this.y, this.timer/30, this.timer/30, this.color);
+	  	}
+	  }
+	  
+	//Object class for brick debris
+	  function brickDebris() {
+	  	this.scale = 100;
+	  	this.x;
+	  	this.y;
+	  	this.xVel = 0;
+	   this.yVel = Math.random()*0.1;
+	   this.color;
+	  	this.timer = 20+(Math.random()*(this.scale/3));
+	  	this.parentIndex;
+	  	this.size = 10;
+	  	
+	  	this.move = function() {
+	  		this.x += this.xVel;
+	  		this.y += this.yVel;
+	  		this.yVel += Math.random()*0.15;
+	  		this.timer--;
+	  		if(this.y > paddleY &&
+	  		   this.x > paddleX &&
+	  		   this.x < paddleX + paddleW) {
+	  		   this.y = paddleY;
+	  		   this.yVel *= -0.1;
+	  		   }
+	  		var bottomC = Math.floor(this.x/brickW);
+	  		var bottomR = Math.floor((this.y + this.timer/this.size)/brickH)
+	  	 var bottomI = index(bottomC, bottomR);
+					
+					if(brick[bottomI] != 0 &&
+					   this.yVel > 0 &&
+					   bottomC >= 0 &&
+					   bottomC < colCount &&
+					   bottomR >= 0 &&
+					   bottomR < rowCount &&
+					   this.parentIndex != bottomI &&
+					   this.color != "crimson") {
+					   	this.yVel *= -0.3;
+					   }
+					if((this.y + this.timer/this.size) >= ballY - ballR &&
+					   this.y <= ballY + ballR &&
+					   (this.x + this.timer/this.size) >= ballX - ballR &&
+					   this.x <= ballX + ballR && 
+					   this.yVel > 0) {
+					   	this.yVel *= -0.3;
+					   }
+	  	}
+	  	
+	  	this.draw = function() {
+	  		rect(this.x, this.y, this.timer/this.size, this.timer/this.size, this.color);
+	  	}
+	  }
+			
+	//Resets everything
+	  function gameReset() {
+	  	resetting = false;
+	  	document.getElementById("body").style.background = "teal";
+	  	lives = 3;
+	  	gameStarted = false;
+	  	paddleReset();
+	  	brickReset();
+	  }
+			
+ //Draw info, like lives, bricks, etc
+   function drawGameInfo() {
+   	ctx.textAlign = "left";
+   	ctx.textBaseline = "middle";
+   	ctx.fillStyle = "black";
+   	ctx.font = "bold 20px arial";
+   	ctx.fillText("Bricks: " + bricksLeft, 5, 1.5+ brickH/2);
+   	
+   	ctx.textAlign = "right";
+   	ctx.fillText("Lives: " + lives, canvas.width-5, 1.5+brickH/2);
+   	
+   	if(gameStarted == false &&
+   	   delay == false &&
+   	   lives > 0 &&
+   	   bricksLeft > 0) {
+   		ctx.textAlign = "center";
+   		ctx.textBaseline = "bottom";
+   		ctx.font = "bold 15px sans-seriff";
+   		ctx.fillText("Serve Ball", canvas.width/2, canvas.height);
+   		
+   		ctx.font = "bold 15px helvetica";
+   		ctx.textBaseline = "middle";
+   		ctx.textAlign = "top";
+   		ctx.fillStyle = "#fff";
+   		ctx.fillText("Game By Ayden Cook", canvas.width/2, rowCount*brickH + brickH);
+   	}
+   }
+			
+ //collision between ball and bricks
+   function ballBrickCollision() {
+   	
+ //Finds the column of 4 points on ball
+   	var topC = Math.floor(ballX/brickW);
+   	var rightC = Math.floor((ballX + ballR)/brickW);
+   	var bottomC = topC;
+   	var leftC = Math.floor((ballX - ballR)/brickW);
+   	
+ //Finds the row of 4 points on ball
+   var topR = Math.floor((ballY - ballR)/brickH);
+   var rightR = Math.floor(ballY/brickH);
+   var bottomR = Math.floor((ballY + ballR)/brickH);
+   var leftR = rightR;
+   
+ //Finds the brick the point is over
+   var topI = index(topC, topR);
+   var rightI = index(rightC, rightR);
+   var leftI = index(leftC, leftR);
+   var bottomI = index(bottomC, bottomR);
+   
+ //top point collision
+   if(brick[topI] != 0 &&
+      topC >= 0 &&
+      topC < colCount &&
+      topR >= 0 &&
+      topR < rowCount &&
+      yVel < 0) {
+      	ballY = topR*brickH + ballR + brickH;
+      	yVel *= -1;
+      	if(brick[topI] == 1) {
+      		brick[topI] = 0;
+      		bricksLeft--;
+      		
+      		for(d=0; d<=70; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "skyblue";
+      			deb.x = 2 + (topC*brickW) + Math.random()*(brickW-8);
+      			deb.y = 2+ (topR*brickH) + Math.random()*(brickH-8);
+      			deb.parentIndex = topI;
+      			debrisArray.push(deb);
+      		}
+      		for(d=0; d<=20; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "black";
+      			deb.x = 2 + topC*brickW;
+      			deb.y = (topR*brickH) + Math.random()*brickH;
+      			deb.parentIndex = topI;
+      			deb.size = 15;
+      			debrisArray.push(deb);
+      		}
+      		for(d=0; d<=20; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "black";
+      			deb.x = (topC*brickW) + Math.random()*brickW;
+      			deb.y = topR*brickH;
+      			deb.parentIndex = topI;
+      			deb.size = 15;
+      			debrisArray.push(deb);
+      		}
+      		for(d=0; d<=20; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "black";
+      			deb.x = (topC*brickW) + brickW - 2;
+      			deb.y = (topR*brickH) + Math.random()*brickH;
+      			deb.parentIndex = topI;
+      			deb.size = 15;
+      			debrisArray.push(deb);
+      		}
+      		for(d=0; d<=20; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "black";
+      			deb.x = topC*brickW + Math.random()*brickW;
+      			deb.y = (topR*brickH) + brickH - 2;
+      			deb.parentIndex = topI;
+      			deb.size = 15;
+      			debrisArray.push(deb);
+      		}
+      	} else if(brick[topI] == 2) {
+      		brick[topI] = 1;
+      		
+      		for(d=0; d<=70; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "crimson";
+      			deb.x = 2 + (topC*brickW) + Math.random()*(brickW-8);
+      			deb.y = 2+ (topR*brickH) + Math.random()*(brickH-8);
+      			deb.parentIndex = topI;
+      			debrisArray.push(deb);
+      		}
+      	}
+      }
+      
+ //right point collision
+   if(brick[rightI] != 0 &&
+      rightC >= 0 &&
+      rightC < colCount &&
+      rightR >= 0 &&
+      rightR < rowCount &&
+      xVel > 0) {
+      	ballX = rightC * brickW - ballR;
+      	xVel *= -1;
+      	if(brick[rightI] == 1) {
+      		brick[rightI] = 0;
+      		bricksLeft--;
+      		
+      		for(d=0; d<=70; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "skyblue";
+      			deb.x = 2 + (rightC*brickW) + Math.random()*(brickW-8);
+      			deb.y = 2+ (rightR*brickH) + Math.random()*(brickH-8);
+      			deb.parentIndex = rightI;
+      			debrisArray.push(deb);
+      		}
+      		
+      		for(d=0; d<=20; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "black";
+      			deb.x = 2 + rightC*brickW;
+      			deb.y = (rightR*brickH) + Math.random()*brickH;
+      			deb.parentIndex = rightI;
+      			deb.size = 15;
+      			debrisArray.push(deb);
+      		}
+      		for(d=0; d<=20; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "black";
+      			deb.x = (rightC*brickW) + Math.random()*brickW;
+      			deb.y = rightR*brickH;
+      			deb.parentIndex = rightI;
+      			deb.size = 15;
+      			debrisArray.push(deb);
+      		}
+      		for(d=0; d<=20; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "black";
+      			deb.x = (rightC*brickW) + brickW - 2;
+      			deb.y = (rightR*brickH) + Math.random()*brickH;
+      			deb.parentIndex = rightI;
+      			deb.size = 15;
+      			debrisArray.push(deb);
+      		}
+      		for(d=0; d<=20; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "black";
+      			deb.x = rightC*brickW + Math.random()*brickW;
+      			deb.y = (rightR*brickH) + brickH - 2;
+      			deb.parentIndex = rightI;
+      			deb.size = 15;
+      			debrisArray.push(deb);
+      		}
+      	} else if(brick[rightI] == 2) {
+      		brick[rightI] = 1;  	
+      		
+      		for(d=0; d<=70; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "crimson";
+      			deb.x = 2 + (rightC*brickW) + Math.random()*(brickW-8);
+      			deb.y = 2+ (rightR*brickH) + Math.random()*(brickH-8);
+      			deb.parentIndex = rightI;
+      			debrisArray.push(deb);
+      		}
+      		}
+      }
+      
+ //bottom point collision
+   if(brick[bottomI] != 0 &&
+      bottomC >= 0 &&
+      bottomC < colCount &&
+      bottomR >= 0 &&
+      bottomR < rowCount &&
+      yVel > 0) {
+      	ballY = bottomR*brickH - ballR;
+      	yVel *= -1;
+      	if(brick[bottomI] == 1) {
+      		brick[bottomI] = 0;
+      		bricksLeft--;
+      		
+      		for(d=0; d<=70; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "skyblue";
+      			deb.x = 2 + (bottomC*brickW) + Math.random()*(brickW-8);
+      			deb.y = 2+ (bottomR*brickH) + Math.random()*(brickH-8);
+      			deb.parentIndex = bottomI;
+      			debrisArray.push(deb);
+      		}
+      		
+      		for(d=0; d<=20; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "black";
+      			deb.x = 2 + bottomC*brickW;
+      			deb.y = (bottomR*brickH) + Math.random()*brickH;
+      			deb.parentIndex = bottomI;
+      			deb.size = 15;
+      			debrisArray.push(deb);
+      		}
+      		for(d=0; d<=20; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "black";
+      			deb.x = (bottomC*brickW) + Math.random()*brickW;
+      			deb.y = bottomR*brickH;
+      			deb.parentIndex = bottomI;
+      			deb.size = 15;
+      			debrisArray.push(deb);
+      		}
+      		for(d=0; d<=20; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "black";
+      			deb.x = (bottomC*brickW) + brickW - 2;
+      			deb.y = (bottomR*brickH) + Math.random()*brickH;
+      			deb.parentIndex = bottomI;
+      			deb.size = 15;
+      			debrisArray.push(deb);
+      		}
+      		for(d=0; d<=20; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "black";
+      			deb.x = bottomC*brickW + Math.random()*brickW;
+      			deb.y = (bottomR*brickH) + brickH - 2;
+      			deb.parentIndex = bottomI;
+      			deb.size = 15;
+      			debrisArray.push(deb);
+      		}
+      	} else if(brick[bottomI] == 2) {
+      		brick[bottomI] = 1;
+      		
+      		for(d=0; d<=70; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "crimson";
+      			deb.x = 2 + (bottomC*brickW) + Math.random()*(brickW-8);
+      			deb.y = 2+ (bottomR*brickH) + Math.random()*(brickH-8);
+      			deb.parentIndex = bottomI;
+      			debrisArray.push(deb);
+      		}
+      	}
+      }
+      
+ //left point collision 
+   if(brick[leftI] != 0 &&
+      leftC >= 0 &&
+      leftC < colCount &&
+      leftR >= 0 &&
+      leftR < rowCount &&
+      xVel < 0) {
+      	ballX = leftC * brickW + brickW + ballR;
+      	xVel *= -1;
+      	if(brick[leftI] == 1) {
+      		brick[leftI] = 0;
+      		bricksLeft--;
+      		
+      		for(d=0; d<=70; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "skyblue";
+      			deb.x = 2 + (leftC*brickW) + Math.random()*(brickW-8);
+      			deb.y = 2+ (leftR*brickH) + Math.random()*(brickH-8);
+      			deb.parentIndex = leftI;
+      			debrisArray.push(deb);
+      		}
+      		
+      		for(d=0; d<=20; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "black";
+      			deb.x = 2 + leftC*brickW;
+      			deb.y = (leftR*brickH) + Math.random()*brickH;
+      			deb.parentIndex = leftI;
+      			deb.size = 15;
+      			debrisArray.push(deb);
+      		}
+      		for(d=0; d<=20; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "black";
+      			deb.x = (leftC*brickW) + Math.random()*brickW;
+      			deb.y = leftR*brickH;
+      			deb.parentIndex = leftI;
+      			deb.size = 15;
+      			debrisArray.push(deb);
+      		}
+      		for(d=0; d<=20; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "black";
+      			deb.x = (leftC*brickW) + brickW - 2;
+      			deb.y = (leftR*brickH) + Math.random()*brickH;
+      			deb.parentIndex = leftI;
+      			deb.size = 15;
+      			debrisArray.push(deb);
+      		}
+      		for(d=0; d<=20; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "black";
+      			deb.x = leftC*brickW + Math.random()*brickW;
+      			deb.y = (leftR*brickH) + brickH - 2;
+      			deb.parentIndex = leftI;
+      			deb.size = 15;
+      			debrisArray.push(deb);
+      		}
+      	} else if(brick[leftI] == 2) {
+      		brick[leftI] = 1;
+      		
+      		for(d=0; d<=70; d++) {
+      			var deb = new brickDebris();
+      			deb.color = "crimson";
+      			deb.x = 2 + (leftC*brickW) + Math.random()*(brickW-8);
+      			deb.y = 2+ (leftR*brickH) + Math.random()*(brickH-8);
+      			deb.parentIndex = leftI;
+      			debrisArray.push(deb);
+      		}
+      	}
+      }
+   }
+			
+	//draws the brick grid
+	  function drawBricks() {
+	  	for(c=0; c<colCount; c++) {
+	  		for(r=0; r<rowCount; r++) {
+	  			var arrayIndex = index(c, r);
+	  	
+	  			if(brick[arrayIndex] == 1) {
+	  				strokeFill(2 + c*brickW, 2 + r*brickH, brickW-4, brickH-4, 2, "black", "skyblue");
+	  			}
+	  			
+	  			if(brick[arrayIndex] == 2) {
+	  				strokeFill(2 + c*brickW, 2 + r*brickH, brickW-4, brickH-4, 2, "black", "crimson");
+	  			}
+	  	}
+	  }
+	 }
+	  
+	//Figures out the brick number
+	  function index(col, row) {
+	  	var array = row * colCount + col;
+	  	
+	  	return array;
+	  }
+			
+	//resets all of the bricks
+	  function brickReset() {
+	  	bricksLeft = 0;
+	  	for(var i=0; i<colCount*1; i++) {
+	  		brick[i] = 0;
+	  	}
+	  for(; i<colCount*rowCount; i++) {
+	  	brick[i] = 1;
+	  	
+	  	if(Math.random() >= 0.7) {
+	  		brick[i] = 2;
+	  	}
+	  	if(Math.random() >= 0.9) {
+	  		brick[i] = 0;
+	  		bricksLeft--;
+	  	}
+	  	
+	  	bricksLeft++;
+	  }
+	  }
+			
+	//Handles ball ans paddle collisions
+			function paddleBallCollision() {
+			//ball hits top of paddle
+				if(ballX + ballR >= paddleX &&
+				   ballX - ballR <= paddleX + paddleW &&
+				   ballY + ballR >= paddleY &&
+				   ballY + ballR <= paddleY + 5 &&
+				   yVel > 0) {
+				   	
+				   	for(i=0; i<10; i++) {
+				   		var deb = new paddleDebris();
+				   		debrisArray.push(deb);
+				   	}
+				   	
+				   	yVel *= -1;
+				   	xVel = (ballX - (paddleX + paddleW/2)) * 0.20;
+				   	
+				   	if(bricksLeft <= 0 &&
+				   	   resetting == false) {
+				   	 resetting = true;
+				   	 document.getElementById("body").style.background = "#42f492";
+				   	 gameStarted = false;
+				   	 setTimeout(gameReset, 2000);
+				   	}
+				   }
+			//ball hits left side of paddle
+				if(ballX + ballR >= paddleX &&
+				   ballX + ballR <= paddleX + paddleW/2 &&
+				   ballY + ballR >= paddleY &&
+				   ballY - ballR <= paddleY + paddleH &&
+				   yVel > 0) {
+				   	ballX = paddleX - ballR - 1;
+			//ball going right, paddle stationary
+				   	if(xVel > 0 && 
+				   	   velPaddle == 0) {
+				   	   	xVel = -xVel;
+				   	   } 
+			//ball going right, paddle left
+				   	else if(xVel > 0 &&
+				   	        velPaddle < 0) {
+				   	        	xVel = -xVel + velPaddle;
+				   	             } 
+			//ball going left, paddle left
+				   	else if(xVel < 0 &&
+				   	        velPaddle < 0) {
+				   	        	xVel = xVel + velPaddle;
+				   	        }
+				   	                       
+				   }
+		//ball hits right side of paddle
+				if(ballX - ballR <= paddleX + paddleW &&
+				   ballX - ballR >= paddleX + paddleW/2 &&
+				   ballY + ballR >= paddleY &&
+				   ballY - ballR <= paddleY + paddleH &&
+				   yVel > 0) {
+				   	ballX = paddleX + paddleW + ballR +1;
+				
+		//ball going left, paddle stationary
+		  if(xVel < 0 &&
+		     velPaddle == 0) {
+		     	xVel = -xVel;
+		     }
+		//ball going left, paddle right
+		  if(xVel < 0 &&
+		     velPaddle > 0) {
+		     	xVel = -xVel + velPaddle;
+		     }
+		//ball going right, paddle right 
+		  if(xVel > 0 &&
+		     velPaddle > 0) {
+		     	xVel = xVel + velPaddle;
+		     }
+				   }
+			}
+			
+	//get the ball moving
+			function startGame() {
+				if(gameStarted == false &&
+				   lives > 0 &&
+				   bricksLeft > 0 &&
+				   delay == false) {
+					gameStarted = true;
+					yVel = -4;
+					xVel = 4-Math.random()*8;
+				}
+			}
+			
+ //move and draw the ball
+			function drawBall() {
+				ballX += xVel;
+				ballY += yVel;
+				
+	//ball doesnt move if game isnt started
+				if(gameStarted == false) {
+					xVel = 0;
+					yVel = 0;
+					ballX = paddleX + paddleW/2;
+					ballY = paddleY - ballR - 5;
+				}
+				
+	//code to draw ball
+				ctx.beginPath();
+				ctx.fillStyle = "orange";
+				ctx.strokeStyle = "black";
+				ctx.lineWidth = 1.5;
+				ctx.arc(ballX, ballY, ballR, 0, Math.PI*2, true);
+				ctx.fill();
+				ctx.stroke();
+				ctx.closePath();
+			}
+			
+	//bounce ball and paddle off wall
+			function wallCollision() {
+	//paddle hits left wall
+				if(paddleX <5) {
+					paddleX = 5;
+					velPaddle = 0;
+				}
+	//paddle hits right wall
+				if(paddleX + paddleW > canvas.width-5) {
+					paddleX = canvas.width -5 - paddleW;
+					velPaddle = 0;
+				}
+				
+	//ball hits left or right wall
+				if(ballX - ballR < 0 &&
+				   xVel < 0 ||
+				   ballX + ballR > canvas.width &&
+				   xVel > 0) {
+					xVel *= -1;
+				}
+	//ball hits top wall/ceiling
+				if(ballY - ballR < 0 &&
+				   yVel < 0) {
+				   	yVel *= -1;
+				   }
+	//stop game when ball goes offscreen
+				if(ballY - ballR > canvas.height + 20) {
+					setTimeout(stopDelay, 500);
+					delay = true;
+					gameStarted = false;
+					lives--;
+				}
+			}
+			
+	//Turns off the delay to serve again
+	  function stopDelay() {
+	  	delay = false;
+	  }
+			
+			
+	//draw and move the paddle
+			function drawPaddle() {
+				paddleX += velPaddle;
+				
+				strokeFill(paddleX, paddleY, paddleW, paddleH, 2, "black", "#42f492");
+			}
+			
+	//left button
+			function left() {
+				velPaddle = -5;
+				startGame();
+			}
+	//right button
+			function right() {
+				velPaddle = 5;
+				startGame();
+			}
+ //stop moving when button is released
+			function clearMove() {
+				velPaddle = 0;
+			}
+			
+	//function to quickly make rectangles
+			function rect(x,y,w,h,c) {
+				ctx.beginPath();
+				ctx.fillStyle = c;
+				ctx.rect(x,y, w,h,);
+				ctx.fill();
+				ctx.closePath();
+				}
+				
+	//reset paddle to middle of screen
+				function paddleReset() {
+					paddleX = canvas.width/2 - paddleW/2;
+					paddleY = canvas.height - paddleH - 30;
+					velPaddle = 0;
+				}
+				
+	//make a stroked rectangle quickly
+			function strokeFill(x,y, w,h, s, sc, c) {
+				ctx.beginPath();
+				ctx.fillStyle = c;
+				ctx.lineWidth = s;
+				ctx.strokeStyle = sc;
+				ctx.rect(x,y, w,h);
+				ctx.fill();
+				ctx.stroke();
+				ctx.closePath();
+			}
+			
+		</script>
+		<style>
+			
+			canvas {
+				border: 2px solid black;
+				border-radius: 5px;
+			}
+			body {
+				background: teal;
+			}
+			.centered {
+				display: flex;
+				justify-content: center;
+			}
+			button {
+				width: 50%;
+				height: 98%;
+				top: 0%;
+				position: absolute;
+				border-radius: 5px;
+				background: rgba(0,0,0,0);
+				border: none;
+			}
+			#left {
+				left: 0%;
+			}
+			#right {
+				right: 0%
+			}
+			button:focus {
+				outline: none;
+			}
+			
+		</style>
+	</head>
+	<body id="body">
+		
+		<div class="centered">
+			<canvas id="canvas" width="350px" height="400px"></canvas>
+		</div>
+		
+		<div class="centered">
+			<button ontouchstart="left()"
+			        ontouchend="clearMove()"
+			        onmousedown="left()"
+			        onmouseup="clearMove()"
+			        id="left"></button>
+			<button ontouchstart="right()"
+			        ontouchend="clearMove()"
+			        onmousedown="right()"
+			        onmouseup="clearMove()"
+			        id="right"></button>
+		</div>
+		
+	</body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+</head>
+<body>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+
+<script>
+  const BALL_COUNT = 800;
+  
+  function ballClass() {
+    var tempRandAng = Math.random()*Math.PI*2.0;
+    var tempRandSpeed = 3.0+Math.random()*5.0;
+    
+    this.speedX = Math.cos(tempRandAng)*tempRandSpeed;
+    this.speedY = Math.sin(tempRandAng)*tempRandSpeed;
+    
+    this.findNewRandPosition = function() {
+      this.x = Math.random()*canvas.width;
+      this.y = Math.random()*canvas.height;
+    }
+    
+    this.findNewRandPosition(); // note: calling that function as part of initialization
+        
+    this.move = function() {
+      if(this.x < 0) { // if ball has moved beyond the left edge
+        this.speedX *= -1; // reverse ball's horizontal direction
+      }
+      
+      if(this.x > canvas.width) { // if ball has moved beyond the right edge
+        this.speedX *= -1; // reverse ball's horizontal direction
+      }
+  
+      if(this.y < 0) { // if ball has moved beyond the top edge
+        this.speedY *= -1; // reverse ball's vertical direction
+      }
+      
+      if(this.y > canvas.height) { // if ball has moved beyond the bottom edge
+        this.speedY *= -1;
+      }
+      
+      this.bounceOffWalls();
+    
+      this.x += this.speedX;
+      this.y += this.speedY;
+    }
+
+    this.isOnWall = function() {
+      return isBrickAtPixelPosition(this.x, this.y);
+    }
+
+    this.bounceOffWalls = function() {
+      var tileCol = this.x / BRICK_W;
+      var tileRow = this.y / BRICK_H;
+      
+      // using Math.floor to round down to the nearest whole number
+      tileCol = Math.floor( tileCol );
+      tileRow = Math.floor( tileRow );
+  
+      // first check whether the ball is within any part of the brick wall
+      if(tileCol < 0 || tileCol >= BRICK_COLS ||
+         tileRow < 0 || tileRow >= BRICK_ROWS) {
+         return false;
+      }
+      
+      var brickIndex = brickTileToIndex(tileCol, tileRow);
+     
+      if(brickGrid[brickIndex] == 1) {
+        // ok, so we know we overlap a brick now.
+        // let's backtrack to see whether we changed rows or cols on way in
+        var prevX = this.x-this.speedX;
+        var prevY = this.y-this.speedY;
+        var prevTileCol = Math.floor(prevX / BRICK_W);
+        var prevTileRow = Math.floor(prevY / BRICK_H);
+        var bothTestsFailed = true;
+        if(prevTileCol != tileCol) { // must have come in horizontally
+          var adjacentBrickIndex = brickTileToIndex(prevTileCol, tileRow);
+          // make sure the side we want to reflect off isn't blocked!
+          if(brickGrid[adjacentBrickIndex] != 1) {
+            this.speedX *= -1;
+            bothTestsFailed = false;
+          }
+        }
+        if(prevTileRow != tileRow) { // must have come in vertically
+          var adjacentBrickIndex = brickTileToIndex(tileCol, prevTileRow);
+          // make sure the side we want to reflect off isn't blocked!
+          if(brickGrid[adjacentBrickIndex] != 1) {
+            this.speedY *= -1;
+            bothTestsFailed = false;
+          }
+        }
+        // we hit an "armpit" on the inside corner, this blocks going into it
+        if(bothTestsFailed) {
+          this.speedX *= -1;
+          this.speedY *= -1;
+        }
+      }
+    }
+    
+    this.draw = function() {
+        colorCircle(this.x, this.y, 2, 'white');
+    }
+  } // end of ball class
+  
+  var ballList = [];
+  
+  function createEveryBall() {
+    for( var i=0;i<BALL_COUNT;i++) {
+      ballList.push(new ballClass());
+      while(ballList[i].isOnWall()) {
+        ballList[i].findNewRandPosition();
+      }
+    }
+  }
+  
+  const BRICK_W = 40;
+  const BRICK_H = 40;
+  const BRICK_GAP = 1;
+  const BRICK_COLS = 20;
+  const BRICK_ROWS = 15;
+
+  var brickGrid =
+      [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+        1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1,
+        1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1,
+        1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1,
+        1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1,
+        1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1,
+        1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+        1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+        1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+        1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];;
+  
+  var canvas, canvasContext;
+  
+  function brickTileToIndex(tileCol, tileRow) {
+    return (tileCol + BRICK_COLS*tileRow);
+  }
+
+  function isBrickAtPixelPosition(pixelX, pixelY) {
+      var tileCol = pixelX / BRICK_W;
+      var tileRow = pixelY / BRICK_H;
+      
+      // using Math.floor to round down to the nearest whole number
+      tileCol = Math.floor( tileCol );
+      tileRow = Math.floor( tileRow );
+  
+      // first check whether the ball is within any part of the brick wall
+      if(tileCol < 0 || tileCol >= BRICK_COLS ||
+         tileRow < 0 || tileRow >= BRICK_ROWS) {
+         return 1; // treat out of bounds as solid
+      }
+      
+      return isBrickAtTileCoord(tileCol, tileRow);
+  }
+
+  function isBrickAtTileCoord(brickTileCol, brickTileRow) {
+    var brickIndex = brickTileToIndex(brickTileCol, brickTileRow);
+    return (brickGrid[brickIndex] == 1);
+  }
+
+  window.onload = function() {
+    canvas = document.getElementById('gameCanvas');
+    canvasContext = canvas.getContext('2d');
+    
+    // these next few lines set up our game logic and render to happen 30 times per second
+    var framesPerSecond = 30;
+    setInterval(function() {
+        moveEverything();
+        drawEverything();
+      }, 1000/framesPerSecond);
+    
+    createEveryBall();
+  }
+    
+  function moveEverything() {
+    for(var i=0;i<ballList.length;i++) {
+      ballList[i].move();
+    }
+  }
+  
+  function colorRect(topLeftX, topLeftY, boxWidth, boxHeight, fillColor) {
+    canvasContext.fillStyle = fillColor;
+    canvasContext.fillRect(topLeftX, topLeftY, boxWidth, boxHeight);
+  }
+  
+  function colorCircle(centerX, centerY, radius, fillColor) {
+    canvasContext.fillStyle = fillColor;
+    canvasContext.beginPath();
+    canvasContext.arc(centerX, centerY, radius, 0, Math.PI*2, true);
+    canvasContext.fill();
+  }
+  
+  function drawBricks() {
+    for(var eachCol=0; eachCol<BRICK_COLS; eachCol++) { // in each column...
+      for(var eachRow=0; eachRow<BRICK_ROWS; eachRow++) { // in each row within that col
+      
+        if( isBrickAtTileCoord(eachCol, eachRow) ) {
+          var brickLeftEdgeX = eachCol * BRICK_W;
+          var brickTopEdgeY = eachRow * BRICK_H;
+          colorRect(brickLeftEdgeX, brickTopEdgeY,
+                   BRICK_W - BRICK_GAP, BRICK_H - BRICK_GAP, 'blue' );
+        } // end of isBrickAtTileCoord()
+      } // end of for eachRow
+    } // end of for eachCol
+  } // end of drawBricks()
+  
+  function drawEverything() {
+    colorRect(0, 0, canvas.width, canvas.height, 'black');
+
+    drawBricks();
+    
+    for(var i=0;i<ballList.length;i++) {
+      ballList[i].draw();
+    }
+  }
+</script>
+
+</body>
+</html>

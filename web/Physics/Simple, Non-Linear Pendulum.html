@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<script>
+	    
+	    window.onload = function() {
+	        canvas = document.getElementById("canvas");
+	        ctx = canvas.getContext("2d");
+	        
+	        setInterval(sim, 1000/60);
+	    }
+
+	    
+	    //Variables of the pendulum
+	    var length = 150; //Will be scaled down by 60 in calculations
+	    var gravity = 9.81;
+
+	    //Starting angle
+	    var angle = 179.9 * (Math.PI/180);
+
+	    //Apply force thats how much % of velocity?  Ex. -5 slows it down by 5% of the velocity
+	    var dampenAmount = -0 * (Math.pow(10, -2));
+	    
+	    //Display Vectors?
+	    var vectorsOn = true;
+	    //Display Graph Over Screen
+	    var makeGraph = true;
+	    //Scale of x Axis, in seconds
+	    var xScale = 10;
+	    //Display Info On Screen?
+	    var infoOn = true;
+
+	    //Just creating variables
+	    var aVel = 0;
+	    var aAcc = 0;
+	    var timer = 0;
+	    var graphTracer = [];
+	    var displayAngle;
+	    var mouseX;
+	    var mouseY;
+	    var clickOn = false;
+	    var mouseAngle;
+	    
+	    function sim() {
+	        ctx.fillStyle = "grey";
+	        ctx.fillRect(0, 0, canvas.width, canvas.height);
+	        
+	        timer += 1/60;
+	        // Length is scaled down by 60 to speed it up
+	        aAcc = (-gravity * Math.sin(angle) + dampenAmount*aVel)/(length/60) ;
+	        aVel += aAcc/60;
+	        angle += aVel/60;
+
+	        //Dampen it
+	        //aVel -= aVel*dampenAmount;
+
+	        bobX = canvas.width/2 + (length * Math.sin(angle));
+	        bobY = (length + canvas.height/2) - (length - length * Math.cos(angle));
+
+	        var dX = bobY - canvas.height/2;
+	        var dY = bobX - canvas.height/2;
+
+	        displayAngle = Math.atan(dY/dX);
+	        if(dX < 0 && 
+	           dY > 0) {
+	        	displayAngle += Math.PI;
+	        } else if(dX < 0 &&
+	        	      dY <= 0) {
+	        	displayAngle -= Math.PI;
+	        }
+
+	        //Create points on graph
+	        if(timer*xScale <= canvas.width) {
+	       	graphTracer.push({
+	       		x: timer * xScale,
+	       		y: (canvas.height/2 - (displayAngle*(180/Math.PI)) * 0.9) - 1
+	       		});
+	       }
+
+	       	//Draw points on graph
+	        if(makeGraph == true) {
+	       		for(i=0; i<graphTracer.length; i++) {
+	        		ctx.fillStyle = "crimson";
+	        		ctx.fillRect(graphTracer[i].x, graphTracer[i].y, 2, 2);
+	      		  }
+	        }
+	        
+
+	        //Display simulation text info
+	        if(infoOn == true) {
+	        ctx.font = "bold 10px arial";
+	        ctx.fillStyle = "black";
+	        ctx.textAlign = "left";
+
+	        //Angle of Pendulum
+	        ctx.fillText("Angle: " + (Math.round(displayAngle*180/Math.PI * 100)/100) + " deg.", 20, 20);
+
+	        //Timer
+	        ctx.fillText("Timer: " + Math.round(timer * 100)/100 + " sec.", 20, 30);
+	        
+	        //Current Velocity
+	        ctx.fillStyle = "#d5f5ee";
+	        ctx.fillText("Velocity: " + Math.round(aVel*(length/60)*100)/100 + " m/s", 20, 40);
+	        
+	        //Current Acceleration
+	        ctx.fillStyle = "orange";
+	        ctx.fillText("Acceleration: " + Math.round(aAcc * (length/60) * 100)/100 + " m/s/s", 20, 50);
+
+	        ctx.textAlign = "right";
+	        ctx.fillStyle = "black";
+	        //Length of Pendulum scaled down by 60
+	        ctx.fillText("Length: " + length/60 + " meters", canvas.width - 20, 20);
+	        if(vectorsOn) {
+	        	ctx.fillText("Vectors: On" , canvas.width - 20, 30);
+	        } else {
+	        	ctx.fillText("Vectors: Off" , canvas.width - 20, 30);
+	        }
+	        //Driving Force behind the pendulum
+	        ctx.fillText("Driving Force: " + dampenAmount*100 + " %", canvas.width - 20, 40);
+	        //Scale of the background graph's x axis
+	        ctx.fillText("Graph Scale: " + xScale + " sec.", canvas.width - 20, 50);
+	    }
+
+
+	        //Draw velocity and acceleration vectors
+	        if(vectorsOn == true) {
+	        //Acceleration vector
+	        ctx.beginPath();
+	        ctx.strokeStyle = "orange";
+	        ctx.moveTo(bobX, bobY);
+	        //Acc is scaled up by 5 to see the vector easily
+	        ctx.lineTo(bobX + (aAcc * (length/60) * 5 * Math.cos(angle)), bobY - ((aAcc * (length/60) * 5 * Math.sin(angle))));
+	        ctx.stroke();
+	        ctx.closePath();
+	        
+	        //Velocity Vector
+	        ctx.beginPath();
+	        ctx.strokeStyle = "#d5f5ee";
+	        ctx.moveTo(bobX, bobY);
+	        //Vel is scaled up by 5 to see the vector easily
+	        ctx.lineTo(bobX + (aVel * (length/60) * 5 * Math.cos(angle)), bobY - ((aVel * (length/60) * 5 * Math.sin(angle))));
+	        ctx.stroke();
+	        ctx.closePath();
+
+	        //Gravity Vector
+	        ctx.beginPath();
+	        ctx.strokeStyle = "blue";
+	        ctx.moveTo(bobX, bobY);
+	        //Scaled by 5 to see the vector easily
+	        ctx.lineTo(bobX, bobY + gravity * 5);
+	        ctx.stroke();
+	        ctx.closePath();
+	        }
+
+
+	        //Draw pivot point at center of screen
+	        ctx.beginPath();
+	        ctx.fillStyle = "black";
+	        ctx.arc(canvas.width/2, canvas.height/2, 2, 0, Math.PI*2, true);
+	        ctx.fill();
+	        ctx.closePath();
+	        
+	        //Draw String
+	        ctx.beginPath();
+	        ctx.strokeStyle = "black";
+	        ctx.lineWidth = 2;
+	        ctx.moveTo(canvas.width/2, canvas.height/2);
+	        ctx.lineTo(bobX, bobY);
+	        ctx.stroke();
+	        ctx.closePath();
+	        
+	        //Draw the pendulum bob
+	        ctx.beginPath();
+	        ctx.fillStyle = "crimson";
+	        ctx.arc(bobX, bobY, 5, 0, Math.PI*2, true);
+	        ctx.fill();
+	        ctx.stroke();
+	        ctx.closePath();
+
+
+	        //Control pendulum position with mouse 
+	        if(clickOn == true &&
+	           mouseX >= 0 &&
+	           mouseX <= canvas.width &&
+	           mouseY >= 0 &&
+	           mouseY <= canvas.height) {
+
+	        	var x = mouseY - canvas.height/2;
+	        	var y = mouseX - canvas.width/2;
+
+	        	mouseAngle = Math.atan(y/x);
+	        if(x < 0 && 
+	           y > 0) {
+	        	mouseAngle += Math.PI;
+	        } else if(x < 0 &&
+	        	      y <= 0) {
+	        	mouseAngle -= Math.PI;
+	        }
+
+	        	angle = mouseAngle;
+	        	timer = 0;
+	        	graphTracer.splice(0, graphTracer.length);
+	        	aVel = 0;
+
+	        }
+
+
+	    }
+
+	    //Listen for user input
+	    document.addEventListener("mousedown", mouseDown);
+	    document.addEventListener("mouseup", mouseUp);
+	    document.addEventListener("mousemove", mouseMove);
+	    
+	    document.addEventListener("touchstart", mouseDown);
+	    document.addEventListener("touchend", mouseUp);
+	    document.addEventListener("touchmove", mouseMove);
+	    
+
+	    function mouseDown() {
+	    	clickOn = true;
+	    }
+	    function mouseUp() {
+	    	clickOn = false;
+	    }
+	    function mouseMove(e) {
+	    	mouseX = e.clientX - canvas.getBoundingClientRect().left - document.documentElement.scrollLeft;
+	    	mouseY = e.clientY - canvas.getBoundingClientRect().top - document.documentElement.scrollTop;
+	    }
+	    	
+	    
+	    
+	</script>
+	<style>
+	    
+	    div {
+	        display: flex;
+	        justify-content: center;
+	    }
+	    canvas {
+	        border: 2px solid black;
+	        border-radius: 5px;
+	    }
+	    body {
+	        background: skyblue;
+	    }
+	    
+	</style>
+	<body>
+	    <div>
+		<canvas id="canvas" width="350px" height="350px"></canvas>
+		</div>
+	</body>
+</html>

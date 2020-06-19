@@ -1,0 +1,181 @@
+
+    vim <filename> #Open <filename> in vim
+    : help <topic> # Open the built-in utility for <topic> if available
+    : q # Get out of vim
+    : w # Save the current file
+    : wq # Save the current file and exit vim
+    ZZ # Save the current file and exit vim
+    : q! # Get out without storage
+                     #! * forces * the: q to run, so it comes out without saving
+    : x # Same with wq but shorter
+
+    u # Undo
+    CTRL + R # Redo
+
+    h # Move one character to the left
+    j # Move a line down
+    k # Move a line up
+    l # Move a line to the right
+
+    Ctrl + B # Go to a back screen
+    Ctrl + F # Go to a front screen
+    Ctrl + U # Go half screen back
+    Ctrl + D # Go half screen ahead
+
+    # Moves in the same line
+
+    0 # Go to the beginning of the line
+    $ # Go to the bottom of the line
+    ^ # Go to the first non-empty character of the line
+
+    # Search the text
+
+    / word # Emphasizes all the appearances of the word after the cursor
+    ? word # Emphasizes all the appearances of the word before the cursor
+    n # Moves the cursor to the next display of the word
+    N # Moves the cursor to the previous appearance of the word
+
+    :% s / foo / bar / g # changed 'foo' to 'bar' in each line of the file
+    : s / foo / bar / g # changed 'foo' to 'bar' in the current line
+
+    # Changes in characters
+
+    f <character> # Jump forward and land on the next <character>
+    t <character> # Jump forward and land immediately before the previous <character>
+
+    # For example,
+    f <# Jump forward and land on <
+    t <# Jump forward and land immediately before <
+
+    # Moving by words
+
+    w # Go a word forward
+    b # Go a word back
+    e # Go to the end of the word you are in
+
+    # Other characters to go around
+
+    gg # Go to the beginning of the file
+    G # Go to the bottom of the file
+    : NUM # Go to the line with NUM number (any number)
+    # Go to the top of the page
+    M # Go to the middle of the page
+    L # Go to the bottom of the page
+
+    i # Put the vim in insert mode, before the cursor position
+    a # Vim puts in insert mode, after cursor position
+    v # puts vim in visual mode
+    : # Put vim in ex mode
+    <esc> # leaves any mode we are in and goes to command mode
+
+    # Copy-Paste text
+
+    y # Yank (copy) whatever is selected
+    yy # Yank the line you are on
+    d # delete what is selected
+    dd # Delete the line you are on
+    p # Paste the copied text after the cursor position
+    P # Paste the copied text before the cursor position
+    x # Delete the character below the cursor
+
+    # 'Verbs'
+
+    d # Delete
+    c # Change
+    y # Yank (copied)
+    v # Select visually
+
+    # 'Modifiers'
+
+    i # Inside
+    a # Around
+    NUM # Number (NUM = any number)
+    f # Look for something and go where it is
+    t # Search for something and go before where it is
+    / # Find a string after the cursor
+    ? # Find a string before the cursor
+
+    # 'Nouns'
+
+    w # Word
+    s # Proposal
+    p # Paragraph
+    b # Block
+
+    # Samples of 'suggestions' or commands
+
+    d2w # Delete 2 words
+    cis # Change in the foreground
+    yip # Copy the paragraph you are in
+    ct <# Change to <
+                     # Change the text from which you are before the next bracketChange the text from where you are to the next open bracket
+    d $ # Delete by the end of the line
+
+    > # Right-click your block option
+    <#Turn to the left your option by one block
+    : earlier 15m # Make the file as it was 15 minutes ago
+    : later 15m # Cancel for the above command
+    ddp # Exchange the positions of successive lines
+    . #Repeat the previous action
+    : w! sudo tee% # Save the current file as root
+    : set syntax = c # Make syntax highlighting for the language c
+    : sort # Sort all lines
+    : sort! # Arrange all lines upside down (ascending row)
+    : sort u # Sort all lines and delete double lines
+    ~ # Change the capitals to lowercase in the selected text
+    u # The selected text should be in lower case
+    U # The selected text to become capital letters
+
+    # Fold text
+    zf # Doubles (compresses the lines in one) the selected text
+    zo # Fold the selected fold
+    zc # Closes the selected fold
+    zR # Opens all folds
+    zM # Closes all folds
+
+    qa # Start recording a macro that will be named 'a'
+    q # Stop recording
+    #a # Run the macro
+
+"Example. / .Vimrc
+"2015.10
+
+"Required for vim to be iMproved
+nocompatible set
+
+"Determines filetype from name to allow intelligent auto-indenting, etc.
+filetype indent plugin on
+
+“Enable syntax highlighting
+syntax on
+
+"Better command-line completion
+set wildmenu
+
+"Use case insensitive search except when using capital letters
+set ignorecase
+set smartcase
+
+"When opening a new line and no file-specific indenting is enabled,
+"keep the same indent as the line you're currently on
+autoindent set
+
+"Display line numbers on the left
+set number
+
+"Indentation options, change according to personal preference
+
+"Number of visual spaces for TAB
+set tabstop = 4
+
+"Number of spaces in TAB when editing
+set softtabstop = 4
+
+"Number of spaces indented when reindent operations (>> and <<) are used
+set shiftwidth = 4
+
+"Convert TABs to spaces
+set expandtab
+
+"Enable intelligent tabbing and spacing for indentation and alignment
+set smarttab

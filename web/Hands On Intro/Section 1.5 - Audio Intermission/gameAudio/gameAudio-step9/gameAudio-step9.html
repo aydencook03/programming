@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+</head>
+<body>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+
+<script src="SoundOverlaps.js"></script>
+<script>
+  var canvas, canvasContext;
+  var longerSound = new SoundOverlapsClass("../gameAudio-effects/longer"); ////
+  var shorterSound = new SoundOverlapsClass("../gameAudio-effects/bloop"); ////
+  
+  function mouseupHandler() {
+    longerSound.play();
+  }
+
+  function keyPressed(evt) {
+    shorterSound.play();
+    evt.preventDefault(); // without this, arrow keys scroll the browser!
+  }
+  
+  window.onload = function() {
+    //// removed calls to load() on the sounds, now done as part of the constructor
+    canvas = document.getElementById('gameCanvas');
+    canvasContext = canvas.getContext('2d');
+    canvas = document.getElementById('gameCanvas');
+    canvas.addEventListener('mouseup',mouseupHandler);
+    document.addEventListener("keydown",keyPressed);
+    canvasContext.fillRect(0, 0, canvas.width, canvas.height);
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<Style>
+	
+	button:focus {
+		outline: none;
+	}
+	
+Div {
+display: flex;
+Justify-content: center;
+Align-items: center;
+}
+         
+canvas {
+Margin-bottom: 10px;
+Border-radius: 3px;
+} 
+
+#leftButton {
+width: 150px;
+float: left;
+height: 65px;
+Font-weight: bold;
+Font-size: 30px;
+Margin-right: 1px;
+Border-radius: 3px;
+}
+
+#rightButton {
+width: 150px;
+float: left;
+Height: 65px;
+Font-weight: bold;
+Font-size: 30px;
+Margin-left: 1px;
+Border-radius: 3px;
+}
+
+span {
+Display: flex;
+Justify-content: center;
+Align-items: center;
+Font-weight: bold;
+Font-size: 20px;
+Font-family: Arial;
+}
+
+#buttons {display:flex;
+          Align-items: center;
+          Margin-top: 0px;
+          Justify-content: center;}
+
+h2 {display: flex;
+    Justify-content: center;
+    Margin-top: 20px;}
+
+#carSpeedUp {
+  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-left: 1px;
+  Border-radius: 3px;
+}
+
+#carSpeedDown {
+  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-right: 1px;
+  Border-radius: 3px;
+}
+
+#paddleWidthUp {
+  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-left: 1px;
+  Border-radius: 3px;
+}
+
+#paddleButtons {
+  Margin-top: 5px;
+}
+
+#paddleWidthDown {
+  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-right: 1px;
+  Border-radius: 3px;
+}
+
+#carSize {margin-top: 5px;}
+
+#carSizeUp {
+  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-left: 1px;
+  Border-radius: 3px;
+}
+
+#carSizeDown {
+  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-right: 1px;
+  Border-radius: 3px;
+}
+
+#paddleY {margin-top: 5px;}
+
+#paddleYUp {
+	  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-left: 1px;
+  Border-radius: 3px;
+}
+
+#paddleYDown {
+	  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-right: 1px;
+  Border-radius: 3px;
+}
+
+#useMouse {margin-bottom: 5px}
+
+#useMouseTrue {
+		  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-left: 1px;
+  Border-radius: 3px;
+}
+
+#useMouseFalse {
+		  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-right: 1px;
+  Border-radius: 3px;
+}
+
+body {
+  background: #fff;
+}
+
+#copyright {
+	float: right;
+	font-size: 0.8em;
+	margin-top: 3px;
+	
+}
+
+</style>
+
+  <Script>
+
+//Grab Canvas
+var canvas;
+var ctx;
+
+//Framerate
+var fPs = 60;
+
+//Car Variables
+var yVelocity = 0;
+var xVelocity = 0;
+var carSize = 5;
+
+//Game Mechanics
+var useMouse = false;
+var playerLives = 3;
+var showWinScreen = false;
+var showLoseScreen = false;
+
+//Track Variables
+var trackWidth = 15;
+var trackHeight = 15;
+var trackGap = 2;
+var colCount = 20;
+var rowCount = 20;
+var tracks = 
+[
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,
+1,2,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1,1,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,
+1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,0,0,0,1,
+1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1,
+1,1,1,0,0,0,0,1,1,1,1,0,0,0,1,1,0,0,0,1,
+1,1,0,0,0,0,1,1,0,0,0,0,0,1,1,1,0,0,0,1, 1,0,0,0,0,1,1,0,0,0,0,0,0,1,1,1,0,0,0,1,
+1,0,0,0,1,1,0,0,0,0,0,0,1,1,1,0,0,0,0,1,
+1,0,0,0,1,1,0,0,0,0,1,1,1,1,0,0,0,0,1,1,
+1,0,0,0,1,1,0,0,0,1,1,1,1,0,0,0,0,0,1,1,
+1,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,
+1,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,1,1,1,1,
+1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,
+1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,
+1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,]
+
+//Car
+var carPic = new Image();
+var isCarLoaded = false;
+	carPic.src = "Images/player1.png";
+
+//What Happens When The Window Loads
+window.onload = function() {
+canvas = document.getElementById('game');
+ctx = canvas.getContext('2d');
+ setInterval(drawShapes,1000/fPs);
+ carReset();
+}
+
+ //Car
+carPic.onload = function() {
+	isCarLoaded = true;
+}
+
+//Car Start Position
+var carY = 250;
+var carX = 150;
+var carAng = 0;
+
+//Reset Car And Show Win Screens
+function carReset() {
+  for(var row=0;row<rowCount;row++) {
+	for(var col=0;col<colCount;col++) {
+		
+	var arrayIndex = colCount*row+col;
+		
+		if(tracks[arrayIndex] == 2) {
+			tracks[arrayIndex] = 0;
+			carX = col * trackWidth + trackWidth;
+			carY = row * trackHeight;
+		 	}
+		}
+}
+}
+
+//Speeds Up The Car For The Button
+function carSpeedUp() {
+  yVelocity *= 1.5;
+}
+
+//Slows The Car For The Button
+function carSpeedDown() {
+  yVelocity *= 0.5;
+}
+
+//How To Draw Tracks
+function drawTracks() {
+for(var row=0;row<rowCount;row++) {
+	for(var col=0;col<colCount;col++) {
+		
+	var arrayIndex = colCount*row+col;
+		
+		if(tracks[arrayIndex] == 1) {
+			ctx.fillStyle = "teal";	ctx.fillRect(trackWidth*col,trackHeight*row,trackWidth-2,trackHeight-2);
+		 }
+ 	}
+ }
+}
+
+function rowColToArrayIndex(col, row) {
+	return col + colCount * row;
+}
+
+function drawBitmap(useBitmap, atX, atY, withAng) {
+	ctx.save();
+	ctx.translate(atX, atY);
+	ctx.rotate(withAng);
+	ctx.drawImage(useBitmap, -useBitmap.width/2 , -useBitmap.height/2, 100, 50)
+	ctx.restore();
+}
+
+var turnPower = 0;
+var carSpeed = 1;
+
+function turnLeft() {
+	turnPower = -0.05;
+}
+function turnRight() {
+	turnPower = 0.05;
+}
+function straighten() {
+	turnPower = 0;
+}
+
+//Draw Everything
+function drawShapes() {
+
+//Black Out The Canvas
+ctx.fillStyle = 'black';
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+carAng += turnPower;
+
+carX += Math.cos(carAng) * carSpeed;
+carY += Math.sin(carAng) * carSpeed;
+
+//Draw Car
+if(isCarLoaded) {
+drawBitmap(carPic, carX, carY, carAng);
+ctx.stroke();
+}
+
+
+
+/*
+//Move Car Vertically
+carY = carY + yVelocity;
+
+//Move Car Horizontally
+carX = carX + xVelocity;
+*/
+drawTracks();
+
+var carColumn = Math.floor(carX/trackWidth);
+
+var carRow = Math.floor(carY/trackHeight);
+
+var trackUnderCar = rowColToArrayIndex(carColumn, carRow);
+
+if(carColumn >= 0 &&
+   carColumn < colCount &&
+   carRow >= 0 &&
+   carRow < rowCount); {
+   	if(tracks[trackUnderCar] == 1) {
+   		
+   	tracks[trackUnderCar] =  1;
+   	
+   	var previousCarX = carX - xVelocity;
+   	var previousCarY = carY - yVelocity;
+   	var previousCarC = Math.floor(previousCarX / trackWidth);
+   	var previousCarR = Math.floor(previousCarY / trackHeight);
+   	var bothFailed = true;
+   	
+   	if(previousCarC != carColumn) {
+   		
+   		var adjTrackSide = rowColToArrayIndex(previousCarC, carRow);
+   		
+   		if(isTrackAtColRow(previousCarC, carRow) == false) {
+   		xVelocity = -xVelocity;
+   		bothFailed = false;
+   		}
+   	}
+   	
+
+   	if(previousCarR != carRow) {
+   		
+   		   	var adjTrackTop = rowColToArrayIndex(carColumn, previousCarR);
+   		
+   		if(isTrackAtColRow(carColumn, previousCarR) == false) {
+   		yVelocity = -yVelocity;
+   		bothFailed = false;
+   		}
+   	}
+   	if(bothFailed) {
+   		yVelocity = -yVelocity;
+   		xVelocity = -xVelocity;
+   	}
+  }
+}
+
+function isTrackAtColRow(col,row) {
+	if(col >= 0 && col < colCount &&
+	   row >= 0 && row < rowCount) {
+	   	var trackIndexUnderCoord = rowColToArrayIndex(col, row);
+	   	return tracks[trackIndexUnderCoord];
+	   }
+	   else {
+	   	return false;
+	   }
+}
+
+//Bounce Car Off Walls
+if(carX + carSize >= canvas.width && xVelocity >=0) {
+  xVelocity = -xVelocity;}
+if(carX - carSize <= 0 && xVelocity <= 0) {
+  xVelocity = -xVelocity;}
+  
+if(carY - carSize <= 0) {
+	yVelocity = -yVelocity;
+}
+  
+//Reset Car At Bottom
+if(carY - carSize >= canvas.height) {
+	yVelocity = -yVelocity;
+}
+
+/*
+//Draw Car
+ctx.fillStyle = "white";
+ctx.beginPath();
+ctx.arc(carX,carY,carSize,0,Math.PI*2, true);
+ctx.fill();
+*/
+}
+  </script>
+
+</head>
+
+<body>
+<Span> JavaScript Racer </span>
+  <Div>
+<Canvas id="game" width="300px" height="300px"> </canvas>
+  </Div>
+  
+  <Div>
+<Button id="leftButton" onmousedown="turnLeft()" ontouchstart="turnLeft()" onmouseup="straighten()" ontouchend="straighten()" width="150px">  </button>
+
+<Button id="rightButton" onmousedown="turnRight()" ontouchstart="turnRight()" onmouseup="straighten()" ontouchend="straighten()" width="150px">  </button> </div>
+
+<H2><u>Game Controls</u></h2>
+
+<Div id="buttons"> 
+<button id="carSpeedDown" onclick="carSpeedDown()">
+ Car Speed Down </button>
+
+<button id="carSpeedUp" onclick="carSpeedUp()">Car Speed Up </button> </div>
+
+<span id="copyright"><i> <sup>&copy;</sup>Ayden Cook, 2017 All Rights Reserved</i></span>
+</Body>
+</html>

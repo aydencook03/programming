@@ -1,0 +1,139 @@
+<html>
+<script>
+
+var fps = 60;
+
+window.onload = function() {
+    canvas = document.getElementById("canvas");
+    ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    initialize();
+    
+    
+    setInterval(main, 1000/fps);
+}
+
+function initialize() {
+    w = 10;
+    h = 30;
+    
+    x = canvas.width/2 - w/2;
+    y = h;
+    xV = 0; // (m/s)
+    yV = 0;
+    xA = 0; // (m/s/s)
+    yA = 0;
+    
+    a = Math.PI/2;
+    aV = 0;
+    aA = 0;
+    
+    gravity = 50;
+    
+    dryMass = 2008; //mass (kg) of rocket without fuel
+    fuelMass = 5640; //mass (kg) of fuel
+    
+    thrustForce = 224000; //thrust (N) created from thrust
+    turnForce = 1.5; //thrust (N) created from RCS
+    
+    thrustConsumption = 106.42; //rate (kg/s) of fuel consumption by engine
+    turnConsumption = 12.7; //rate of fuel consumption by RCS
+    
+    thrusting = false;
+    turningLeft = false;
+    turningRight = false;
+    
+    color = "crimson";
+}
+
+function main() {
+    ctx.beginPath();
+    ctx.fillStyle = "grey";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.closePath();
+    
+    moveRocket();
+    drawRocket();
+}
+
+document.addEventListener("keydown",keyDown);
+document.addEventListener("keyup",keyUp);
+
+function keyDown(e) {
+    if(e.keyCode == "37" && fuelMass > 0) {
+        turningLeft = true;
+    }
+    if(e.keyCode == "39" && fuelMass > 0) {
+        turningRight = true;
+    }
+    if(e.keyCode == "38" && fuelMass > 0) {
+        thrusting = true;
+    }
+}
+function keyUp(e) {
+    if(e.keyCode == "37") {
+        turningLeft = false;
+    }
+    if(e.keyCode == "39") {
+        turningRight = false;
+    }
+    if(e.keyCode = "38") {
+        thrusting = false;
+    }
+}
+
+function moveRocket() {
+    xA = 0;
+    yA = 0;
+    aA = 0;
+    if(thrusting) {
+        xA = Math.cos(a) * (thrustForce/(dryMass + fuelMass));
+        yA = Math.sin(a) * (thrustForce/(dryMass + fuelMass));
+        fuelMass -= thrustConsumption/fps;
+    }
+    yA -= gravity;
+    xV += xA/fps;
+    yV += yA/fps;
+    aV += aA/fps;
+    if(y - h < 0) {
+        y = h;
+        yV = 0;
+    }
+    x += xV/fps;
+    y += yV/fps;
+    a += aV/fps;
+}
+function drawRocket() {
+    drawRect(x,y,w,h,color);
+}
+
+function drawRect(x,y,w,h,c) {
+    ctx.beginPath();
+    ctx.fillStyle = c;
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 1.5;
+    ctx.rect(x,canvas.height - y,w,h);
+    ctx.fill();
+    ctx.stroke();
+    ctx.closePath();
+}
+
+</script>
+<body>
+<canvas id="canvas" width="350" height="350"></canvas>
+</body>
+<style>
+
+body {
+    padding: 0;
+    margin: 0;
+}
+canvas {
+    padding: 0;
+    margin: 0;
+}
+
+</style>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <script>
+      	var body = document.getElementsByTagName("body");
+      	var color = ["blue","lightgreen","lightblue","grey","red","orange","yellow","crimson","teal","purple","skyblue","brown","black","pink","silver","turquoise"];
+      	var i = 0;
+      	
+      	function add() {
+      		i++;
+      		if(i>=color.length) {
+      			i = 0;
+      		}
+      	}
+      	
+      	function changeColor() {
+      		
+      		body[0].style.backgroundColor = color[i];
+		}
+
+      	
+      	
+      </script>
+   </head>
+   <body>
+   	<div style="display: flex; justify-content: center; align-items: center; height: 350px">
+      <button onclick="changeColor(),add()">Change</button>
+      </div>
+   </body>
+</html>

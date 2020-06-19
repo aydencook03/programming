@@ -1,0 +1,192 @@
+<html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script type="text/javascript">
+	
+var canvas;
+var ctx;
+
+window.onload = function() {
+	canvas = document.getElementById("canvas");
+	ctx = canvas.getContext("2d");
+
+	movers();
+
+	setInterval(simulation, 1000/60);
+}
+
+var bounds = true; // Does the canvas border stop objects?
+
+var moverArray = [];
+
+function simulation() {
+	rect(0, 0, canvas.width, canvas.height, "grey");
+	
+
+	for(i=0; i<moverArray.length; i++) {
+		moverArray[i].update();
+		moverArray[i].show();
+
+	    //moverArray[i].vel.multiply(20).draw(moverArray[i].pos.i, moverArray[i].pos.j);
+
+	var wind = new vector("c", -1 + Math.random()*2, -1 + Math.random()*2);
+	moverArray[i].applyForce(wind);
+	}
+}
+
+function movers() {
+	for(i= 0; i<20; i++) {
+		var m = 1.5 + Math.random() * 6;
+		var r = m * 1.5;
+		var x = r + Math.random()*canvas.width - 2*r;
+		var y = r + Math.random()*canvas.height - 2*r;
+
+		var newMover = new object(x, y, m, r, "crimson");
+
+		moverArray.push(newMover);
+	}
+}
+
+function object(x, y, m, r, color) {
+	this.pos = new vector("c", x, y);
+	this.vel = new vector("c", 0, 0);
+	this.acc = new vector("c", 0, 0);
+	this.m = m;
+
+	this.r = r;
+	this.c = color;
+
+	this.update = function() {
+		this.pos = this.pos.add(this.vel);
+		this.vel = this.vel.add(this.acc);
+		this.acc = this.acc.multiply(0);
+
+		if(bounds == true) {
+			if(this.pos.i + this.r >= canvas.width &&
+			   this.vel.i > 0 ||
+			   this.pos.i  - this.r <= 0 &&
+			   this.vel.i < 0) {
+				this.vel.i *= -0.2;
+			}
+			if(this.pos.j + this.r > canvas.height &&
+			   this.vel.j > 0 ||
+			   this.pos.j - this.r < 0 &&
+			   this.vel.j < 0) {
+				this.vel.j *= -0.2;
+			}
+		}
+	}
+	this.show = function() {
+		circle(this.pos.i, this.pos.j, this.r, this.c);
+	}
+	this.applyForce = function(forceV) {
+		this.acc = this.acc.add(forceV.multiply(1/this.m));
+	}
+}
+
+function vector(coordinates, one, two) {
+this.c = coordinates; //Coordinate System (ex: Polar, Cartesian)
+this.i; //i component of vector
+this.j; //j component of vector
+this.m; //Magnitude of vector
+this.a; //Angle of vector direction
+
+	if(this.c == "c") { //If vector is given in cartesian
+		this.i = one;
+		this.j = two;
+		this.m = Math.sqrt(Math.pow(this.i, 2) + Math.pow(this.j, 2));
+		this.a = Math.atan(this.j/this.i);
+		 if(this.a < 0) {
+			this.a += Math.PI*2;
+		}
+		if(this.i < 0) {
+			this.a += Math.PI;
+		}
+	}
+	if(this.c == "p") { // If vector is given in polar
+		this.m = one;
+		this.a = two * (Math.PI/180);
+		this.i = this.m * (Math.cos(this.a));
+		this.j = this.m * (Math.sin(this.a));
+	}
+	while(this.a > Math.PI *2) { //Always range angle from 0 to 360
+		this.a -= Math.PI*2;
+	}
+	// Add this vector and another, return the new vector
+	this.add = function(adderVector) {
+		newI = this.i + adderVector.i;
+		newJ = this.j + adderVector.j;
+
+		var sumVector = new vector("c", newI, newJ);
+		return sumVector;
+	}
+	// Multiply this vector by a scalar, return the new vector
+	this.multiply = function(scalar) {
+		newI = this.i * scalar;
+		newJ = this.j * scalar;
+
+		var productVector = new vector("c", newI, newJ);
+		return productVector;
+	}
+	// Normalize this vector into a unit vector, return the unit vector
+	this.normalize = function() {
+		var unitVector = new vector("p", 1, (this.a * (180/Math.PI)));
+		return unitVector;
+	}
+	// Draw this vector from a starting position
+	this.draw = function(startX, startY, color) {
+		line(startX, startY, startX + this.i, startY + this.j, color);
+	}
+}
+
+function rect(x, y, w, h, c) {
+	ctx.beginPath();
+	ctx.fillStyle = c;
+	ctx.strokeStyle = "black";
+	ctx.lineWidth = 2;
+	ctx.rect(x, y, w, h);
+	ctx.fill();
+	ctx.stroke();
+	ctx.closePath();
+}
+function circle(x, y, r, c) {
+	ctx.beginPath();
+	ctx.fillStyle = c;
+	ctx.strokeStyle = "black";
+	ctx.lineWidth = 2;
+	ctx.arc(x, y, r, 0, Math.PI*2, true);
+	ctx.fill();
+	ctx.stroke();
+	ctx.closePath();
+}
+function line(startX, startY, endX, endY, color) {
+	ctx.beginPath();
+	ctx.strokeStyle = color;
+	ctx.lineWidth = 2;
+	ctx.moveTo(startX, startY);
+	ctx.lineTo(endX, endY);
+	ctx.stroke();
+	ctx.closePath();
+}
+
+</script>
+<body>
+<div>
+<canvas id="canvas" width = "350px" height="350px"></canvas>
+</div>
+</body>
+<style type="text/css">
+	
+canvas {
+	border: 2px solid black;
+	border-radius: 5px;
+}
+div {
+	display: flex;
+	justify-content: center;
+}
+body {
+	background: #ccc;
+}
+
+</style>
+</html>

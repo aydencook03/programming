@@ -1,0 +1,790 @@
+
+<!-- This Code Is 100% Plain JavaScript
+      With No JQuery Or Images -->
+      
+<!-- Check Out My Other Games If You 
+      Liked This One -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<Style>
+	
+	button:focus {
+		outline: none;
+	}
+	
+Div {
+display: flex;
+Justify-content: center;
+Align-items: center;
+}
+         
+canvas {
+Margin-bottom: 10px;
+Border-radius: 3px;
+border: 3px solid black;
+} 
+
+#leftButton {
+width: 150px;
+float: left;
+height: 65px;
+Font-weight: bold;
+Font-size: 30px;
+Margin-right: 1px;
+Border-radius: 3px;
+}
+
+#rightButton {
+width: 150px;
+float: left;
+Height: 65px;
+Font-weight: bold;
+Font-size: 30px;
+Margin-left: 1px;
+Border-radius: 3px;
+}
+
+span {
+Display: flex;
+Justify-content: center;
+Align-items: center;
+Font-weight: bold;
+Font-size: 20px;
+Font-family: Arial;
+color: white;
+}
+
+#buttons {display:flex;
+          Align-items: center;
+          Margin-top: 0px;
+          Justify-content: center;}
+
+h2 {display: flex;
+    Justify-content: center;
+    Margin-top: 20px;
+    color: white;
+    }
+
+#ballSpeedUp {
+  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-left: 1px;
+  Border-radius: 3px;
+}
+
+#ballSpeedDown {
+  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-right: 1px;
+  Border-radius: 3px;
+}
+
+#paddleWidthUp {
+  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-left: 1px;
+  Border-radius: 3px;
+}
+
+#paddleButtons {
+  Margin-top: 5px;
+}
+
+#paddleWidthDown {
+  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-right: 1px;
+  Border-radius: 3px;
+}
+
+#ballSize {margin-top: 5px;}
+
+#ballSizeUp {
+  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-left: 1px;
+  Border-radius: 3px;
+}
+
+#ballSizeDown {
+  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-right: 1px;
+  Border-radius: 3px;
+}
+
+#paddleY {margin-top: 5px;}
+
+#paddleYUp {
+	  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-left: 1px;
+  Border-radius: 3px;
+}
+
+#paddleYDown {
+	  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-right: 1px;
+  Border-radius: 3px;
+}
+
+#useMouse {margin-bottom: 5px}
+
+#useMouseTrue {
+		  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-left: 1px;
+  Border-radius: 3px;
+}
+
+#useMouseFalse {
+		  font-weight: bold;
+  Height: 60px;
+  Width: 150px;
+  Font-size: 15px;
+  Float: left;
+  Margin-right: 1px;
+  Border-radius: 3px;
+}
+
+body {
+  background: radial-gradient(teal 40%, navy);
+}
+
+#copyright {
+	float: right;
+	font-size: 0.8em;
+	margin-top: 3px;
+	color: white;
+	
+}
+
+</style>
+
+  <Script>
+
+//Grab Canvas
+var canvas;
+var canvasContext;
+
+//Paddle Variables
+var PADDLE_WIDTH = 80;
+var paddleHeight = 10;
+var paddleX = 135;
+var paddleY = 380;
+var pxVelocity = 0;
+
+//Framerate
+var fPs = 60;
+
+//Ball Variables
+var yVelocity = 3 ;
+var xVelocity = Math.random()*2;
+var ballSize = 5;
+
+//Game Mechanics
+var useMouse = false;
+var playerLives = 3;
+var showWinScreen = false;
+var showLoseScreen = false;
+var showTitleScreen = true;
+
+//Brick Variables
+var brickWidth = 35;
+var brickHeight = 20;
+var brickGap = 2;
+var colCount = 10;
+var rowCount = 8;
+var brick = new Array(colCount*rowCount);
+
+var debris = [];
+
+function debrisClass() {
+	this.x = ballX;
+	this.y = ballY;
+	this.velY = 2- Math.random()*4;
+	this.velX = 2- Math.random()*4;
+	
+	this.cyclesLeft = 10+ Math.random()*40;
+	this.color = "teal";
+	if(Math.random() >= 0.9) {
+		this.color = "black";
+	}
+	
+	this.move = function() {
+		this.cyclesLeft--;
+		this.x += this.velX;
+		this.y += this.velY;
+	}
+	
+	this.draw = function() {
+		canvasContext.fillStyle = this.color;
+		canvasContext.fillRect(this.x, this.y, this.cyclesLeft/10, this.cyclesLeft/10);
+	}
+}
+
+
+//Game Rules
+alert("GAME-CONTROLS:\nYou can use your keyboard's arrow keys and also the W S A D keys to move your paddle, also, you can turn on mouse controls to use the mouse to play, and if your on touchscreen you can use the built in buttons.\n\nGAME-SWITCHES:\nBelow the game, you can change some of the elements of the game like ball size, paddle size, etc.\n\nGAMEPLAY:\nYou have to move your paddle in order to block the ball from passing your side of the screen, if it does, you lose a life, you also have to break all of the bricks with the ball.\n\nHOW TO WIN:\nYou have to use the ball to break all of the bricks on the screen, if you run out of lives the game resets.  If you break all of the bricks without running out of all of the lives, you win the game. If you break all of the bricks but miss the ball afterwords, you INSTANTLY lose.")
+
+
+//What Happens When The Window Loads
+window.onload = function() {
+canvas = document.getElementById('game');
+canvasContext = canvas.getContext('2d');
+ setInterval(drawShapes,1000/fPs);
+ brickReset();
+ ballReset();
+}
+
+//Ball Start Position
+var ballY = 250;
+var ballX = 150;
+
+//Reset Ball And Show Win Screens
+function ballReset() {
+  yVelocity = -yVelocity;
+  ballX = canvas.width/2;
+  ballY = canvas.height/2;
+  xVelocity = Math.random()*2;
+//Randomize Velocity
+if(xVelocity < 1) {
+	xVelocity = Math.random()*-3;
+}
+if(xVelocity >= 1) {
+	xVelocity = Math.random()*3;
+}
+}
+
+//Speeds Up The Ball For The Button
+function ballSpeedUp() {
+  yVelocity *= 1.5;
+}
+
+//Slows The Ball For The Button
+function ballSpeedDown() {
+  yVelocity *= 0.5;
+}
+
+//Moves P1 Paddle Up For Button
+function paddleUp() {
+	paddleY -= 10;
+}
+
+//Moves P1 Paddle Down For Button
+function paddleDown() {
+	paddleY += 10;
+}
+
+//Button To Turn On Mouse Controls
+function useMouseTrue() {
+	useMouse = true;
+}
+
+//Button To Turn Off Mouse Controls
+function useMouseFalse() {
+	useMouse = false;
+}
+
+//Instructions To Turn Off Win/Lose Screens
+function restartGame() {
+  if(showWinScreen) {
+    showWinScreen = false;
+    playerLives = 3;
+    bricksLeft = 0;
+    brickReset();
+    ballReset();
+    }
+    if(showLoseScreen) {
+    	showLoseScreen = false;
+    	playerLives = 3;
+    bricksLeft = 0;
+    	brickReset();
+    	ballReset();
+    }
+    var body = document.getElementById("body");
+    body.style.background = "radial-gradient(teal 40%, navy)";
+}
+
+//Lengthens Paddle For Button
+function paddleWidthUp() {
+  PADDLE_WIDTH += 10;
+}
+
+//Shortens Paddle For Button
+function paddleWidthDown() {
+  PADDLE_WIDTH -= 10;
+}
+
+//Makes Ball Smaller For Button
+function ballSizeDown() {
+  ballSize--;
+}
+
+//Makes Ball Larger For Button
+function ballSizeUp() {
+  ballSize++;
+}
+
+//Move Paddle Button
+function moveLeft() {
+  pxVelocity = -4;
+}
+
+//Move Paddle Button
+function moveRight() {
+ pxVelocity = 4;
+}
+function clearMove() {
+	pxVelocity = 0;
+}
+
+//What To Do If Key Is Pressed
+document.addEventListener("keydown",keyPress);
+document.addEventListener("keyup", clearMove)
+
+//Determines What Keys Are Pressed
+function keyPress(e) {
+	if(e.keyCode == "37" || e.keyCode == "65") {
+		moveLeft();
+		restartGame();
+	}
+	else if(e.keyCode == "39" || e.keyCode == "68") {
+		moveRight();
+		restartGame();
+	}
+}
+
+var bricksLeft = 0;
+
+//Reset Grid
+function brickReset() {
+	var i;
+	for(i=0;i<3*colCount;i++) {
+		brick[i] = false;
+ }
+ for(;i<colCount * rowCount; i++) {
+ 	brick[i] = true;
+ 	bricksLeft++;
+ }
+}
+		
+//How To Draw Bricks
+function drawBricks() {
+for(var row=0;row<rowCount;row++) {
+	for(var col=0;col<colCount;col++) {
+		
+	var arrayIndex = colCount*row+col;
+		
+		if(brick[arrayIndex]) {
+			canvasContext.beginPath();
+			canvasContext.fillStyle = "teal";
+			canvasContext.strokeStyle = "black";
+			canvasContext.lineWidth = 2;	canvasContext.rect(2+brickWidth*col,brickHeight*row,brickWidth-4,brickHeight-3);
+			canvasContext.fill();
+			canvasContext.stroke();
+			canvasContext.closePath();
+		 }
+ 	}
+ }
+}
+
+
+//Turn On To Activate Mouse Cheat
+/*
+document.addEventListener("mousemove",mouseMove);
+
+function mouseMove(e) {
+	var rect = canvas.getBoundingClientRect();
+	var root = document.documentElement;
+	
+	var mouseX = e.clientX;
+	var mouseY = e.clientY;
+	
+	ballX = mouseX - rect.left - root.scrollLeft;
+	ballY = mouseY - rect.top - root.scrollTop;
+	
+	xVelocity = 1;
+	yVelocity = -1;
+}
+*/
+
+//Turns Each Brick Into A Corresponding Number
+function rowColToArrayIndex(col, row) {
+	return col + colCount * row;
+}
+
+function startGame() {
+	if(showTitleScreen) {
+		showTitleScreen = false;
+	}
+}
+
+document.addEventListener("click",startGame);
+
+//Draw Everything
+function drawShapes() {
+	
+	//Black Out The Canvas
+canvasContext.fillStyle = 'grey';
+canvasContext.fillRect(0,0,canvas.width,canvas.height);
+	
+	if(showTitleScreen) {
+	 canvasContext.fillStyle = "white";
+  canvasContext.font ="30px Arial";
+  canvasContext.fillText("JavaScript BrickBreaker",canvas.width/2-160, canvas.height/2);
+  
+    canvasContext.font ="12px Arial";
+  canvasContext.fillText("Game By Ayden Cook", 5, canvas.height-15);
+  
+    canvasContext.font ="20px Arial";
+  canvasContext.fillText("Click To Play", canvas.width/2-60, canvas.height/2+80);
+  return;
+}
+
+//Find Out Color Of Lives Left Number
+	var lifeColor;
+	
+	if(playerLives == 3) {
+		lifeColor = "green";
+	}
+	if(playerLives == 2) {
+		lifeColor = "orange";
+	}
+	if(playerLives == 1) {
+		lifeColor = "red";
+	}
+
+//Draw Lives Left
+	canvasContext.fillStyle = "white";
+	canvasContext.font = "20px arial";
+	canvasContext.fillText("Lives: ",5,25);
+	
+	canvasContext.fillStyle = lifeColor;
+	canvasContext.font = "20px arial";
+	canvasContext.fillText(playerLives,65,25);
+
+//Draw How Many Bricks Are Left
+	canvasContext.fillStyle = "white";
+	canvasContext.fillText("Bricks Left: ", canvas.width/2, 25);
+
+//Calculate Bricks Left Color
+	function brickLeftColor(col, row) {
+		return (col * row) - colCount * 3;
+	}
+	
+//Calculate Number Of Bricks Left + Color Of Number
+	var leftColor;
+	if(bricksLeft >= brickLeftColor(colCount, rowCount)/2) {
+		leftColor = "red";
+	}
+	if(bricksLeft < brickLeftColor(colCount, rowCount)/2 && bricksLeft > brickLeftColor(colCount, rowCount)/5) {
+		leftColor = "orange";
+	}
+	if(bricksLeft <= brickLeftColor(colCount, rowCount)/5) {
+		leftColor = "green";
+	}
+
+//Show Number of Bricks Left
+canvasContext.fillStyle = leftColor;	canvasContext.fillText(bricksLeft,canvas.width/2+110,25);
+
+//How To Draw Win Screen
+if(showWinScreen) {
+	 canvasContext.fillStyle = "white";
+  canvasContext.font ="40px Arial";
+  canvasContext.fillText("You Won!",canvas.width/2-80, canvas.height/2+40);
+  
+    canvasContext.font ="12px Arial";
+  canvasContext.fillText("Game By Ayden Cook", 5, canvas.height-15);
+  
+    canvasContext.font ="10px Arial";
+  canvasContext.fillText("Press An Arrow Key Or Click Restart", canvas.width/2-75, canvas.height/2+80);
+  var body = document.getElementById("body");
+  body.style.background = "lightgreen";
+  return;
+}
+
+//How To Draw Lose Screen
+if(showLoseScreen) {
+	  canvasContext.fillStyle = "white";
+  canvasContext.font ="40px Arial";
+  canvasContext.fillText("Game Over!",canvas.width/2-100,canvas.height/2+40);
+  
+  canvasContext.font ="12px Arial";
+  canvasContext.fillText("Game By Ayden Cook", 5, canvas.height-15);
+  
+  canvasContext.font ="10px Arial";
+  canvasContext.fillText("Press An Arrow Key Or Click To Restart", canvas.width/2-75, canvas.height/2+80);
+  var body = document.getElementById("body");
+  body.style.background = "crimson";
+  return;
+}
+
+//Move Ball Vertically
+ballY = ballY + yVelocity;
+
+//Move Ball Horizontally
+ballX = ballX + xVelocity;
+
+paddleX += pxVelocity;
+
+drawBricks();
+
+var ballColumn = Math.floor(ballX/brickWidth);
+
+var ballRow = Math.floor(ballY/brickHeight);
+
+var brickUnderBall = rowColToArrayIndex(ballColumn, ballRow);
+
+//Check To See If Ball Is In Grid
+if(ballX - ballSize > 0 &&
+   ballX + ballSize < canvas.width &&
+   ballRow >= 0 &&
+   ballRow < rowCount) {
+   	
+//Turn Off Valid Brick Under Ball   	
+   	if(brick[brickUnderBall]) {
+   	brick[brickUnderBall] = false;
+   	bricksLeft--;
+   	
+   	for(var i=0; i<20; i++) {
+   		var newDebris = new debrisClass();
+   		
+   		debris.push(newDebris);
+   	}
+   	
+   	var previousBallX = ballX - xVelocity;
+   	var previousBallY = ballY - yVelocity;
+   	var previousBallC = Math.floor(previousBallX / brickWidth);
+   	var previousBallR = Math.floor(previousBallY / brickHeight);
+   	var bothFailed = true;
+
+//Bounce Ball Horizontally If Ball Changes Column
+   	if(previousBallC != ballColumn) {
+   		
+   		var adjBrickSide = rowColToArrayIndex(previousBallC, ballRow);
+   		
+   		if(isBrickAtColRow(previousBallC, ballRow) == false) {
+   		xVelocity = -xVelocity;
+   		bothFailed = false;
+   		}
+   	}
+
+//Bounce Vertically If Ball Changes Row
+   	if(previousBallR != ballRow) {
+   		
+   		   	var adjBrickTop = rowColToArrayIndex(ballColumn, previousBallR);
+   		
+   		if(isBrickAtColRow(ballColumn, previousBallR) == false) {
+   		yVelocity = -yVelocity;
+   		bothFailed = false;
+   		}
+   	}
+   	if(bothFailed) {
+   		yVelocity = -yVelocity;
+   		xVelocity = -xVelocity;
+   	}
+  }
+}
+
+//Fixes Wrap Collision Bug
+function isBrickAtColRow(col,row) {
+	if(col >= 0 && col < colCount &&
+	   row >= 0 && row < rowCount) {
+	   	var brickIndexUnderCoord = rowColToArrayIndex(col, row);
+	   	return brick[brickIndexUnderCoord];
+	   }
+	   else {
+	   	return false;
+	   }
+}
+
+//Bounce Ball Off Walls
+if(ballX + ballSize >= canvas.width && xVelocity >=0) {
+  xVelocity = -xVelocity;}
+if(ballX - ballSize <= 0 && xVelocity <= 0) {
+  xVelocity = -xVelocity;}
+  
+if(ballY - ballSize <= 0) {
+	yVelocity = -yVelocity;
+}
+  
+//Reset Ball At Bottom
+if(ballY - ballSize >= canvas.height) {
+	ballReset();
+	playerLives--;
+	
+	//Lose If Miss Ball At The End Of Game
+	if(bricksLeft == 0) {
+		showLoseScreen = true;
+	}
+}
+
+//Show Lose Screen When Out Of Lives
+if(playerLives == 0) {
+	showLoseScreen = true;
+	var body = document.getElementById("body");
+	body.style.background = "crimson";
+}
+
+//Bounce Ball Off P1 Paddle
+if(ballY + ballSize >= paddleY &&
+   ballY - ballSize <= paddleY + paddleHeight &&
+   ballX + ballSize >= paddleX &&
+   ballX - ballSize <= paddleX + PADDLE_WIDTH) {
+   	yVelocity = -yVelocity;
+   	var deltaX = ballX - (paddleX+PADDLE_WIDTH/2);
+   	xVelocity = deltaX*0.2;
+   	
+   	if(bricksLeft == 0) {
+	showWinScreen = true;
+		var body = document.getElementById("body");
+	body.style.background = "lightgreen";
+}
+}
+
+//Can't Move Paddle Off Screen
+if(paddleY + paddleHeight > canvas.height) {
+	paddleY = canvas.height - paddleHeight;
+}
+
+//Don't Let Paddle Go Off Right Side
+if(paddleX + PADDLE_WIDTH > canvas.width) { paddleX = canvas.width - PADDLE_WIDTH;
+}
+
+//Don't Let Paddle Go Off Left Side
+if(paddleX < 0) { paddleX = 0}
+
+
+//Draw Player Paddle
+canvasContext.beginPath();
+canvasContext.fillStyle = "white";
+canvasContext.lineWidth = 3;
+canvasContext.rect(paddleX,paddleY,PADDLE_WIDTH,paddleHeight);
+canvasContext.stroke();
+canvasContext.fill();
+canvasContext.closePath();
+
+//Draw Ball
+canvasContext.beginPath();
+canvasContext.fillStyle = "white";
+canvasContext.strokeStyle = "black";
+canvasContext.lineWidth = 1;
+canvasContext.arc(ballX,ballY,ballSize,0,Math.PI*2, true);
+canvasContext.fill();
+canvasContext.stroke();
+canvasContext.closePath();
+
+//Mouse Click Restarts Game
+document.addEventListener("click", click);
+
+function click() {
+	restartGame();
+}
+
+//Get Mouse Position
+document.addEventListener("mousemove",updateMousePos);
+
+//Make Mouse Equal Paddle Position
+function updateMousePos(evt) {
+	
+	if(useMouse) {
+	var rect = canvas.getBoundingClientRect();
+	var root = document.documentElement;
+	var mouseX = evt.clientX - rect.left - root.scrollLeft;
+	
+	paddleX = mouseX - PADDLE_WIDTH/2;
+ 	}
+ }
+ 
+ for(var i=0; i<debris.length; i++) {
+ 	debris[i].move();
+ 	debris[i].draw();
+ }
+ 
+ for(var i=0; i<debris.length; i++) {
+ 	if(debris[i].cyclesLeft <= 0) {
+ 		debris.splice(i, 1);
+ 	}
+ }
+}
+  </script>
+
+</head>
+
+<body id="body">
+  <Div>
+<Canvas id="game" width="350px" height="400px"> </canvas>
+  </Div>
+  
+  <Div>
+<Button id="leftButton" onclick="restartGame()" onmousedown="moveLeft()" onmouseup="clearMove()" ontouchstart="moveLeft()" ontouchend="clearMove()" width="150px">  </button>
+
+<Button id="rightButton" onclick="restartGame()" onmousedown="moveRight()" onmouseup="clearMove()" ontouchstart="moveRight()" ontouchend="clearMove()" width="150px">  </button> </div>
+
+<H2><u>Game Controls</u></h2>
+
+	<div id="useMouse">
+		<button id="useMouseFalse" onclick="useMouseFalse()">Turn Off Mouse Controls</button>
+		
+		<button id="useMouseTrue" onclick="useMouseTrue()">Turn On Mouse Controls</button> </div>
+
+<Div id="buttons"> 
+<button id="ballSpeedDown" onclick="ballSpeedDown()">
+ Ball Speed Down </button>
+
+<button id="ballSpeedUp" onclick="ballSpeedUp()">Ball Speed Up </button> </div>
+
+<Div id="paddleButtons">
+<button id="paddleWidthDown" onclick="paddleWidthDown()">Paddle Width Down </button>
+
+<button id="paddleWidthUp" onclick="paddleWidthUp()">Paddle Width Up</button> </div>
+</Div>
+
+<Div id="ballSize">
+<Button id="ballSizeDown" onclick="ballSizeDown()">Decrease Ball Size</button>
+
+<Button id="ballSizeUp" onclick="ballSizeUp()">Increase Ball Size</button> </div>
+
+
+<div id="paddleY">
+	<button id="paddleYDown" onclick="paddleDown()">Move Your Paddle Down</button>
+	
+	<button id="paddleYUp" onclick="paddleUp()">Move Your Paddle Up</button> </div>
+
+
+<span id="copyright"><i> <sup>&copy;</sup>Ayden Cook, 2017 All Rights Reserved</i></span>
+</Body>
+</html>

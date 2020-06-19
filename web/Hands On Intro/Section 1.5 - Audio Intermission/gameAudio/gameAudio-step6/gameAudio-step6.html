@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+</head>
+<body>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+
+<script>
+  var audioFormat;
+  var someSound;
+  var canvas, canvasContext;
+  
+  function setFormat() {
+    var audio = new Audio();
+    if (audio.canPlayType("audio/mp3")) {
+        audioFormat = ".mp3";
+    } else {
+        audioFormat = ".ogg";
+    }
+  }
+  
+  function mouseupHandler() {
+    someSound.currentTime = 0; ////
+    someSound.play();
+  }
+  
+  function loadSounds() {
+    setFormat();
+    someSound = new Audio("../gameAudio-effects/longer"+audioFormat);
+  }
+  
+  window.onload = function() {
+    loadSounds();
+  
+    canvas = document.getElementById('gameCanvas');
+    canvasContext = canvas.getContext('2d');
+    canvas = document.getElementById('gameCanvas');
+    canvas.addEventListener('mouseup',mouseupHandler);
+    canvasContext.fillRect(0, 0, canvas.width, canvas.height);
+  }
+</script>
+
+</body>
+</html>

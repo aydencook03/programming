@@ -1,0 +1,150 @@
+
+<!-- This Code Is 100% Plain JavaScript
+      With No JQuery Or Images -->
+      
+<!-- Check Out My Other Codes If You 
+      Liked This One -->
+
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <script>
+	var canvas;
+	var ctx;
+      	
+window.onload = function() {
+	canvas =
+  	document.getElementById("canvas");
+ ctx = canvas.getContext("2d");
+ setInterval(draw,1000/60);
+}
+
+//Rectangle Code
+function drawRect(topLeftX,topLeftY, width,height,stroke,strokeS, color) {
+	ctx.beginPath();
+ctx.fillStyle = color;
+ctx.strokeStyle = stroke;
+ctx.lineWidth = strokeS;	ctx.rect(topLeftX,topLeftY,width,height);
+ctx.fill();
+ctx.stroke();
+ctx.closePath();
+}
+//Circle Code
+function drawCircle(x, y, radius,stroke, strokeWidth,  color) {
+	ctx.beginPath();
+	ctx.fillStyle = color;
+	ctx.strokeStyle = stroke;
+	ctx.lineWidth = strokeWidth;
+	ctx.arc(x, y, radius, 0, Math.PI*2);
+	ctx.fill();
+	ctx.stroke();
+	ctx.closePath();
+}
+
+var ball = [];
+var newBall = [];
+
+var rectX = 100;
+var rectY = 100;
+var rectW = 150;
+var rectH = 100;
+
+var ballSpawnAmount = 1;
+var ballStartAmount = 10;
+
+function ballClass() {
+	this.x = Math.random()* 325;
+	this.y = Math.random()* 450;
+	
+	this.radius = 4;
+	
+	this.velX = 5- Math.random()*10;
+	this.velY = 5- Math.random()*10;
+
+ this.move = function() {
+ 	this.x += this.velX;
+ 	this.y += this.velY;
+ 	
+ 	if(this.x - this.radius <= 0 &&
+ 	   this.velX < 0) {
+ 		this.velX *= -1;
+ 	}
+ 	if(this.x + this.radius >= canvas.width &&
+ 	   this.velX > 0) {
+ 		this.velX *= -1;
+ 	}
+ 	if(this.y - this.radius <= 0 &&
+ 	   this.velY < 0) {
+ 		this.velY *= -1;
+ 	}
+ 	if(this.y + this.radius >= canvas.height &&
+ 	   this.velY > 0) {
+ 		this.velY *= -1;
+ 	}
+ }// End Of Move
+ 
+ this.draw = function() {
+ 	drawCircle(this.x,this.y,this.radius, "black", 1, "white");
+ }// End Of Draw
+ 
+}// End Of Ball Class
+
+function spawnBall() {
+	for(i=0;i<ballSpawnAmount;i++) {
+	newBall = new ballClass();
+	ball.push(newBall);
+	}
+}
+
+function destroy() {
+	for(i=ball.length-1;i>=0;i--) {
+		if(ball[i].x + ball[i].radius >= rectX &&
+		   ball[i].x - ball[i].radius <= rectX + rectW &&
+		   ball[i].y + ball[i].radius >= rectY &&
+		   ball[i].y - ball[i].radius <= rectY + rectH) {
+	ball.splice(i,1);
+ 	} 
+	}
+}
+
+function draw() {
+	drawRect(0,0, canvas.width,canvas.height,"grey",0, "grey");
+	
+	drawRect(rectX, rectY, rectW, rectH,"black",1, "red");
+	
+	ctx.fillStyle = "white";
+	ctx.font = "20px arial";
+	ctx.fillText("Box Of Death",rectX+15,rectY+55);
+	
+	for(var i=0;i<ball.length;i++) {
+	 ball[i].move();
+	 ball[i].draw();
+	 //Activate To Show Index
+	 /*
+	 ctx.fillStyle = "white";
+	 ctx.font = "10px arial";
+	 ctx.fillText(i,ball[i].x + 10, ball[i].y +10);
+	 */
+ }
+ 
+}
+      	
+      </script>
+      <style>
+      	button:focus {
+      		outline: none;
+      	}
+      	</style>
+   </head>
+   <body style="background:black;">
+      <canvas id="canvas" width="325" height="400" style="display: block; margin: 10px auto; border: 3px solid white; border-radius: 5px;"></canvas>
+      
+      <div style="display: flex; justify-content: center;">
+      	
+      	<button style="margin-right:2.5px;width:100px;height:60px;font-weight:bold;font-size:20px;background:#444;color:white;border-radius:5px;" onclick="destroy()">Delete</button>
+      	
+      	<button style="margin-left:2.5px;width:100px;height:60px;font-weight:bold;font-size:20px;background:#444;color:white;border-radius:5px;" onclick="spawnBall()">Spawn</button>
+      	
+      	</div>
+   </body>
+</html>

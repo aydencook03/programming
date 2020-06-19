@@ -1,0 +1,182 @@
+<html>
+	<head>
+		<script>
+			
+			var paddleX;
+			var paddleY;
+			var paddleW = 50;
+			var paddleH = 10;
+			var velPaddle = 0;
+			
+			var ballX = 0;
+			var ballY = 0;
+			var ballR = 4;
+			var xVel = 0;
+			var yVel = 0;
+			var gameStarted = false;
+			
+			window.onload = function() {
+				canvas = document.getElementById("canvas");
+				ctx = canvas.getContext("2d");
+				
+				paddleReset();
+				
+				setInterval(mainFunc, 1000/60);
+			}
+			
+			function mainFunc() {
+				rect(0,0, canvas.width,canvas.height, "white");
+				
+				drawPaddle();
+				drawBall();
+				wallCollision();
+				paddleBallCollision();
+			}
+			
+			function paddleBallCollision() {
+				
+			}
+			
+			function startGame() {
+				if(gameStarted == false) {
+					gameStarted = true;
+					yVel = -4;
+					xVel = 4-Math.random()*8;
+				}
+			}
+			
+			function drawBall() {
+				ballX += xVel;
+				ballY += yVel;
+				
+				if(gameStarted == false) {
+					xVel = 0;
+					yVel = 0;
+					ballX = paddleX + paddleW/2;
+					ballY = paddleY - ballR - 5;
+				}
+				
+				ctx.beginPath();
+				ctx.fillStyle = "grey";
+				ctx.strokeStyle = "black";
+				ctx.lineWidth = 1.5;
+				ctx.arc(ballX, ballY, ballR, 0, Math.PI*2, true);
+				ctx.fill();
+				ctx.stroke();
+				ctx.closePath();
+			}
+			
+			function wallCollision() {
+				if(paddleX <5) {
+					paddleX = 5;
+					velPaddle = 0;
+				}
+				if(paddleX + paddleW > canvas.width-5) {
+					paddleX = canvas.width -5 - paddleW;
+					velPaddle = 0;
+				}
+				
+				if(ballX - ballR < 0 &&
+				   xVel < 0 ||
+				   ballX + ballR > canvas.width &&
+				   xVel > 0) {
+					xVel *= -1;
+				}
+				if(ballY - ballR < 0 &&
+				   yVel < 0) {
+				   	yVel *= -1;
+				   }
+				if(ballY - ballR > canvas.height + 20) {
+					gameStarted = false;
+				}
+			}
+			
+			function drawPaddle() {
+				paddleX += velPaddle;
+				
+				strokeFill(paddleX, paddleY, paddleW, paddleH, 2, "black", "crimson");
+			}
+			
+			function left() {
+				velPaddle = -4.5;
+				startGame();
+			}
+			function right() {
+				velPaddle = 4.5;
+				startGame();
+			}
+			function clearMove() {
+				velPaddle = 0;
+			}
+			
+			function rect(x,y,w,h,c) {
+				ctx.beginPath();
+				ctx.fillStyle = c;
+				ctx.rect(x,y, w,h,);
+				ctx.fill();
+				ctx.closePath();
+				}
+				
+				function paddleReset() {
+					paddleX = canvas.width/2 - paddleW/2;
+					paddleY = canvas.height - paddleH - 20;
+					velPaddle = 0;
+				}
+				
+			function strokeFill(x,y, w,h, s, sc, c) {
+				ctx.beginPath();
+				ctx.fillStyle = c;
+				ctx.lineWidth = s;
+				ctx.strokeStyle = sc;
+				ctx.rect(x,y, w,h,);
+				ctx.fill();
+				ctx.stroke();
+				ctx.closePath();
+			}
+			
+		</script>
+		<style>
+			
+			canvas {
+				border: 2px solid black;
+				border-radius: 5px;
+			}
+			body {
+				background: teal;
+			}
+			div {
+				display: flex;
+				justify-content: center;
+			}
+			button {
+				width: 345px;
+				height: 75px;
+				margin: 4px 3px;
+				border-radius: 5px;
+				background: crimson;
+			}
+			button:focus {
+				outline: none;
+			}
+			
+		</style>
+	</head>
+	<body>
+		
+		<div>
+			<canvas id="canvas" width="350px" height="400px"></canvas>
+		</div>
+		
+		<div>
+			<button ontouchstart="left()"
+			        ontouchend="clearMove()"
+			        onmousedown="left()"
+			        onmouseup="clearMove()"></button>
+			<button ontouchstart="right()"
+			        ontouchend="clearMove()"
+			        onmousedown="right()"
+			        onmouseup="clearMove()"></button>
+		</div>
+		
+	</body>
+</html>

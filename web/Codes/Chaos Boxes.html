@@ -1,0 +1,94 @@
+
+<!-- Run This A Few Times So You Don't Miss The Slick Animation ;) -->
+
+<Style>
+
+#one {width:300px;
+      Height:300px;
+      Border:3px solid black;
+      Background: teal;}
+
+#two {width:250px;
+      Height:250px;
+      Border:3px solid black;
+      Background: skyblue;}
+
+#three {width:200px;
+        Height:200px;
+        Border:3px solid black;
+        Background: crimson;}
+
+#four {width:150px;
+       Height:150px;
+       Border:3px solid black;
+       Background: grey;}
+
+#five {width:100px;
+        Height:100px;
+        Border: 3px solid black;
+        Background: lightgreen;
+        Display:flex;
+        Justify-content: center;
+        Align-items: center;
+        Font-weight:bold;
+        Font-family: Arial;
+        Text-align:center;}
+
+Body {display:flex;
+      Justify-content:center;
+      Align-items: center;
+      Background: linear-gradient( to bottom right, lightblue 30%, skyblue);}
+
+Div {Border-radius:10px;}
+
+#head {background: white;
+       Border: 3px solid RGB(245,245,245);
+       Box-shadow: grey 3px 4px 5px;
+       Text-shadow: grey 3px 4px 5px;
+       Border-radius: 3px;
+       Top: 0px;
+       Display: inline;
+       Width: 95%;
+       Position: fixed;
+       Height: 30px;
+       Display: flex;
+       Align-items: center;
+       Font-weight: bold;
+       Font-family: Arial;
+       Font-size: 25px;
+       Margin-top:3%;}
+
+#footer {background: white;
+       Bottom: 0%;
+       Left: 2005px;
+       Margin-bottom:3%;
+       Text-shadow: grey 3px 4px 5px;
+       Border-radius: 3px;
+       Position:fixed ;
+       Box-shadow: grey 3px 4px 5px;
+       Width: 95%;
+       Height: 30px;
+       Border: 3px solid RGB(245, 245, 245);
+       Display: flex;
+       Justify-content:center;
+       Align-items: center;
+       Font-weight: bold;
+       Font-family: Arial;
+       Font-size: 25px;
+       Animation: one 7s 5s 1 normal;}
+
+@keyframes one {0% {transform: translate(0px, 0)} 25%{transform: skew(20deg) translate(-2000px, 0)} 50%{transform: translate(-2000px, 0px) skew(0deg)} 75%{transform: translate(-2000px, 0px) skew(-20deg)} 100%{transform:translate(0px, 0px)}}
+
+</Style>
+<Span id="head"><Marquee>Chaos Boxes</Marquee></span>
+<Div id="one">
+<Marquee behavior="alternate" scrollamount="5"><Marquee direction="up" behavior="alternate" height="300px" scrollamount="10"><div id="two">
+<Marquee behavior="alternate" scrollamount="7"> <Marquee direction="up" behavior="alternate" height="250px" scrollamount="4"><div id="three">
+<Marquee behavior="alternate" scrollamount="7"> <Marquee direction="up" behavior="alternate" height="200px" scrollamount="6"><div id="four">
+<Marquee behavior="alternate" scrollamount="6">  <Marquee direction="up" behavior="alternate" height="150px" scrollamount="3"><Div id="five">What Is The Point Of This?
+
+</Marquee></Marquee></Marquee></Marquee></Marquee></Marquee>
+</Marquee></Marquee></Marquee>
+</Marquee></Marquee>
+</div></div></div></div></div>
+<Div id="footer">By Ayden Cook</div>

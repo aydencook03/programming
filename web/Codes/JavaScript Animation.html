@@ -1,0 +1,51 @@
+<style>
+#contain {
+	background-color: grey;
+	width: 300px;
+	height: 300px;;
+}
+#boxMove {
+	background: teal;
+	border: 3px solid black;
+	width: 50px;
+	height: 50px;
+	position: relative;
+	top: 10px;
+	left: 10px;
+}
+</style>
+
+
+<script>
+
+var pos = 10;
+
+
+var t = setInterval(move, 1000/30);
+
+function move() {
+		var box = document.getElementById("boxMove");
+	if(pos >= 230) {
+		clearInterval(t);
+		
+		var txt = document.createTextNode("Done");
+		var p = document.createElement("p");
+		
+		p.appendChild(txt);
+		p.style.fontWeight = "bold";
+		p.style.textAlign = "center";
+		box.style.background = "radial-gradient(teal,lightgreen)"
+		box.appendChild(p);
+		
+	}
+	pos += 3;
+	box.style.left = pos;
+}
+</script>
+
+
+<div id="contain">
+
+<div id="boxMove"></div>
+
+</div>

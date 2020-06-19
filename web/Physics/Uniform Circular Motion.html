@@ -1,0 +1,193 @@
+<html>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+	var canvas;
+	var ctx;
+	
+	var centerX;
+	var centerY;
+	
+	var ballX;
+	var ballY;
+	
+	var angularVelocity;
+	var radius;
+	var angle;
+	var period;
+	var timer = 0;
+	
+	var pSlider;
+	var rSlider;
+	
+	window.onload = function() {
+		canvas = document.getElementById("canvas");
+		ctx = canvas.getContext("2d");
+		
+		pSlider = document.getElementById("period");
+		rSlider = document.getElementById("radius");
+		
+		centerX = canvas.width/2;
+		centerY = canvas.height/2;
+		angle = 0;
+		ballX = centerX + radius;
+		ballY = centerY;
+		
+	 setInterval(events, 1000/60);
+	}
+	
+	function events() {
+		ctx.fillStyle = "grey";
+		ctx.fillRect(0,0, canvas.width, canvas.height);
+		
+		//Seconds per rotation
+		period = Number(pSlider.value);
+		period *= 60; //Convert to framerate
+		
+		//Radius in meters
+		radius = Number(rSlider.value);
+		radius *= 100; //Convert to pixels
+		
+		angularVelocity = (Math.PI*2)/period;
+		
+		velocity = (2*Math.PI*(radius/100))/period*60;
+		
+		acceleration = (velocity*velocity)/(radius/100);
+		
+		ctx.save();
+		ctx.scale(0.7,0.7);
+		ctx.translate(canvas.width/4.9,canvas.height/3.5);
+		
+		angle += angularVelocity;
+		
+		timer += 1/60;
+		
+		if(angle >= Math.PI*2) {
+			angle = 0;
+		}
+		
+		ballX = centerX + radius*Math.cos(angle);
+		ballY = centerY - radius*Math.sin(angle);
+		
+		ctx.beginPath();
+		ctx.moveTo(centerX, centerY);
+		ctx.lineTo(ballX, ballY);
+		ctx.stroke();
+		ctx.closePath();
+		
+			ctx.beginPath();
+			ctx.lineWidth = 4;
+			ctx.strokeStyle = "pink";
+		ctx.moveTo(ballX, ballY);
+		
+		ctx.lineTo(ballX - (velocity * 50 * Math.cos(Math.PI/2 - angle)), ballY - (velocity * 50 * Math.sin(Math.PI/2 - angle)));
+		ctx.stroke();
+		ctx.closePath();
+		
+		ctx.beginPath();
+		ctx.strokeStyle = "orange";
+		ctx.lineWidth = 4;
+		ctx.moveTo(ballX, ballY);
+		ctx.lineTo(ballX - (acceleration*50)*Math.cos(angle), ballY + (acceleration*50)*Math.sin(angle));
+		ctx.stroke();
+		ctx.closePath();
+		
+		ctx.beginPath();
+		ctx.fillStyle = "black";
+		ctx.lineWidth = 4;
+		ctx.arc(centerX, centerY, 4, 0, Math.PI*2);
+		ctx.fill();
+		ctx.closePath();
+		
+		ctx.beginPath();
+		ctx.strokeStyle = "purple";
+		ctx.lineWidth = 3.5;
+		ctx.arc(centerX, centerY, radius, 0, 2*Math.PI - angularVelocity*60, true);
+		ctx.stroke();
+		ctx.closePath();
+		
+		ctx.beginPath();
+		ctx.fillStyle = "crimson";
+		ctx.strokeStyle = "black";
+		ctx.lineWidth = 2;
+		ctx.arc(ballX, ballY, 10, 0, Math.PI*2);
+		ctx.fill();
+		ctx.stroke();
+		ctx.closePath();
+		
+		
+		ctx.restore();
+		
+		ctx.beginPath();
+		ctx.fillStyle = "black";
+		ctx.textAlign = "left";
+		ctx.font = "12px bold";
+		ctx.fillText("Timer: " + Math.floor(timer*10)/10 + "  seconds", 20, 20);
+		ctx.fillText("Radius: " + radius/100 + "  meters", 20, 35);
+		ctx.fillText("Period: " + Math.round(period/60 *100)/100 + "  seconds", 20, 50);
+		ctx.fillStyle = "purple";
+		ctx.fillText("Angular Velocity: " + Math.ceil((angularVelocity*60)*(180/Math.PI)) + "°  per second", 20, 65);
+		ctx.fillStyle = "pink";
+		ctx.fillText("Velocity: " + Math.round(velocity*100)/100 + "  meters/second", 20, 80);
+		ctx.fillStyle = "orange";
+		ctx.fillText("Acceleration: " + Math.floor(acceleration*100)/100 + "  meters/second/second", 20, 95);
+		ctx.closePath();
+	}
+	
+</script>
+<style>
+	
+	canvas {
+		border: 2px solid black;
+		border-radius: 5px;
+	}
+	div {
+		display: flex;
+		justify-content: center;
+	}
+	body {
+		background-color: teal;
+	}
+	input {
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		background: #757070;
+		border: 2px solid black;
+		border-radius: 5px;
+		width: 170px;
+		height: 15px;
+		margin-top: 15px;
+	}
+	input:hover {
+		outline: none;
+	}
+	input::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		width: 20px;
+		height: 25px;
+		background: #C21E40;
+		border: 2px solid black;
+		border-radius: 10px;
+	}
+	input::-moz-range-thumb {
+		-moz-appearance: none;
+		width: 20px;
+		height: 25px;
+		background: #C21E40;
+		border: 2px solid black;
+		border-radius: 10px;
+	}
+
+
+</style>
+<body>
+	<div>
+<canvas id="canvas" width = "350px" height = "450px"></canvas>
+</div>
+<div>
+	
+	<input id="period" type="range" min="0.1" max = "10" value = "3" step="0.1">
+		<input id="radius" type="range" min="0.1" max="3" value="1" step="0.1">
+	
+</div>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+
+window.onload = function() {
+	canvas = document.getElementById("canvas");
+	ctx = canvas.getContext("2d");
+	
+	getVariables();
+
+	drawGraph();
+
+	setXvalues();
+	
+	iterateEuler();
+
+	plotGraph();
+}
+
+function getVariables() {
+    yVal = [];
+    yDotVal = [];
+    xVal = [];
+    xTicks = 0;
+    yTicks = 0;
+
+    vertAxis = "a";
+    horzAxis = "t";
+
+    funcColor = "blue";
+    pointColor = "black";
+
+    //function info
+    //Initial y value
+    yVal[0] = (179.9999) *Math.PI/180;
+    //Initial y_dot value
+    yDotVal[0] = 0;
+    //Change in x per point
+    hStep = 0.0001;
+
+    //Max values
+    xMax = 50;
+    xMin = 0;
+    yMax = Math.PI + 0.5;
+    yMin = -Math.PI - 0.5;
+    //Gap between graph and edge of canvas
+    spacing = 30;
+    //Every How many pixels equals 1
+    horzScale = (canvas.width-2*spacing)/(Math.abs(xMax) + Math.abs(xMin));
+    vertScale = (canvas.height-2*spacing)/(Math.abs(yMax) + Math.abs(yMin));
+}
+
+//Draw structure of graph
+function drawGraph() {
+	ctx.strokeStyle = "black";
+	ctx.lineWidth = 2;
+	ctx.beginPath();
+	ctx.moveTo(spacing, canvas.height-spacing - Math.abs(yMin*vertScale));
+	ctx.lineTo(canvas.width-spacing, canvas.height-spacing -  Math.abs(yMin*vertScale));
+	ctx.moveTo(spacing, canvas.height-spacing);
+	ctx.lineTo(spacing, spacing);
+	ctx.stroke();
+	ctx.closePath();
+	ctx.fillStyle = "black";
+	ctx.font = "bold 13px arial";
+	ctx.fillText(vertAxis + "(" + horzAxis + ")", spacing, spacing - 5);
+	ctx.fillText(horzAxis, canvas.width - spacing + 5, canvas.height - spacing -  Math.abs(yMin*vertScale));
+
+
+	ctx.strokeStyle = "crimson";
+	ctx.lineWidth = 1.5;
+	//xTicks
+	for(i=0; i< ((canvas.width - 2*spacing)/horzScale); i++) {
+		ctx.beginPath();
+		ctx.moveTo(spacing+ i*horzScale, canvas.height -spacing -  Math.abs(yMin*vertScale));
+		ctx.lineTo(spacing+ i*horzScale, canvas.height -spacing -  Math.abs(yMin*vertScale) + 5);
+		ctx.stroke();
+		xTicks++;
+	}
+	//yTicks
+	for(i=0; i< ((canvas.height- 2*spacing)/vertScale); i++) {
+		ctx.beginPath();
+		ctx.moveTo(spacing, canvas.height -spacing - i*vertScale);
+		ctx.lineTo(spacing -5, canvas.height - spacing - i*vertScale);
+		ctx.stroke();
+		yTicks++;
+	}
+}
+
+//Create x values
+function setXvalues() {
+	for(i=0; i <= (xMax/hStep); i++) {
+		xVal[i] = i*hStep;
+	}
+}
+
+
+//Set the slope function in form y' = f(one, two)
+function getSlope1(one, two) {
+	var slope = two;
+
+	return slope;
+}
+//Used for second order equations y'' = f(one, two)
+function getSlope2(one, two) {
+    var slope = -mu * one -g/l * Math.sin(two);
+    
+    return slope;
+}
+
+var g = 9.81;
+var l = 2.5;
+var mu = 0.00013082;
+
+//Solve with Euler method
+function iterateEuler() {
+	for(i=0; i <= xVal.length; i++) {
+	    yDotVal[i+1] = yDotVal[i] + (hStep * getSlope2(yDotVal[i], yVal[i]));
+	    
+	    
+		yVal[i+1] = yVal[i] + ( hStep * getSlope1(xVal[i], yDotVal[i]) );
+	}
+}
+
+//Plot the points and draw function
+function plotGraph() {
+	ctx.fillStyle = pointColor;
+	ctx.strokeStyle = funcColor;
+	ctx.lineWidth = 2;
+
+	for(i=0; i<= xVal.length; i++) {
+
+		if(hStep >= 0.25) {
+		ctx.beginPath();
+		ctx.arc(spacing + xVal[i] * horzScale, canvas.height-spacing - yVal[i]*vertScale - Math.abs(yMin*vertScale), 1, 0, Math.PI*2, true);
+		ctx.fill();
+		ctx.closePath();
+	}
+		if(hStep >= 0.001) {
+		ctx.beginPath();
+		ctx.moveTo(spacing + xVal[i] * horzScale, canvas.height - spacing - yVal[i]*vertScale - Math.abs(yMin*vertScale));
+		ctx.lineTo(spacing + xVal[i+1] * horzScale, canvas.height - spacing - yVal[i+1]*vertScale - Math.abs(yMin*vertScale));
+		ctx.stroke();
+		ctx.closePath();
+	} else  if(hStep < 0.001 && hStep > 0.00001) {
+		if(i % 5 == 0) {
+		ctx.beginPath();
+		ctx.moveTo(spacing + xVal[i] * horzScale, canvas.height - spacing - yVal[i]*vertScale - Math.abs(yMin*vertScale));
+		ctx.lineTo(spacing + xVal[i+5] * horzScale, canvas.height - spacing - yVal[i+5]*vertScale - Math.abs(yMin*vertScale));
+		ctx.stroke();
+		ctx.closePath();
+		}
+	} else {
+		if(i % 60 == 0) {
+		ctx.beginPath();
+		ctx.moveTo(spacing + xVal[i] * horzScale, canvas.height - spacing - yVal[i]*vertScale - Math.abs(yMin*vertScale));
+		ctx.lineTo(spacing + xVal[i+60] * horzScale, canvas.height - spacing - yVal[i+60]*vertScale - Math.abs(yMin*vertScale));
+		ctx.stroke();
+		ctx.closePath();
+		}
+	}
+
+	}
+}
+
+function y(val) {
+	var y = yVal[val/hStep];
+	return y;
+}
+
+</script>
+<style>
+
+	body {
+		background: teal;	
+	}
+	div {
+		display: flex;
+		justify-content: center;
+	}
+	canvas {
+		border: 2px solid black;
+		border-radius: 5px;
+		background: white;
+	}
+
+</style>
+<body>
+	<div>
+		<canvas id="canvas" width="350px" height="350px"></canvas>
+	</div>
+</body>
+</html>

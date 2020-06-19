@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+
+<Script>
+	
+	
+//Gets Canvas + Sets Framerate
+window.onload = function() {
+  canvas = document.getElementById("test");
+  ctx = canvas.getContext("2d");
+  setInterval(draw,1000/60);
+}
+
+//Some Variables
+var canvas;
+var ctx;
+var ballX = 90;
+var ballY = 90;
+var xVelocity = 2;
+var yVelocity = 2;
+var color = "#ccff99";
+var ballWidth = 15;
+var paddleWidth = 100;
+var paddleHeight = 10;
+var paddleX = 150;
+
+//Draw EVERYTHING
+function draw() {
+
+//Color The Canvas Grey
+ctx.fillStyle = "grey";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+//Draw The Ball
+ctx.beginPath();
+ctx.fillStyle = color;
+ctx.strokeStyle = "black";
+ctx.lineWidth = 2;
+ctx.arc(ballX,ballY,ballWidth,0,Math.PI*2, true);
+ctx.fill();
+ctx.stroke();
+ctx.closePath();
+
+//Change Ball Position
+ballX += xVelocity;
+ballY += yVelocity;
+
+//Bounce Ball Off Left + Choose Color
+if(ballX - ballWidth <= 0) {
+  xVelocity = -xVelocity;
+  changeColor();
+}
+
+//Bounce Ball Off Right + Choose Color
+if(ballX + ballWidth >= canvas.width) {
+  xVelocity = -xVelocity;
+  changeColor();
+}
+
+//Bounce Ball Off Top + Choose Color
+if(ballY - ballWidth <= 0) {
+  yVelocity = -yVelocity;
+  changeColor();
+}
+
+//Bounce Ball Off Bottom + Choose Color
+if(ballY + ballWidth >= canvas.height) {
+  yVelocity = -yVelocity;
+  changeColor();
+}
+
+//Randomly Choose Ball Color
+function changeColor() {
+
+var x = Math.random()*10;
+var n = Math.ceil(x);
+var nu = n;
+
+  if(nu == 1) {
+    color = "#ffaacc";}
+  
+  if(nu == 2) {
+    color = "orange";}
+
+  if(nu == 3) {
+    color = "teal";}
+
+  if(nu == 4) {
+    color = "turquoise";}
+
+  if(nu == 5) {
+    color = "purple";}
+
+  if(nu == 6) {
+    color = "lightgreen";}
+
+  if(nu == 7) {
+    color = "skyblue";}
+  
+  if(nu == 8) {
+    color = "darkgrey";}
+
+  if(nu == 9) {
+    color = "crimson";}
+  
+  if(nu == 10) {
+    color = "pink";}
+}
+
+}
+
+</script>
+
+
+</head>
+
+<body>
+
+  <Style>
+#test {
+  display:block;
+  Border: 3px solid black;
+  margin: auto;
+  Border-radius: 3px;
+}
+
+body {
+  background: radial-gradient(teal 40%, purple);
+}
+  </Style>
+
+  <Canvas id="test" width="300px" height="450px"></canvas>
+
+</body>
+
+</html>

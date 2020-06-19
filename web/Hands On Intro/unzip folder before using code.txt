@@ -1,0 +1,8 @@
+Many source files reference other data in the folders. Images, scripts, and some sounds are stored alongside the example solutions.
+
+For the example projects to run in-browser the files they reference need to be accessible. Extract the whole compressed folder before starting to ensure that those files can be reached by the code.
+
+Once you've decompressed the zip that contained this txt file feel free to discard this message.
+
+Happy developing!
+-Chris

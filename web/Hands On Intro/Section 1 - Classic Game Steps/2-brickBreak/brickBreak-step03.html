@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+</head>
+<body>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+
+<script>
+  // variables to keep track of ball position
+  var ballX = 75, ballY = 75;
+  var ballSpeedX = 6, ballSpeedY = 8;
+  
+  const PADDLE_WIDTH = 100;
+  const PADDLE_THICKNESS = 10;
+  var paddleX = 400;
+  
+  // save the canvas for dimensions, and its 2d context for drawing to it
+  var canvas, canvasContext;
+  
+  function calculateMousePos(evt) {
+    var rect = canvas.getBoundingClientRect(), root = document.documentElement;
+
+    // account for the margins, canvas position on page, scroll amount, etc.
+    var mouseX = evt.clientX - rect.left - root.scrollLeft;
+    var mouseY = evt.clientY - rect.top - root.scrollTop;
+    return {
+      x: mouseX,
+      y: mouseY
+    };
+  }
+  
+  window.onload = function() {
+    canvas = document.getElementById('gameCanvas');
+    canvasContext = canvas.getContext('2d');
+
+    // these next few lines set up our game logic and render to happen 30 times per second
+    var framesPerSecond = 30;
+    setInterval(function() {
+        moveEverything();
+        drawEverything();
+      }, 1000/framesPerSecond);
+      
+    canvas.addEventListener('mousemove', function(evt) {
+        var mousePos = calculateMousePos(evt);
+        paddleX = mousePos.x - (PADDLE_WIDTH/2); // minus half paddle height to center
+      } );
+  }
+  
+  function ballReset() {
+    // center ball on screen
+    ballX = canvas.width/2;
+    ballY = canvas.height/2;
+  }
+  
+  function moveEverything() {
+    if(ballX < 0) { // if ball has moved beyond the left edge
+      ballSpeedX *= -1; // reverse ball's horizontal direction
+    }
+    
+    if(ballX > canvas.width) { // if ball has moved beyond the right edge
+      ballSpeedX *= -1; // reverse ball's horizontal direction
+    }
+
+    if(ballY < 0) { // if ball has moved beyond the top edge
+      ballSpeedY *= -1; // reverse ball's vertical direction
+    }
+    
+    if(ballY > canvas.height) { // if ball has moved beyond the bottom edge
+      if(ballX > paddleX && ballX < paddleX+PADDLE_WIDTH) {
+        ballSpeedY *= -1; // reverse ball's vertical direction
+        
+        var deltaX = ballX-(paddleX+PADDLE_WIDTH/2); ////
+        ballSpeedX = deltaX * 0.35; ////
+
+      } else {
+        ballReset();
+      }
+    }
+  
+    ballX += ballSpeedX; // move the ball based on its current horizontal speed 
+    ballY += ballSpeedY; // same as above, but for vertical
+  }
+  
+  function colorRect(topLeftX, topLeftY, boxWidth, boxHeight, fillColor) {
+    canvasContext.fillStyle = fillColor;
+    canvasContext.fillRect(topLeftX, topLeftY, boxWidth, boxHeight);
+  }
+  
+  function colorCircle(centerX, centerY, radius, fillColor) {
+    canvasContext.fillStyle = fillColor;
+    canvasContext.beginPath();
+    canvasContext.arc(centerX, centerY, radius, 0, Math.PI*2, true);
+    canvasContext.fill();
+  }
+  
+  function drawEverything() {
+    // clear the game view by filling it with black
+    colorRect(0, 0, canvas.width, canvas.height, 'black');
+
+    // draw a white rectangle to use as the left player's paddle
+    colorRect(paddleX, canvas.height-PADDLE_THICKNESS, PADDLE_WIDTH, PADDLE_THICKNESS, 'white');
+    
+    // draw the ball
+    colorCircle(ballX, ballY, 10, 'white');
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html> <html> <head> <meta charset="UTF-8" /> <title>Canvas Test</title> </head> <body> <header> </header> <nav> </nav> <section> <div> <canvas id="canvas" width="320" height="200"> This text is displayed if your browser does not support HTML5 Canvas. </canvas> </div> 
+
+
+<script type="text/javascript">
+ var canvas; 
+ var ctx; 
+ 
+ function init() { 
+ canvas = document.getElementById("canvas"); 
+ ctx = canvas.getContext("2d"); 
+ draw(); 
+ 
+ } 
+ 
+ function draw() { 
+ ctx.fillStyle = '#FA6900'; ctx.shadowOffsetX = 5; 
+ ctx.shadowOffsetY = 5; 
+ ctx.shadowBlur = 4; 
+ ctx.shadowColor = 'rgba(204, 204, 204, 0.5)';
+ ctx.fillRect(0,0,15,150); 
+ ctx.save(); 
+ ctx.fillStyle = '#E0E4CD'; ctx.shadowOffsetX = 10; ctx.shadowOffsetY = 10; 
+ ctx.shadowBlur = 4; 
+ ctx.shadowColor = 'rgba(204, 204, 204, 0.5)'; 
+ ctx.fillRect(30,0,30,150); 
+ ctx.save(); 
+ ctx.fillStyle = '#A7DBD7'; ctx.shadowOffsetX = 15; ctx.shadowOffsetY = 15; 
+ ctx.shadowBlur = 4; 
+ ctx.shadowColor = 'rgba(204, 204, 204, 0.5)'; 
+ ctx.fillRect(90,0,45,150); 
+ ctx.save(); 
+ ctx.restore(); 
+ ctx.beginPath(); 
+ ctx.arc(185, 75, 22, 0, Math.PI*2, true); 
+ ctx.closePath(); 
+ ctx.fill(); 
+ ctx.restore(); 
+ ctx.beginPath(); 
+ ctx.arc(260, 75, 15, 0, Math.PI*2, true); 
+ ctx.closePath(); 
+ ctx.fill(); 
+ ctx.restore(); 
+ ctx.beginPath(); 
+ ctx.arc(305, 75, 8, 0, Math.PI*2, true); 
+ ctx.closePath(); 
+ ctx.fill(); 
+ 
+ } 
+ init();
+  </script>
+   </section> 
+   <aside> </aside> 
+   <footer> </footer> 
+   </body> </html>

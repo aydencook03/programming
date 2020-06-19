@@ -1,0 +1,28 @@
+<div id="div">
+<p id="p1">One</p>
+<p id="p2">Two</p>
+<p id="p3">Three</p>
+
+<p id="p4">Four</p>
+</div>
+
+<script>
+
+var p1 = document.getElementById("p1");
+var p2 = document.getElementById("p2");
+var p3 = document.getElementById("p3");
+var p4 = document.getElementById("p4");
+var div = document.getElementById("div");
+
+div.removeChild(p1);
+
+p3.parentNode.removeChild(p3);
+
+var newp = document.createElement("p");
+var node = document.createTextNode("new");
+
+newp.appendChild(node);
+
+div.replaceChild(newp, p4);
+
+</script>

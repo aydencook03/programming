@@ -1,0 +1,131 @@
+
+
+<h2><u>SVG Examples</u></h2>
+
+
+<!-- Complex -->
+
+      <svg height="400" width="450">
+         <path id="lineAB" d="M 100 350 l 150 -300" stroke="red" stroke-width="3" fill="none" />
+
+         <path id="lineBC" d="M 250 50 l 150 300" stroke="red" stroke-width="3" fill="none" />
+
+         <path d="M 175 200 l 150 0" stroke="green" stroke-width="3" fill="none" />
+
+         <path d="M 100 350 q 150 -300 300 0" stroke="blue" stroke-width="5" fill="none" />
+
+         <!-- Mark relevant points -->
+         <g stroke="black" stroke-width="3" fill="black">
+            <circle id="pointA" cx="100" cy="350" r="3" />
+            <circle id="pointB" cx="250" cy="50" r="3" />
+            <circle id="pointC" cx="400" cy="350" r="3" />
+         </g>
+         <!-- Label the points -->
+         <g font-size="30" font-family="sans-serif" fill="black" stroke="none" text-anchor="middle">
+            <text x="100" y="350" dx="-30">A</text>
+            <text x="250" y="50" dy="-10">B</text>
+            <text x="400" y="350" dx="30">C</text>
+         </g>
+         Sorry, your browser does not support inline SVG.
+      </svg>
+
+<!-- Smiley Face -->
+
+   <svg class="face" height="100" width="100">
+                <circle cx="50" cy="50" r="50" fill="#FDD835"/>
+                <circle cx="30" cy="30" r="10" fill="#FFFFFF"/>
+                <circle cx="70" cy="30" r="10" fill="#FFFFFF"/>
+                <circle cx="30" cy="30" r="5" fill="#000000"/>
+                <circle cx="70" cy="30" r="5" fill="#000000"/>
+                <path d="M 30 70 q 20 20 40 0" stroke="#FFFFFF" stroke-width="5" fill="none" />
+            </svg>
+
+
+<!--Circle SVG-->
+
+<svg width="200" height="150">
+   <circle cx="80" cy="80" r="50" fill="green" />
+</svg>
+
+<!--Rectangle SVG-->
+
+<svg width="200" height="150">
+   <rect width="300" height="100" 
+     x="20" y="20" fill="green" />
+</svg>
+
+<!--Ellipse SVG-->
+
+<svg height="200" width="1000">
+   <ellipse cx="200" cy="100" rx="150" ry="70" style="fill:green" />
+</svg>
+
+<!--Polygon SVG-->
+
+<svg width="200" height="200">
+<polygon points="100 100, 200 200, 300 0" 
+      style="fill: green; stroke:black;" />
+</svg>
+
+<!--Line SVG-->
+
+<svg width="400" height="150">
+    <line x1="10" y1="10" x2="200" y2="100" 
+        style="stroke:#000000; stroke-linecap:round; 
+        stroke-width:20"  />
+</svg>
+
+<!--PolyLine SVG-->
+
+<svg width="600" height="200">
+    <polyline style="stroke-linejoin:miter; stroke:black; 
+        stroke-width:12; fill: black;"
+        points="100 100, 150 150, 200 100, 300 100, 300 0, 100 0, 102 105" />
+</svg>
+
+
+<!-- Path Example -->
+
+<!--The following commands are available for path data:
+M: moveto
+L: lineto
+H: horizontal lineto
+V: vertical lineto
+C: curveto
+S: smooth curveto
+Q: quadratic Bézier curve
+T: smooth quadratic Bézier curveto
+A: elliptical Arc
+Z: closepath
+
+Define a path using the d attribute -->
+
+<svg width="500" height="500">
+<path d="M 0 0 L200 200 L200 0 Z" style="stroke:#000;  fill:none;" />
+</svg>
+
+
+<!-- Animation Example -->
+
+<!--M places our "virtual pen" down at the position 0, 0. It then moves 200px down and to the right, then moves up to the position 200, 0. The Z command closes the shape, which results in a hypotenuse: 
+
+All of the above commands can also be expressed with lower case letters. When capital letters are used, it indicates absolute position; lower case indicates relative position.-->
+
+
+
+
+
+
+<svg width="1000" height="250">
+<rect width="150" height= "150" fill="orange">
+  <animate attributeName="x" from="0" to="250"
+    dur="1s" fill="freeze" repeatCount="indefinite"/> 
+</rect>
+</svg>
+
+<!--attributeName: Specifies Which attribute will be affected by the animation
+FROM: Specifies the starting value of the attribute
+TO: Specifies the ending value of the attribute
+DUR: Specifies how long the animation runs (duration)
+FILL: Specifies whether or not the attribute's value should return to its initial value when the animation is finished (Values: "remove" resets the value; "freeze" keeps the “to value”)
+REPEATCOUNT: Specifies the repeat count of the animation-->

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+</head>
+<body>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+
+<script>
+  // variables to keep track of ball position
+  var ballX = 75, ballY = 75;
+  var ballSpeedX = 6, ballSpeedY = 8;
+  
+  // save the canvas for dimensions, and its 2d context for drawing to it
+  var canvas, canvasContext;
+  
+  window.onload = function() {
+    canvas = document.getElementById('gameCanvas');
+    canvasContext = canvas.getContext('2d');
+
+    // these next few lines set up our game logic and render to happen 30 times per second
+    var framesPerSecond = 30;
+    setInterval(function() {
+        moveEverything();
+        drawEverything();
+      }, 1000/framesPerSecond);
+  }
+  
+  function moveEverything() {
+    if(ballX < 0) { // if ball has moved beyond the left edge
+      ballSpeedX *= -1; // reverse ball's horizontal direction
+    }
+    
+    if(ballX > canvas.width) { // if ball has moved beyond the right edge
+      ballSpeedX *= -1; // reverse ball's horizontal direction
+    }
+
+    if(ballY < 0) { // if ball has moved beyond the top edge
+      ballSpeedY *= -1; // reverse ball's vertical direction
+    }
+    
+    if(ballY > canvas.height) { // if ball has moved beyond the bottom edge
+      ballSpeedY *= -1; // reverse ball's vertical direction
+    }
+  
+    ballX += ballSpeedX; // move the ball based on its current horizontal speed 
+    ballY += ballSpeedY; // same as above, but for vertical
+  }
+  
+  function drawEverything() {
+    // clear the game view by filling it with black
+    canvasContext.fillStyle = 'black';
+    canvasContext.fillRect(0, 0, canvas.width, canvas.height); 
+
+    // draw a white rectangle to use as the left player's paddle ////
+    canvasContext.fillStyle = 'white'; ////
+    canvasContext.fillRect(0, 250, 10, 100);  ////
+    
+    // draw a white circle
+    canvasContext.fillStyle = 'white';
+    canvasContext.beginPath();
+    canvasContext.arc(ballX, ballY, 10, 0, Math.PI*2, true); 
+    canvasContext.fill();
+  }
+</script>
+
+</body>
+</html>

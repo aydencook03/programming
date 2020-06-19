@@ -1,0 +1,2 @@
+#! /usr/bin/bash
+google-chrome-beta http://192.168.254.254/htmlV/fw_port_forwarding.asp?back_location=fw_security_general.asp

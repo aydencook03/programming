@@ -1,0 +1,430 @@
+<html>
+<meta name="viewport" content="width=device-width,height=device-width">
+<script>
+
+	var frame = 240;
+	var object = [];
+	var pos = [];
+	var running = true; //pause or play simulation
+	var time = 0;
+
+	//preset system selection
+	var threeBodyCircularSystem = false;
+	var threeBodyCentralSystem = false;
+	var binarySystem = false;
+
+
+	window.onload = function() {
+		canvas = document.getElementById("canvas");
+		ctx = canvas.getContext("2d");
+
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+
+		//World Conditions
+		drawVectors = false;
+		drawPaths = false;
+		maxPathLength = 1000;
+		gravityOn = false;
+		G = 517500;
+		collisionsOn = true;
+		collisionDampenAmount = 0.6;
+		fallingOn = false;
+		gAcceleration = 9.81;
+		edgeBoundaryCollisions = true;
+		edgeCollisionDampenAmount = 0.6;
+		frictionC = 0.5;
+
+		createObjects();
+
+		for(i=0; i<object.length; i++) {
+			pos.push([]);
+		}
+
+		setInterval(main, 1000/frame);
+	}
+
+	var momentumT = 0;
+
+	function main() {
+		ctx.fillStyle = "rgb(50,50,50)";
+		ctx.fillRect(0,0,canvas.width,canvas.height);
+
+		momentumT = 0;
+		
+		bodyPhysics(); //calculates accelerations/collisions
+		drawPathsF(); //creates trails behind objects
+		drawObjects(); //draws and moves objects
+
+		time += 1/frame;
+		ctx.beginPath();
+		ctx.fillStyle = "white";
+		ctx.fillText(Math.round(time * 100)/100, canvas.width/2, 20);
+		ctx.closePath();
+
+		for(i=0; i<object.length; i++) {
+			var speed = Math.sqrt(Math.pow(object[i].xV,2) + Math.pow(object[i].yV,2));
+			var mom = speed * object[i].m;
+			momentumT += mom;
+		}
+		ctx.beginPath();
+		ctx.fillStyle = "white";
+		ctx.fillText(Math.round(momentumT * 100)/100, canvas.width/2, 30);
+		ctx.closePath();
+	}
+
+	function createObjects() {
+		pushPresets();
+
+		for(i=0; i<20; i++) {
+			var randX = Math.random() * canvas.width;
+			var randY = Math.random() * canvas.height;
+			var randA = Math.random() * (2*Math.PI);
+			var randXv = -200 + Math.random() * 400;
+			var randYv = -200 + Math.random() * 400;
+			var randAv = 0;
+			var randM = 1 + Math.random() * 21;
+			var density = 0.0075;
+			var radius = Math.sqrt(randM/(Math.PI*density));
+
+			var randBall = new objectClass(randX, randY, randA, randXv, randYv, randAv, randM, radius, "orange");
+			object.push(randBall);
+		}
+	}
+
+	function drawPathsF() {
+		if(drawPaths == true) {
+		for(i=0; i<object.length; i++) {
+			
+			pos[i].push({
+				x: object[i].x,
+				y: object[i].y,
+				c: object[i].c
+			});
+			
+			for(p=0; p<pos[i].length -1; p++) {
+				ctx.beginPath();
+				ctx.strokeStyle = pos[i][p].c;
+				ctx.lineWidth = 2;
+				ctx.moveTo(pos[i][p].x, canvas.height - pos[i][p].y);
+				ctx.lineTo(pos[i][p+1].x, canvas.height - pos[i][p+1].y);
+				ctx.stroke();
+				ctx.closePath();
+			}
+			if(pos[i].length > maxPathLength) {
+				pos[i].splice(0, 1);
+			}
+		}
+	}
+	}
+
+	function objectClass(x, y, a, xV, yV, aV, m, r, c) {
+		this.x = x; // x position
+		this.y = y; // y position
+		this.a = a; // angle of rotation in radians
+		this.xV = xV; // x velocity
+		this.yV = yV; // y velocity
+		this.aV = aV; // angular velocity in radians/second
+		this.xA = 0; // x acceleration
+		this.yA = 0; // y acceleration
+		this.m = m; // mass of object
+		this.r = r; // radius of object
+		this.c = c; // color of object
+
+		this.draw = function() {
+			if(running) {
+			this.xV += this.xA/frame;
+			this.yV += this.yA/frame;
+			this.x += this.xV/frame;
+			this.y += this.yV/frame;
+			this.a += this.aV/frame;
+			if(Math.abs(this.xV) < 0.01) {
+				this.xV = 0;
+			}
+			if(Math.abs(this.yV) < 0.01) {
+				this.yV = 0;
+			}
+		}
+			
+			drawCircle(this.x,canvas.height - this.y,this.r,this.c);
+			ctx.beginPath();
+			ctx.strokeStyle = "black";
+			ctx.lineWidth = 1.5;
+			ctx.moveTo(this.x, canvas.height - this.y);
+			ctx.lineTo(this.x + this.r * Math.cos(this.a), canvas.height - (this.y + this.r * Math.sin(this.a)));
+			ctx.stroke();
+			ctx.closePath();
+			
+			if(drawVectors == true) {
+				//draw velocity vector (green)
+				ctx.beginPath();
+				ctx.strokeStyle = "lightgreen";
+				ctx.lineWidth = 1.5;
+				ctx.moveTo(this.x, canvas.height - this.y);
+				ctx.lineTo(this.x + this.xV/4, canvas.height - (this.y + this.yV/4));
+				ctx.stroke();
+				ctx.closePath();
+			
+			//draw acceleration vector (orange)
+				ctx.beginPath();
+				ctx.strokeStyle = "orange";
+				ctx.lineWidth = 1.5;
+				ctx.moveTo(this.x, canvas.height - this.y);
+				ctx.lineTo(this.x + this.xA/4, canvas.height - (this.y + this.yA/4));
+				ctx.stroke();
+				}
+		}
+	}
+
+	function drawObjects() {
+		for(i=0;i<object.length;i++) {
+			object[i].draw();
+		}
+	}
+
+	function bodyPhysics() {
+		if(gravityOn) {
+			gravity();
+		}
+		if(collisionsOn) {
+			ballCollision();
+		}
+		if(edgeBoundaryCollisions) {
+			edgeCollisions();
+		}
+		if(fallingOn) {
+			bodyFall();
+		}
+	}
+
+	function gravity() {
+			for(obj=0; obj < object.length; obj++) {
+					object[obj].xA = 0;
+					object[obj].yA = 0;
+
+				for(cen=0; cen < object.length; cen++) {
+
+					//Handles Gravitational Attraction
+					var xDif = object[obj].x - object[cen].x;
+					var yDif = object[obj].y - object[cen].y;
+					var gVal = G * object[cen].m;
+					var b1 = Math.pow(xDif,2) + Math.pow(yDif,2);
+					var b2 = Math.sqrt(b1);
+					if(cen != obj && gravityOn) {
+						object[obj].xA += (-gVal * xDif)/(b1 * b2);
+						object[obj].yA += (-gVal * yDif)/(b1 * b2);
+					}
+			}
+		}
+	}
+	function ballCollision() {
+		for(obj=0; obj < object.length; obj++) {
+			for(cen=0; cen < object.length; cen++) {
+
+				//Handles Body Collisions
+				var radii = object[obj].r + object[cen].r;
+				var xDif = object[obj].x - object[cen].x;
+				var yDif = object[obj].y - object[cen].y;
+				var pSum = Math.pow(xDif,2) + Math.pow(yDif,2);
+				var distance = Math.sqrt(pSum);
+				var overlap = Math.abs(radii - distance);
+
+				//unit vector along line of collision, from cen to obj
+				var dHatx = (xDif)/(distance);
+				var dHaty = (yDif)/(distance);
+				//unit vector perpendicular to line of collision
+				var pHatx = -1 * dHaty;
+				var pHaty = dHatx;
+
+				//dot products of object velocity vectors and perpendicular unit vector
+				var objPDP = object[obj].xV * pHatx + object[obj].yV * pHaty;
+				var cenPDP = object[cen].xV * pHatx + object[cen].yV * pHaty;
+
+				//dot products of object velocity vectors and normal unit vector
+				var objDDP = object[obj].xV * dHatx + object[obj].yV * dHaty;
+				var cenDDP = object[cen].xV * dHatx + object[cen].yV * dHaty;
+
+				var massSum = object[cen].m + object[obj].m;
+				//velocity response along normal vector (conservation of 1D momentum)
+				var cenNV = ((object[cen].m - object[obj].m)/(massSum))*(cenDDP) + ((2*object[obj].m)/massSum)*(objDDP);
+				var objNV = ((2*object[cen].m)/massSum)*(cenDDP) + ((object[obj].m - object[cen].m)/massSum)*(objDDP);
+
+				if(distance < radii && cen != obj && collisionsOn) {
+						
+						object[obj].x += (overlap * 0.5) * dHatx;
+						object[obj].y += (overlap * 0.5) * dHaty;
+						object[cen].x -= (overlap * 0.5) * dHatx;
+						object[cen].y -= (overlap * 0.5) * dHaty;
+
+						object[obj].xV = (pHatx * objPDP + dHatx * objNV * collisionDampenAmount);
+						object[obj].yV = (pHaty * objPDP + dHaty * objNV * collisionDampenAmount);
+						object[cen].xV = (pHatx * cenPDP + dHatx * cenNV * collisionDampenAmount);
+						object[cen].yV = (pHaty * cenPDP + dHaty * cenNV * collisionDampenAmount);
+						
+						var aV1x = pHatx * object[obj].aV*object[obj].r;
+						var aV1y = pHaty * object[obj].aV*object[obj].r;
+						var aV2x = pHatx * object[cen].aV*object[cen].r;
+						var aV2y = pHaty * object[cen].aV*object[cen].r;
+
+						var m1 = object[obj].m*Math.pow(object[obj].r,2);
+						var m2 = object[cen].m*Math.pow(object[cen].r,2);
+						var iV1 = (aV1x*pHatx + aV1y*pHaty) + objPDP;
+						var iV2 = (aV2x*pHatx + aV2y*pHaty) + cenPDP;
+						var mSum = m1 + m2;
+						
+						object[obj].aV = frictionC*(((m1-m2)/mSum)*iV1 - ((2*m2)/mSum)*iV2)/object[obj].r;
+						object[cen].aV = frictionC*(((2*m1)/mSum)*iV1 - ((m2-m1)/mSum)*iV2)/object[cen].r;
+				}
+
+			}
+		}
+	}
+	function edgeCollisions() {
+		for(obj=0; obj < object.length; obj++) {
+
+				object[obj].onGround = false;
+
+				if(object[obj].x + object[obj].r > canvas.width) {
+						object[obj].x = canvas.width - object[obj].r;
+						object[obj].xV = -Math.abs(object[obj].xV)*edgeCollisionDampenAmount;
+							object[obj].c = "green";
+					}
+					if(object[obj].x - object[obj].r < 0) {
+						object[obj].x = object[obj].r;
+						object[obj].xV = Math.abs(object[obj].xV)*edgeCollisionDampenAmount;
+							object[obj].c = "green";
+					}
+					if(object[obj].y + object[obj].r > canvas.height) {
+						object[obj].y = canvas.height - object[obj].r;
+						object[obj].yV = -Math.abs(object[obj].yV)*edgeCollisionDampenAmount;
+							object[obj].c = "green";
+					}	
+					if(object[obj].y - object[obj].r < 0) {
+						object[obj].y = object[obj].r;
+						object[obj].yV = Math.abs(object[obj].yV)*edgeCollisionDampenAmount;
+							object[obj].c = "green";
+					}
+
+		}
+	}
+	function bodyFall() {
+		for(obj=0; obj < object.length; obj++) {
+			object[obj].yV -= gAcceleration;
+		}
+	}
+			
+
+	function pushPresets() {
+
+		if(threeBodyCircularSystem) {
+		var center = new objectClass(
+			canvas.width/2, canvas.height/2 + 173.205/2, 0,
+			-90, 0, 0, 
+			3.5, 7,
+			"crimson");
+		object.push(center);
+				
+		var obj = new objectClass(
+			canvas.width/2 + 100, canvas.height/2 - 173.205/2, 0, 
+			45, 45 * Math.sqrt(3), 0, 
+			3.5, 7,
+			"teal");
+		object.push(obj);
+
+		var test = new objectClass(
+			canvas.width/2 - 100, canvas.height/2 - 173.205/2, 0, 
+			45, -45 * Math.sqrt(3), 0, 
+			3.5, 7,
+			"yellow");
+		object.push(test);
+		}
+
+
+		if(threeBodyCentralSystem) {
+		var center = new objectClass(
+			canvas.width/2, canvas.height/2, 0, 
+			0, 0, 0, 
+			6, 12, 
+			"crimson");
+		object.push(center);
+
+		var obj = new objectClass(
+			canvas.width/2, canvas.height/2 + 320, 0, 
+			40, 0, 0, 
+			0.1, 4,
+			"lightgreen");
+		object.push(obj);
+		
+		var o = new objectClass(
+			canvas.width/2, canvas.height/2 - 140, 0, 
+			-148.925, 0, 0, 
+			0.01, 2,
+			"teal");
+		object.push(o);
+		}
+
+
+		if(binarySystem) {
+		var center = new objectClass(
+			canvas.width/2, canvas.height/2, 0, 
+			-35.74602, 0, 0, 
+			9, 18, 
+			"crimson");
+		object.push(center);
+
+		var obj = new objectClass(
+			canvas.width/2, canvas.height/2 + 140, 0, 
+			160.85708, 0, 0, 
+			2, 4, 
+			"teal");
+		object.push(obj);
+		}
+	}
+
+	function drawRect(x,y,w,h,c) {
+		ctx.beginPath;
+		ctx.strokeStyle = "black";
+		ctx.lineWidth = 2;
+		ctx.fillstyle = c;
+		ctx.rect(x,y,w,h);
+		ctx.fill();
+		ctx.stroke();
+		ctx.closePath();
+	}
+	function drawCircle(x,y,r,c) {
+		ctx.beginPath();
+		ctx.strokeStyle = "black";
+		ctx.lineWidth = 1.5;
+		ctx.fillStyle = c;
+		ctx.arc(x,y,r,0,Math.PI*2);
+		ctx.fill();
+		ctx.stroke();
+		ctx.closePath();
+	}
+
+</script>
+<style>
+
+	canvas {
+		padding: 0;
+		margin: 0;
+	}
+	div {
+		justify-content: center;
+		display: flex;
+		margin: 0;
+		padding: 0;
+	}
+	body {
+		background: grey;
+		margin: 0;
+		padding: 0;
+	}
+
+</style>
+<body>
+	<div>
+	<canvas id="canvas" width="350px" height="350px"></canvas>
+	</div>
+</body>
+</html>

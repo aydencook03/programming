@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <script>
+window.onload = function() {
+	canvas =
+  	document.getElementById("canvas");
+ ctx = canvas.getContext("2d");
+ setInterval(draw,1000/60);
+ pushTrack();
+ player1Reset();
+}
+
+function arrayIndex(c, r) {
+	return c + colCount * r;
+}
+
+function pushTrack() {
+	for(var r=0; r<rowCount; r++) {
+		for(var c=0; c<colCount; c++) {
+			var array = arrayIndex(c, r);
+			
+				var newTile = new tileClass();
+				newTile.x = c*tileWidth;
+				newTile.y = r*tileHeight;
+				newTile.data = tileArray[array];
+				
+				tile.push(newTile);
+		}
+	}
+}
+
+var tileArray = [
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+1,2,0,0,0,0,0,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,1,1,1,1,1,1,1,1,1,0,0,0,1,
+1,0,0,0,0,0,0,0,0,1,1,0,0,1,
+1,0,0,0,0,0,0,0,0,0,1,0,0,1,
+1,0,0,0,1,1,0,0,0,0,1,0,0,1,
+1,0,0,1,3,3,1,0,0,0,1,0,0,1,
+1,0,0,1,3,3,1,0,0,0,0,0,0,1,
+1,0,0,1,3,3,1,1,0,0,0,0,0,1,
+1,0,0,1,3,3,3,1,1,1,1,1,1,1,
+1,0,0,1,3,3,3,3,3,1,4,4,4,1,
+1,0,0,1,3,3,3,3,3,1,0,0,0,1,
+1,0,0,1,3,3,3,3,3,1,0,0,0,1,
+1,0,0,0,1,1,1,1,1,1,0,0,0,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1
+];
+
+var road = 0;
+var wall = 1;
+var spawn = 2;
+var grass = 3;
+var goal = 4;
+
+var colCount = 14;
+var rowCount = 18;
+
+var tileWidth = 25;
+var tileHeight = 25;
+
+var tile = [];
+
+function tileClass() {
+	this.x = 0;
+	this.y = 0;
+	this.w = tileWidth;
+	this.h = tileHeight;
+	this.color = "#222";
+	this.data = 0;
+	this.stroke = "black";
+	
+	this.draw = function() {
+		
+		if(this.data == road || this.data == spawn) {
+			this.color = "#222";
+			this.stroke = "#222";
+		}
+		if(this.data == wall) {
+			this.color = "silver";
+		}
+		if(this.data == grass) {
+			this.color = "#19BE17";
+			this.stroke = "#19BE17"
+		}
+		if(this.data == goal) {
+			this.color = "#DFDFDF";
+			this.stroke = "#DFDFDF";
+		}
+		
+		ctx.beginPath();
+		ctx.fillStyle = this.color;
+		ctx.strokeStyle = this.stroke;
+		ctx.lineWidth = 1;
+		ctx.rect(this.x, this.y, this.w, this.h);
+		ctx.fill();
+		ctx.stroke();
+		ctx.closePath();
+	}
+}
+
+//Rectangle Code
+function drawRect(topLeftX,topLeftY, width,height, color) {
+ctx.fillStyle = color;	ctx.fillRect(topLeftX,topLeftY,width,height);
+}
+//Circle Code
+function drawCircle(x, y, radius, color) {
+	ctx.beginPath();
+	ctx.fillStyle = color;
+	ctx.arc(x, y, radius, 0, Math.PI*2);
+	ctx.fill();
+	ctx.closePath();
+}
+
+var playerX = 0;
+var playerY = 0;
+var playerW = 30;
+var playerH = 15;
+var playerAngle = 0;
+var velocity = 0;
+var driveSpeed = 0;
+
+var turnPower = 0
+
+function left() {
+	if(Math.abs(velocity) > 0.3) {
+	turnPower = -0.04;
+	}
+}
+function right() {
+	if(Math.abs(velocity) > 0.3) {
+	turnPower = 0.04;
+	}
+}
+function clearTurn() {
+	turnPower = 0;
+}
+
+function accelerate() {
+	driveSpeed = 0.03;
+}
+function decelerate() {
+	driveSpeed = -0.02;
+}
+function noMotion() {
+	driveSpeed = 0;
+}
+
+document.addEventListener("keydown", keyDown);
+document.addEventListener("keyup", keyUp);
+
+function keyDown(e) {
+	
+	if(e.keyCode == "37") {
+		if(Math.abs(velocity) > 0.3) {
+		turnPower = -0.04;
+		}
+		e.preventDefault();
+	}
+	if(e.keyCode == "39") {
+		if(Math.abs(velocity) > 0.3) {
+		turnPower = 0.04;
+		}
+		e.preventDefault();
+	}
+	if(e.keyCode == "38") {
+		driveSpeed = 0.03;
+		e.preventDefault();
+	}
+	if(e.keyCode == "40") {
+		driveSpeed = -0.02;
+		e.preventDefault();
+	}
+}
+function keyUp(e) {
+	if(e.keyCode == "37" ||
+	   e.keyCode == "39") {
+	   	turnPower = 0;
+	   }
+	if(e.keyCode == "38" ||
+	   e.keyCode == "40") {
+	   	driveSpeed = 0;
+	   }
+}
+
+function player1Reset() {
+	for(var r=0; r<rowCount; r++) {
+		for(var c=0; c<colCount; c++) {
+			var array = arrayIndex(c, r);
+			
+			if(tileArray[array] == spawn) {
+				playerX = c * tileWidth + 5;
+				playerY = r * tileHeight + tileHeight/2 - playerH/2;
+			}
+		}
+	}
+}
+
+function checkCollision() {
+	
+	for(var i=0; i<tile.length; i++) {
+		
+		//Left
+		 if(playerX + playerW >= tile[i].x &&
+		    playerX + playerW <= tile[i].x + 5 &&
+		    tile[i].data == wall &&
+		    playerY + playerH > tile[i].y &&
+		    playerY < tile[i].y + tile[i].h ) {
+		    	velocity *= -0.3;
+		    	playerX--;
+		    }
+		    
+		//Bottom
+		 else if(playerX + playerW >= tile[i].x &&
+		    playerX <= tile[i].x + tile[i].w &&
+		    tile[i].data == wall &&
+		    playerY -5 <= tile[i].y + tile[i].h &&
+		    playerY -5 >= tile[i].y + tile[i].h-5) {
+		    	velocity *= -0.3;
+		    playerY++;
+		 }
+		 
+		 
+		//Right
+		 else if(playerX <= tile[i].x + tile[i].w &&
+		    playerX >= tile[i].x + tile[i].w - 5 &&
+		    tile[i].data == wall &&
+		    playerY + playerH > tile[i].y &&
+		    playerY < tile[i].y + tile[i].h) {
+		    	velocity *= -0.3;
+		    	playerX++;
+		    }
+		    
+		//Top
+		 else if(playerX >= tile[i].x &&
+		    playerX <= tile[i].x + tile[i].w - 1 &&
+		    tile[i].data == wall &&
+		    playerY + playerH + 5 >= tile[i].y &&
+		    playerY + playerH + 5 <= tile[i].y + 5) {
+		    	velocity *= -0.3;
+		    	playerY--;
+		    }
+		    
+	}
+}
+
+function drawCar1() {
+	
+	playerAngle += turnPower;
+	
+	velocity += driveSpeed;
+	
+	if(velocity > 0) {
+	velocity -= 0.01;
+	}
+	
+	if(velocity < 0) {
+		velocity += 0.01;
+	}
+	
+	playerX += Math.cos(playerAngle)*velocity;
+	playerY += Math.sin(playerAngle)*velocity;
+	
+	ctx.save();
+	ctx.rotate(playerAngle);
+	ctx.translate(-playerX - playerW/2, -playerY - playerH/2);
+	
+	drawRect(playerX, playerY, playerW, playerH, "teal");
+	
+	drawRect(playerX + playerW - 10, playerY + 2, 7, 11, "lightblue");
+	
+	drawRect(playerX + 5, playerY - 1.5, 5, 2, "black");
+	
+	drawRect(playerX + 5, playerY + playerH - 0.5, 5, 2, "black");
+	
+	drawRect(playerX + playerW - 10, playerY - 1.5, 5, 2, "black");
+	
+	drawRect(playerX + playerW - 10, playerY + playerH - 0.5, 5, 2, "black");
+	
+	
+	ctx.restore();
+}
+
+function draw() {
+	drawRect(0,0, canvas.width,canvas.height, "black");
+	
+	for(var i=0; i<tile.length; i++) {
+		tile[i].draw();
+	}
+	
+	ctx.save();
+	ctx.translate(playerX + playerW/2, playerY + playerH/2);
+	
+	drawCar1();
+	
+	ctx.restore();
+	
+	checkCollision();
+	
+}     	
+      	
+      </script>
+      
+      <style>
+      	
+      	button {
+      		width: 110px;
+      		height: 70px;
+      		font-size: 25px;
+      		font-weight: bold;
+      		border-radius: 5px;
+      		margin: 5px 2.5px;
+      	}
+      	button:focus {
+      		outline: none;
+      	}
+      	
+      	</style>
+      
+   </head>
+   <body>
+   <div style="display: flex; justify-content:center">
+      <canvas id="canvas" width="350px" height="450px" style="display: block; margin: 0px auto; border: 3px solid black; border-radius: 5px;"></canvas>
+      </div>
+      
+      <div style="display: flex; justify-content: center">
+      	<button onmousedown="left()"
+      	        onmouseup="clearTurn()"
+      	        ontouchstart="left()"
+      	        ontouchend="clearTurn()">
+      	</button>
+      	<button onmousedown="right()"
+      	        onmouseup="clearTurn()"
+      	        ontouchstart="right()"
+      	        ontouchend="clearTurn()">
+      	</button>
+      	<button onmousedown="decelerate()"
+      	        onmouseup="noMotion();"
+      	        ontouchstart="decelerate()"
+      	        ontouchend="noMotion()">
+      	</button>
+      	<button onmousedown="accelerate()"
+      	        onmouseup="noMotion()"
+      	        ontouchstart="accelerate()"
+      	        ontouchend="noMotion()">
+      	</button>
+      	
+      	</div>
+      
+   </body>
+</html>

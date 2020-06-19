@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+</head>
+<body>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+
+<script>
+  // variables to keep track of ball position
+  var ballX = 75, ballY = 75;
+  var ballSpeedX = 6, ballSpeedY = 8;
+  
+  // brick constants and variables
+  const BRICK_W = 80;
+  const BRICK_H = 20;
+  const BRICK_GAP = 2;
+  const BRICK_COLS = 10;
+  const BRICK_ROWS = 14;
+  var brickGrid = new Array(BRICK_COLS * BRICK_ROWS);
+  var bricksLeft; // will get set in resetBricks()
+
+  // paddle constants and variables
+  const PADDLE_WIDTH = 100;
+  const PADDLE_THICKNESS = 10;
+  const PADDLE_Y = 540;
+  var paddleX = 400;
+  
+  // save the canvas for dimensions, and its 2d context for drawing to it
+  var canvas, canvasContext;
+  
+  function calculateMousePos(evt) {
+    var rect = canvas.getBoundingClientRect(), root = document.documentElement;
+
+    // account for the margins, canvas position on page, scroll amount, etc.
+    var mouseX = evt.clientX - rect.left - root.scrollLeft;
+    var mouseY = evt.clientY - rect.top - root.scrollTop;
+    return {
+      x: mouseX,
+      y: mouseY
+    };
+  }
+  
+  function brickTileToIndex(tileCol, tileRow) {
+    return (tileCol + BRICK_COLS*tileRow);
+  }
+
+  function isBrickAtTileCoord(brickTileCol, brickTileRow) {
+    var brickIndex = brickTileToIndex(brickTileCol, brickTileRow);
+    return (brickGrid[brickIndex] == 1);
+  }
+  
+  function breakAndBounceOffBrickAtPixelCoord(pixelX,pixelY) {
+    var tileCol = pixelX / BRICK_W;
+    var tileRow = pixelY / BRICK_H;
+    
+    // we'll use Math.floor to round down to the nearest whole number
+    tileCol = Math.floor( tileCol );
+    tileRow = Math.floor( tileRow );
+
+    // first check whether the ball is within any part of the brick wall
+    if(tileCol < 0 || tileCol >= BRICK_COLS ||
+       tileRow < 0 || tileRow >= BRICK_ROWS) {
+       return false; // bail out of function to avoid illegal array position usage
+    }
+    
+    var brickIndex = brickTileToIndex(tileCol, tileRow);
+
+    if(brickGrid[brickIndex] == 1) {
+      
+      // ok, so we know we overlap a brick now.
+      // let's backtrack to see whether we changed rows or cols on way in
+      var prevBallX = ballX-ballSpeedX;
+      var prevBallY = ballY-ballSpeedY;
+      var prevTileCol = Math.floor(prevBallX / BRICK_W);
+      var prevTileRow = Math.floor(prevBallY / BRICK_H);
+
+      var bothTestsFailed = true;
+
+      if(prevTileCol != tileCol) { // must have come in horizontally
+        var adjacentBrickIndex = brickTileToIndex(prevTileCol, tileRow);
+        // make sure the side we want to reflect off isn't blocked!
+        if(brickGrid[adjacentBrickIndex] != 1) {
+          ballSpeedX *= -1;
+          bothTestsFailed = false;
+        }
+      }
+
+      if(prevTileRow != tileRow) { // must have come in vertically
+        var adjacentBrickIndex = brickTileToIndex(tileCol, prevTileRow);
+        // make sure the side we want to reflect off isn't blocked!
+        if(brickGrid[adjacentBrickIndex] != 1) {
+          ballSpeedY *= -1;
+          bothTestsFailed = false;
+        }
+      }
+
+      // we hit an "armpit" on the inside corner, this blocks going into it
+      if(bothTestsFailed) {
+        ballSpeedX *= -1;
+        ballSpeedY *= -1;
+      }
+
+      brickGrid[brickIndex] = 0;
+      bricksLeft--;
+    }
+  }
+
+  function resetBricks() {
+    bricksLeft = 0; ////
+
+    for(var eachRow = 0; eachRow < BRICK_ROWS; eachRow++) { ////
+      for (var eachCol = 0; eachCol < BRICK_COLS; eachCol++) { ////
+          var brickIndex = brickTileToIndex(eachCol, eachRow); ////
+          if(eachRow >= 3) { // only place bricks at or below margin line ////
+            brickGrid[brickIndex] = 1;
+            bricksLeft++; ////
+          } else { // placing 0's for margin along the top ////
+            brickGrid[brickIndex] = 0; ////
+          } // end no brick in this row ////
+          
+      } // end eachCol ////
+    } // end eachRow  ////
+  } // end resetBricks
+    
+  window.onload = function() {
+    canvas = document.getElementById('gameCanvas');
+    canvasContext = canvas.getContext('2d');
+    
+    // these next few lines set up our game logic and render to happen 30 times per second
+    var framesPerSecond = 30;
+    setInterval(function() {
+        moveEverything();
+        drawEverything();
+      }, 1000/framesPerSecond);
+      
+    canvas.addEventListener('mousemove', function(evt) {
+        var mousePos = calculateMousePos(evt);
+        paddleX = mousePos.x - (PADDLE_WIDTH/2); // minus half paddle height to center
+        //// removed the test hack/cheat that moved the ball whenever the mouse moved
+      } );
+      
+    resetBricks();
+    ballReset();
+  }
+  
+  function ballReset() {
+    // center ball on screen
+    ballX = canvas.width/2;
+    ballY = canvas.height/2;
+  }
+  
+  function moveEverything() {
+    if(ballX < 0) { // if ball has moved beyond the left edge
+      ballSpeedX *= -1; // reverse ball's horizontal direction
+    }
+    
+    if(ballX > canvas.width) { // if ball has moved beyond the right edge
+      ballSpeedX *= -1; // reverse ball's horizontal direction
+    }
+
+    if(ballY < 0) { // if ball has moved beyond the top edge
+      ballSpeedY *= -1; // reverse ball's vertical direction
+    }
+    
+    if(ballSpeedY > 0.0) { // only bounce off paddle if the ball is moving downward
+      if(ballY >= PADDLE_Y && ballY <= PADDLE_Y + PADDLE_THICKNESS) { // vertically over paddle
+        if(ballX > paddleX && ballX < paddleX+PADDLE_WIDTH) { // horizontally too?
+          ballSpeedY *= -1; // reverse ball's vertical direction
+          
+          if(bricksLeft == 0) {
+            resetBricks();
+          }
+          
+          var deltaX = ballX-(paddleX+PADDLE_WIDTH/2);
+          ballSpeedX = deltaX * 0.35;
+        }
+      }
+    }
+    
+    if(ballY > canvas.height) { // if ball has moved beyond the bottom edge
+      ballReset();
+    }
+    
+    breakAndBounceOffBrickAtPixelCoord(ballX, ballY);
+  
+    ballX += ballSpeedX; // move the ball based on its current horizontal speed 
+    ballY += ballSpeedY; // same as above, but for vertical
+  }
+  
+  function colorRect(topLeftX, topLeftY, boxWidth, boxHeight, fillColor) {
+    canvasContext.fillStyle = fillColor;
+    canvasContext.fillRect(topLeftX, topLeftY, boxWidth, boxHeight);
+  }
+  
+  function colorCircle(centerX, centerY, radius, fillColor) {
+    canvasContext.fillStyle = fillColor;
+    canvasContext.beginPath();
+    canvasContext.arc(centerX, centerY, radius, 0, Math.PI*2, true);
+    canvasContext.fill();
+  }
+  
+  function drawBricks() {
+    for(var eachCol=0; eachCol<BRICK_COLS; eachCol++) { // in each column...
+      for(var eachRow=0; eachRow<BRICK_ROWS; eachRow++) { // in each row within that col
+      
+        if( isBrickAtTileCoord(eachCol, eachRow) ) {
+          // compute the corner in pixel coordinates of the corresponding brick
+          // multiply the brick's tile coordinate by BRICK_W or BRICK_H for pixel distance
+          var brickLeftEdgeX = eachCol * BRICK_W;
+          var brickTopEdgeY = eachRow * BRICK_H;
+          // draw a blue rectangle at that position, leaving a small margin for BRICK_GAP
+          colorRect(brickLeftEdgeX, brickTopEdgeY,
+                   BRICK_W - BRICK_GAP, BRICK_H - BRICK_GAP, 'blue' );
+        } // end of isBrickAtTileCoord()
+      } // end of for eachRow
+    } // end of for eachCol
+  } // end of drawBricks()
+  
+  function drawEverything() {
+    // clear the game view by filling it with black
+    colorRect(0, 0, canvas.width, canvas.height, 'black');
+
+    // draw a white rectangle to use as the left player's paddle
+    colorRect(paddleX, PADDLE_Y, PADDLE_WIDTH, PADDLE_THICKNESS, 'white');
+    
+    drawBricks();
+    
+    // draw the ball
+    colorCircle(ballX, ballY, 10, 'white');
+  }
+</script>
+
+</body>
+</html>

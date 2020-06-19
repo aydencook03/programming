@@ -1,0 +1,208 @@
+
+<!-- This Code Is 100% Plain JavaScript
+      With No JQuery Or Images -->
+      
+<!-- Check Out My Other Games If You 
+      Liked This One -->
+
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <script>
+      	
+      	var plat = [];
+window.onload = function() {
+	canvas =
+  	document.getElementById("canvas");
+ ctx = canvas.getContext("2d");
+ setInterval(draw,1000/60);
+ 
+ for(var i=0;i<40;i++) {
+	plat.push({
+		x: Math.random()*canvas.width,
+		y: Math.random()*canvas.height,
+		w: Math.random()*70 + 30,
+		h: Math.random()*10 + 20
+	})
+}
+plat[1].x = 0;
+plat[1].y = 0;
+plat[1].w = canvas.width;
+plat[1].h = 2;
+
+plat[2].x = 0;
+plat[2].y = 0;
+plat[2].w = 2;
+plat[2].h = canvas.height;
+
+plat[3].x = canvas.width - 2;
+plat[3].y = 0;
+plat[3].w = 2;
+plat[3].h = canvas.height;
+
+plat[4].x = 0;
+plat[4].y = canvas.height -2;
+plat[4].w = canvas.width;
+plat[4].h = 2;
+}
+
+//Rectangle Code
+function drawRect(topLeftX,topLeftY, width,height, color) {
+ctx.fillStyle = color;	ctx.fillRect(topLeftX,topLeftY,width,height);
+}
+//Circle Code
+function drawCircle(x, y, radius, color) {
+	ctx.beginPath();
+	ctx.fillStyle = color;
+	ctx.arc(x, y, radius, 0, Math.PI*2);
+	ctx.fill();
+	ctx.closePath();
+}
+
+
+function drawPlat() {
+		for(var i=0;i<plat.length;i++) {
+	drawRect(plat[i].x, plat[i].y, plat[i].w, plat[i].h, "white");
+  }
+ }
+ 
+ var playerX = 20;
+ var playerY = 20;
+ var xVelocity = 0;
+ var yVelocity = 3;
+ var gravity = 0;
+ var onGround = true;
+ 
+function checkCollision() {
+	for(var i=0;i<plat.length;i++) {
+		
+		if(playerX + 10 >= plat[i].x &&
+		   playerX <= plat[i].x + plat[i].w &&
+		   playerY + 20 >= plat[i].y &&
+		   playerY + 20 <= plat[i].y +10 &&
+		   yVelocity > 0) {
+		   	
+		   	playerY = plat[i].y -20;
+		   	onGround = true;
+		   	gravity = 0;
+		     
+ 	}
+ 	if(playerX + 10 >= plat[i].x &&
+ 	   playerX <= plat[i].x &&
+ 	   playerY + 20 > plat[i].y &&
+ 	   playerY + 20 <= plat[i].y + plat[i].h + 20) {
+ 	   	xVelocity = 0;
+ 	   	playerX = plat[i].x -10;
+ 	   }
+ 	if(playerX <= plat[i].x + plat[i].w &&
+ 	   playerX >= plat[i].x + plat[i].w -2 &&
+ 	   playerY + 20 > plat[i].y &&
+ 	   playerY + 20 <= plat[i].y + plat[i].h +20) {
+ 	   	xVelocity = 0;
+ 	   	playerX = plat[i].x + plat[i].w;
+ 	   }
+ 	
+ 	if(playerX + 10 >= plat[i].x &&
+ 	   playerX <= plat[i].x + plat[i].w &&
+ 	   playerY >= plat[i].y + plat[i].h -3 &&
+ 	   playerY <= plat[i].y + plat[i].h +1 &&
+ 	   yVelocity < 0) {
+ 	   	yVelocity = 0;
+ 	   	playerY = plat[i].y + plat[i].h;
+ 	   }
+ }
+}
+
+document.addEventListener("keydown",keyDown);
+document.addEventListener("keyup",keyUp);
+
+function keyDown(e) {
+	if(e.keyCode == "37") {
+		xVelocity = -1.5;
+	}
+	if(e.keyCode == "38") {
+		jump();
+	}
+	if(e.keyCode == "39") {
+		xVelocity = 1.5;
+	}
+}
+function keyUp(e) {
+	if(e.keyCode == "37" ||
+	   e.keyCode == "39") {
+		xVelocity = 0;
+	}
+}
+
+function draw() {
+	drawRect(0,0, canvas.width,canvas.height, "black");
+	
+drawPlat();
+
+playerX += xVelocity;
+playerY += yVelocity;
+
+yVelocity += gravity;
+
+onGround = false;
+
+if(onGround == false) {
+	gravity = 0.1;
+}
+
+checkCollision();
+
+drawRect(playerX, playerY, 10, 20, "teal");
+
+}
+
+function jump() {
+	if(onGround) {
+	yVelocity = -3;
+	}
+}
+
+function left() {
+		xVelocity = -1.5;
+}
+
+function right() {
+		xVelocity = 1.5;
+}
+
+function clearMove() {
+	xVelocity = 0;
+}     	
+      	
+      </script>
+      <style>
+      	button:focus {
+      		outline: none;
+      	}
+      	button {
+      		width: 80px;
+      		height: 50px;
+      		font-weight: bold;
+      		font-size: 20px;
+      		margin: 5px;
+      		border-radius: 5px;
+      		background: #999;
+      	}
+      	body {
+      		background: #444;
+      	}
+      	</style>
+   </head>
+   <body>
+      <canvas id="canvas" width="325" height="400" style="display: block; margin: 10px auto; border: 3px solid black; border-radius: 5px;"></canvas>
+      
+      <div id="div1" style="display:flex; justify-content:center;">
+      	<button onclick="jump()">Jump</button>
+      	</div>
+      	<div id="div2" style="display:flex; justify-content:center" >
+      		<button onmousedown="left()"  onmouseup="clearMove()"  ontouchstart="left()"  ontouchend="clearMove()"></button>
+      		<button onmousedown="right()"  onmouseup="clearMove()"  ontouchstart="right()"  ontouchend="clearMove()" ></button>
+      		</div>
+      
+   </body>
+</html>

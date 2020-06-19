@@ -1,0 +1,107 @@
+<html>
+	<meta name="viewport" content="width=device-width, height=device-height">
+		
+<script>
+	
+	var frame = 60;
+	
+	var x = 150;
+	var xV = 0;
+	var xA = 0;
+	var k = 100;
+	var m = 10;
+	
+window.onload = function() {
+	canvas = document.getElementById("canvas");
+	ctx = canvas.getContext("2d");
+	
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
+	
+	setInterval(main, 1000/frame)
+}
+
+function main() {
+	ctx.beginPath();
+	ctx.fillStyle = "grey";
+	ctx.fillRect(0,0,canvas.width,canvas.height);
+	ctx.closePath();
+	
+	calculateMotion();
+	draw();
+}
+
+function calculateMotion() {
+	xA = -(k/m) * x;
+	xV += xA/frame;
+	x += xV/frame;
+}
+function draw() {
+	drawCircle(canvas.width/2,canvas.height/2,2,"black");
+	
+	drawCircle(canvas.width/2 + x, canvas.height/2, m*2, "teal");
+	
+	var num = 12;
+	for(i=0; i<num-1; i++) {
+		var val = 10;
+		val *= Math.pow(-1, i);
+		
+		ctx.beginPath();
+		ctx.strokeStyle = "black";
+		ctx.lineWidth = 1.5;
+		
+		if(i == 0) {
+			ctx.moveTo(canvas.width/2, canvas.height/2);
+		}
+		else {
+			ctx.moveTo(canvas.width/2 + (x/num)*i, canvas.height/2 + val);
+		}
+		ctx.lineTo(canvas.width/2 + (x/num)*(i+1), canvas.height/2 + val*(-1));
+		if(i == num-2) {
+			ctx.lineTo(canvas.width/2 + x,canvas.height/2);
+		}
+		ctx.stroke();
+		ctx.closePath();
+	}
+}
+
+function drawRect(x,y,w,h,c) {
+	ctx.beginPath();
+	ctx.strokeStyle = "black";
+	ctx.fillStyle = c;
+	ctx.lineWidth = 2;
+	ctx.rect(x,y,w,h);
+	ctx.stroke();
+	ctx.fill();
+	ctx.closePath();
+}
+function drawCircle(x,y,r,c) {
+	ctx.beginPath();
+	ctx.strokeStyle = "black";
+	ctx.fillStyle = c;
+	ctx.lineWidth = 2;
+	ctx.arc(x,y,r,0,Math.PI*2);
+	ctx.fill();
+	ctx.stroke();
+	ctx.closePath();
+}
+	
+</script>
+<style>
+	
+	body {
+		padding: 0;
+		margin: 0;
+	}
+	canvas {
+		padding: 0;
+		margin: 0;
+	}
+	
+</style>
+<body>
+	
+	<canvas id="canvas"></canvas>
+	
+</body>
+</html>

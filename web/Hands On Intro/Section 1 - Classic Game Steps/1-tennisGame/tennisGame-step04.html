@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+</head>
+<body>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+
+<script>
+  // variables to keep track of ball position ////
+  var ballX = 75, ballY = 75; ////
+  var canvas;
+  var canvasContext;
+  
+  window.onload = function() {
+    // save the canvas for dimensions, and its 2d context for drawing to it
+    canvas = document.getElementById('gameCanvas');
+    canvasContext = canvas.getContext('2d');
+
+    setInterval(drawEverything, 1000); ////
+  }
+  
+  function drawEverything() {
+    // each time the ball gets drawn bump it over another 50 pixels right ////
+    ballX += 50; ////
+    console.log("ballX is now: " + ballX); ////
+
+    // clear the game view by filling it with black
+    canvasContext.fillStyle = 'black';
+    canvasContext.fillRect(0, 0, canvas.width, canvas.height); 
+
+    // draw a white circle
+    canvasContext.fillStyle = 'white';
+    canvasContext.beginPath();
+    canvasContext.arc(ballX, ballY, 10, 0, Math.PI*2, true); ////
+    canvasContext.fill();
+  }
+</script>
+
+</body>
+</html>

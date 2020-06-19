@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <script>
+      	
+window.onload = function() {
+	canvas =
+  	document.getElementById("canvas");
+ ctx = canvas.getContext("2d");
+ setInterval(draw,1000/60);
+ 
+ alienReset();
+ alienPush();
+}
+
+var alien = [];
+var alienArray = [];
+
+var alienXSpeed = 0.4;
+var alienYSpeed = 0;
+
+var colCount = 5;
+var rowCount = 6;
+var alienWidth = 40;
+var alienHeight = 20;
+var horiGap = 25;
+var vertGap = 10;
+
+var leftMostPoint = 25;
+var topMostPoint = 50;
+var rightMostPoint = 325;
+var bottomMostPoint = 220;
+
+var player = 0;
+var enemy = 1;
+
+var enemiesLeft = 0;
+
+function alienReset() {
+	for(var i=0; i<rowCount*colCount; i++) {
+		alienArray[i] = true;
+	}
+}
+
+function rowColArray(c, r) {
+	return c + colCount * r;
+}
+
+function alienPush() {
+	for(var r=0; r<rowCount; r++) {
+		for(var c=0; c<colCount; c++) {
+			var array = rowColArray(c, r);
+			
+			if(alienArray[array]) {
+				
+				var newAlien = new alienClass();
+				newAlien.x = leftMostPoint + (horiGap*c) + (c * alienWidth);
+				newAlien.y = topMostPoint + (vertGap*r) + (r * alienHeight);
+				newAlien.w = alienWidth;
+				newAlien.h = alienHeight;
+				newAlien.array = array;
+				
+				alien.push(newAlien);
+				enemiesLeft++;
+			}
+		}
+	}
+}
+
+function alienClass() {
+	this.x = 0;
+	this.y = 0;
+	this.w = 0;
+	this.h = 0;
+	this.color = "green";
+	this.array = 0;
+	
+	this.move = function() {
+		this.velX = alienXSpeed;
+	 this.velY = alienYSpeed;
+		this.x += this.velX;
+		this.y += this.velY;
+	}
+	
+	this.draw = function() {
+		drawRect(this.x, this.y, this.w, this.h, this.color)
+	}
+}
+
+function checkAlienWallCollision() {
+	   
+	if(rightMostPoint >= canvas.width) {
+		rightMostPoint = canvas.width-0.01;
+		alienXSpeed = 0;
+		alienYSpeed = 0.3;
+	}
+	
+	if(bottomMostPoint >= 270) {
+		bottomMostPoint = 269.99;
+		alienYSpeed = 0;
+		alienXSpeed = -0.4;
+	}
+	
+	if(leftMostPoint <= 0) {
+		leftMostPoint = 0.01;
+		alienXSpeed = 0;
+		alienYSpeed = -0.3;
+	}
+	
+	if(topMostPoint <= 49) {
+		topMostPoint = 49.01;
+		alienYSpeed = 0;
+		alienXSpeed = 0.4;
+	}
+}
+
+var playerShot = false;
+var enemyShot = false;
+
+var bullet = [];
+
+function bulletClass() {
+	this.x = 0;
+ this.y = 0;
+ this.w = 5;
+ this.h = 5;
+ this.velX = 0;
+ this.velY = 0;
+ this.creator = player;
+ 
+ if(this.creator == player) {
+ 	this.color = "white";
+ }
+ if(this.creator == enemy) {
+ 	this.color = "green";
+ }
+ 
+ this.move = function() {
+ 	this.x += this.velX;
+ 	this.y += this.velY;
+ }
+ 
+ this.draw = function() {
+ 	drawRect(this.x, this.y, this.w, this.h, this.color);
+ }
+}
+
+var lives = 3;
+
+function checkBulletCollision() {
+	for(i=0; i<bullet.length; i++) {
+		if(//bullet[i].creator == player &&
+		   playerShot == true &&
+		   bullet[i].y <= -5) {
+		   	bullet.splice(i, 1);
+		   	playerShot = false;
+		   }
+		   
+		if(//bullet[i].creator == enemy &&
+		   //enemyShot == true &&
+		   bullet[i].y >= canvas.height) {
+		   	bullet.splice(i, 1);
+		   	enemyShot = false;
+		   }
+		   
+		if(//bullet[i].creator == enemy &&
+		   enemyShot == true &&
+		   bullet[i].x + bullet[i].w >= playerX &&
+		   bullet[i].x <= playerX + playerW &&
+		   bullet[i].y + bullet[i].h >= playerY &&
+		   bullet[i].y <= playerY + playerH &&
+		   bullet[i].velY > 0) {
+		   	lives--;
+		   	enemyShot = false;
+		   	bullet.splice(i, 1);
+		   }
+		  }
+		
+	for(var i=0; i<bullet.length; i++) {
+		for(var e=0; e<alien.length; e++) {
+			if(playerShot == true &&
+			   bullet[i].x + bullet[i].w >= alien[e].x &&
+			   bullet[i].x <= alien[e].x + alien[e].w &&
+			   bullet[i].y <= alien[e].y + alien[e].h &&
+			   bullet[i].y + bullet[i].h >= alien[e].y &&
+			   bullet[i].creator == player) {
+			   	alien.splice(e, 1);
+			   	bullet.splice(i, 1);
+			   	enemiesLeft--;
+			   	playerShot = false;
+			   }
+			   }
+	}
+	
+	for(var i=alien.length-1; i>=0; i--) {
+		if(alien[i].x + alien[i].w/2 >= playerX &&
+		   alien[i].x + alien[i].w/2 <= playerX + playerW &&
+		   enemyShot == false) {
+		   	var newBullet = new bulletClass();
+		   	
+		   	newBullet.x = alien[i].x + alien[i].w/2;
+		   	newBullet.y = alien[i].y + alien[i].h;
+		   	
+		   	newBullet.creator = enemy;
+		   	newBullet.color = "crimson";
+		   	newBullet.velY = 3;
+		   	
+		   	enemyShot = true;
+		   	bullet.push(newBullet);
+		   }
+	}
+}
+
+var playerX = 150;
+var playerY = 420;
+var playerW = 50;
+var playerH = 25;
+
+var pXVelocity = 0;
+var pYVelocity = 0;
+
+function left() {
+	pXVelocity = -4;
+}
+function right() {
+	pXVelocity = 4;
+}
+function clearMove() {
+	pXVelocity = 0;
+}
+
+document.addEventListener("keydown", keyDown);
+document.addEventListener("keyup", keyUp);
+
+function keyDown(e) {
+	if(e.keyCode == "37") {
+		pXVelocity = -4;
+		e.preventDefault();
+	}
+	if(e.keyCode == "39") {
+		pXVelocity = 4;
+		e.preventDefault();
+	}
+	if(e.keyCode == "38") {
+		fire();
+		e.preventDefault();
+	}
+}
+
+function keyUp(e) {
+	if(e.keyCode == "37" ||
+	   e.keyCode == "39") {
+	   	pXVelocity = 0;
+	   }
+}
+
+function fire() {
+	if(playerShot == false) {
+		playerShot = true;
+		var newShot = new bulletClass();
+		newShot.y = playerY;
+		newShot.x = playerX + playerW/2;
+		newShot.creator = player;
+		newShot.velY = -5;
+		
+		bullet.push(newShot);
+	}
+}
+
+function drawPlayer() {
+	
+	if(playerX <= 0) {
+		pXVelocity = 0;
+		playerX = 0;
+	}
+	if(playerX + playerW >= canvas.width) {
+		pxVelocity = 0;
+		playerX = canvas.width - playerW;
+	}
+	
+	drawRect(playerX, playerY, playerW, playerH, "white");
+}
+
+function enemyReset() {
+	alien.splice(0, alien.length);
+	alienPush();
+	enemyShot = false;
+}
+
+function playerReset() {
+	playerX = canvas.width/2 - playerW/2;
+	playerShot = false;
+}
+
+function gameReset() {
+	lives = 3;
+	bullet.splice(0, bullet.length);
+	enemiesLeft = 0;
+	leftMostPoint = 25;
+ topMostPoint = 50;
+ rightMostPoint = 325;
+ bottomMostPoint = 220;
+}
+
+//Rectangle Code
+function drawRect(topLeftX,topLeftY, width,height, color) {
+ctx.fillStyle = color;	ctx.fillRect(topLeftX,topLeftY,width,height);
+}
+//Circle Code
+function drawCircle(x, y, radius, color) {
+	ctx.beginPath();
+	ctx.fillStyle = color;
+	ctx.arc(x, y, radius, 0, Math.PI*2);
+	ctx.fill();
+	ctx.closePath();
+}
+
+function draw() {
+	drawRect(0,0, canvas.width,canvas.height, "black");
+	
+	checkAlienWallCollision();
+	
+	for(var i=0; i<alien.length; i++) {
+		alien[i].move();
+		alien[i].draw();
+	}
+	
+	leftMostPoint += alienXSpeed;
+	rightMostPoint += alienXSpeed;
+	topMostPoint += alienYSpeed;
+	bottomMostPoint += alienYSpeed;
+	
+	for(var i=0; i<bullet.length; i++) {
+		bullet[i].move();
+		bullet[i].draw();
+	}
+	
+	checkBulletCollision();
+	
+	if(lives <= 0) {
+		playerReset();
+		gameReset();
+		enemyReset();
+	}
+	if(enemiesLeft <= 0) {
+		playerReset();
+		gameReset();
+		enemyReset();
+	}
+	
+	playerX += pXVelocity;
+	playerY += pYVelocity;
+	
+	drawPlayer();
+	
+	ctx.fillStyle = "white";
+	ctx.font = "13px arial"
+	
+	ctx.textAlign = "left";
+	ctx.fillText("Enemies: " + enemiesLeft, 10, 14);
+
+	ctx.textAlign = "center";
+	ctx.fillText("Lives: " + lives, canvas.width/2, 14);
+	
+	/*
+	drawCircle(leftMostPoint, topMostPoint, 2, "white");
+	
+	drawCircle(rightMostPoint, topMostPoint, 2, "white");
+	
+	drawCircle(rightMostPoint, bottomMostPoint, 2, "white");
+	
+	drawCircle(leftMostPoint, bottomMostPoint, 2, "white");
+	*/
+}     	
+      	
+      </script>
+      
+      <style>
+      	
+      	button {
+      		width: 110px;
+      		height: 70px;
+      		font-size: 25px;
+      		font-weight: bold;
+      		border-radius: 5px;
+      		margin: 5px 2.5px;
+      	}
+      	button:focus {
+      		outline: none;
+      	}
+      	body {
+      		background: black;
+      	}
+      	
+      	</style>
+      
+   </head>
+   <body>
+   <div style="display: flex; justify-content:center">
+      <canvas id="canvas" width="350px" height="450px" style="display: block; margin: 0px auto; border: 1px dashed white; border-radius: 5px;"></canvas>
+      </div>
+      
+      <div style="display: flex; justify-content: center">
+      	<button onmousedown="left()"
+      	        onmouseup="clearMove()"
+      	        ontouchstart="left()"
+      	        ontouchend="clearMove()">
+      	</button>
+      	<button onclick="fire()">
+      	</button>
+      	<button onmousedown="right()"
+      	        onmouseup="clearMove()"
+      	        ontouchstart="right()"
+      	        ontouchend="clearMove()">
+      	</button>
+      	
+      	</div>
+      
+   </body>
+</html>

@@ -1,0 +1,33 @@
+<div id="div">
+
+</div>
+
+<script>
+
+var par = document.createElement("p");
+var txt = document.createTextNode("test");
+par.appendChild(txt);
+
+var div = document.getElementById("div");
+
+div.appendChild(par);
+
+div.style.backgroundColor = "teal";
+div.style.color = "white";
+div.style.fontWeight = "bold";
+div.style.textAlign = "center";
+div.style.border = "3px solid black";
+div.style.borderRadius = "10px";
+div.style.width = "80%";
+div.style.height = "80%";
+
+par.style.marginTop = "80%";
+
+var body = document.getElementsByTagName("body");
+
+body[0].style.display = "flex";
+body[0].style.alignItems = "center";
+body[0].style.justifyContent = "center";
+
+
+</script>

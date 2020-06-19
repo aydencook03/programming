@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+	<script>
+		
+		var paddleX;
+		var paddleY;
+		var paddleVel;
+		var paddleW = 50;
+		var paddleH = 7;
+		
+		var ballX;
+		var ballY;
+		var ballR = 3;
+		var xVel;
+		var yVel;
+		
+		var gameStarted = false;
+		
+		var brickW = 35;
+		var brickH = 20;
+		var cols = 10;
+		var rows = 10;
+		var brick = [];
+		
+		window.onload = function() {
+			canvas = document.getElementById("canvas");
+			ctx = canvas.getContext("2d");
+			
+			gameReset();
+			brickReset();
+			
+			setInterval(draw, 1000/60);
+		}
+		
+		//document.addEventListener("mousemove", cheat);
+		
+		function cheat(evt) {
+			ballX = evt.clientX;
+			ballY = evt.clientY;
+			xVel = 4.1;
+			yVel = 0.0;
+		}
+		
+		function draw() {
+			ctx.beginPath();
+			ctx.fillStyle = "white";
+			ctx.rect(0,0, canvas.width,canvas.height);
+			ctx.stroke();
+			ctx.fill();
+			ctx.closePath();
+			
+			ctx.save();
+			
+			moveCamera();
+			
+			ctx.beginPath();
+			ctx.rect(0,0, canvas.width,canvas.height);
+			ctx.stroke();
+			ctx.closePath();
+			
+			paddle();
+			ball();
+			wallCollision();
+			paddleCollision();
+			drawBricks();
+			brickCollision();
+			
+			ctx.restore();
+		}
+		
+		function moveCamera() {
+			ctx.translate(-ballX + canvas.width/2, -ballY + canvas.height/2);
+		}
+		
+		function brickCollision() {
+			var topX = ballX;
+			var topY = ballY - ballR;
+			
+			var rightX = ballX + ballR;
+			var rightY = ballY;
+			
+			var botX = ballX;
+			var botY = ballY + ballR;
+			
+			var leftX = ballX - ballR;
+			var leftY = ballY;
+			
+			for(c=0; c<cols; c++) {
+				for(r=0; r<rows; r++) {
+					b = brick[c][r];
+					if(b.s != 0) {
+					if(topX > b.x &&
+					   topX < b.x + brickW &&
+					   topY > b.y + brickH/2 &&
+					   topY < b.y + brickH &&
+					   yVel < 0) {
+					   	yVel *= -1;
+					   	b.s = 0;
+					   }
+					if(rightX > b.x &&
+					   rightX < b.x + brickW/2 &&
+					   rightY > b.y &&
+					   rightY < b.y + brickH &&
+					   xVel > 0) {
+					   	xVel *= -1;
+					   	b.s = 0;
+					   }
+					if(botY > b.y &&
+					   botY < b.y + brickH/2 &&
+					   botX > b.x &&
+					   botX < b.x + brickW &&
+					   yVel > 0) {
+					   	yVel *= -1;
+					   	b.s = 0;
+					   }
+					if(leftX < b.x + brickW &&
+					   leftX > b.x + brickW/2 &&
+					   leftY > b.y &&
+					   leftY < b.y + brickH/2 &&
+					   xVel < 0) {
+					   	xVel *= -1;
+					   	b.s = 0;
+					   }
+					}
+				}
+			}
+		}
+		
+		function brickReset() {
+			for(c=0; c<cols; c++) {
+				brick[c] = [];
+				for(r=0; r<rows; r++) {
+					brick[c][r] = {x: 0, y: 0, s: 0};
+				}
+			}
+			for(c=0; c<cols; c++) {
+				for(r=0; r<rows; r++) {
+					brick[c][r].x = c*brickW;
+					brick[c][r].y = r*brickH;
+					brick[c][r].s = 1;
+				}
+			}
+			for(c=0; c<cols; c++) {
+				for(r=0; r<3; r++) {
+					brick[c][r].s = 0;
+				}
+			}
+		}
+		
+		function drawBricks() {
+			for(c=0; c<cols; c++) {
+				for(r=0; r<rows; r++) {
+					if(brick[c][r].s != 0) {
+						var x = brick[c][r].x;
+						var y = brick[c][r].y;
+						ctx.beginPath();
+						ctx.fillStyle = "teal";
+						ctx.lineWidth = 2;
+						ctx.strokeStyle = "black";
+						ctx.rect(2 + x, 2 + y, brickW-4,brickH-4);
+						ctx.fill();
+						ctx.stroke();
+						ctx.closePath();
+					}
+				}
+			}
+		}
+		
+		function wallCollision() {
+			if(paddleX < 5) {
+				paddleX = 5;
+				paddleVel = 0;
+			}
+			if(paddleX + paddleW > canvas.width - 5) {
+				paddleX = canvas.width - paddleW - 5;
+				paddleVel = 0;
+			}
+			
+			if(ballX - ballR < 0 &&
+			   xVel < 0 ||
+			   ballX + ballR > canvas.width &&
+			   xVel > 0) {
+			   	xVel *= -1;
+			   }
+			if(ballY - ballR < 0 &&
+			   yVel < 0) {
+			   	yVel *= -1;
+			   }
+			if(ballY - ballR > canvas.height + 20) {
+				gameReset();
+			}
+		}
+		
+		function paddleCollision() {
+			if(ballX + ballR > paddleX &&
+			   ballX - ballR < paddleX + paddleW &&
+			   ballY + ballR > paddleY &&
+			   ballY - ballR < paddleY + paddleH &&
+			   yVel > 0) {
+			   	yVel *= -1;
+			   	xVel = (ballX - (paddleX + paddleW/2)) * 0.2;
+			   }
+		}
+		
+		function gameReset() {
+			paddleReset();
+			gameStarted = false;
+			brickReset();
+		}
+		
+		function startGame() {
+			if(gameStarted == false) {
+			gameStarted = true;
+			xVel = 4- Math.random()*8;
+			yVel = -4;
+			}
+		}
+		
+		function ball() {
+			ballX += xVel;
+			ballY += yVel;
+			
+			if(gameStarted == false) {
+				ballX = paddleX + paddleW/2;
+				ballY = paddleY - ballR - 3;
+				xVel = 0;
+				yVel = 0;
+			}
+			
+			ctx.beginPath();
+			ctx.strokeStyle = "black";
+			ctx.lineWidth = 1;
+			ctx.fillStyle = "teal";
+			ctx.arc(ballX,ballY,ballR, 0, Math.PI*2);
+			ctx.fill();
+			ctx.stroke();
+			ctx.closePath();
+		}
+		
+		function paddle() {
+			paddleX += paddleVel;
+			
+			ctx.beginPath();
+			ctx.fillStyle = "crimson";
+			ctx.lineWidth = 2;
+			ctx.strokeStyle = "black";
+			ctx.rect(paddleX,paddleY, paddleW,paddleH);
+			ctx.fill();
+			ctx.stroke();
+			ctx.closePath();
+		}
+		
+		function paddleReset() {
+			paddleX = canvas.width/2 - paddleW/2;
+			paddleY = canvas.height - paddleH - 20;
+			paddleVel = 0;
+		}
+		
+		function left() {
+			paddleVel = -4;
+			startGame();
+		}
+		function right() {
+			paddleVel = 4;
+			startGame();
+		}
+		function clearM() {
+			paddleVel = 0;
+		}
+		
+	</script>
+	<style>
+		
+		canvas {
+			border: 2px solid black;
+			border-radius: 5px;
+		}
+		body {
+			background: grey;
+		}
+		div {
+			display: flex;
+			justify-content: center;
+		}
+		#left {
+			top: 0%;
+			left: 0%;
+			width: 50%;
+			height: 100%;
+			position: absolute;
+		}
+		#right {
+			top: 0%;
+			right: 0%;
+			width: 50%;
+			height: 100%;
+			position: absolute;
+		}
+		button:focus {
+			outline: none;
+		}
+		button {
+			background: rgba(0,0,0,0);
+			border: none;
+		}
+		
+	</style>
+	<body>
+		<div>
+		<canvas id="canvas" height="450px" width="350px"></canvas>
+		</div>
+		<div>
+			<button id="left" 
+			        ontouchstart="left()"
+			        ontouchend="clearM()"></button>
+			<button id="right"
+			        ontouchstart="right()"
+			        ontouchend="clearM()"></button>
+		</div>
+	</body>
+</html>

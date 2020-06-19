@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+</head>
+<body>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+
+<script>
+  var canvas;
+  var canvasContext;
+  
+  window.onload = function() {
+    //// removed a console.log() debug statement from here ////
+    // save the canvas for dimensions, and its 2d context for drawing to it
+    canvas = document.getElementById('gameCanvas');
+    canvasContext = canvas.getContext('2d');
+    
+    drawEverything(); ////
+  }
+  
+  function drawEverything() { ////
+    //// removed another console.log() debug statement from here ////
+    // clear the game view by filling it with black
+    canvasContext.fillStyle = 'black';
+    canvasContext.fillRect(0, 0, canvas.width, canvas.height); 
+
+    // draw a white circle ////
+    canvasContext.fillStyle = 'white'; ////
+    canvasContext.beginPath(); ////
+    canvasContext.arc(75, 75, 10, 0, Math.PI*2, true); ////
+    canvasContext.fill(); ////
+  } ////
+</script>
+
+</body>
+</html>

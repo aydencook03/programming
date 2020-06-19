@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <script>
+      	
+window.onload = function() {
+	canvas =
+  	document.getElementById("canvas");
+ ctx = canvas.getContext("2d");
+ setInterval(draw,1000/60);
+ 
+ createArray();
+ pushBricks();
+ brickReset();
+ 
+ paddleReset();
+}
+
+function createArray() {
+	for(var i=0; i<rowCount*colCount; i++) {
+		brickArray[i] = 1;
+	}
+}
+
+function pushBricks() {
+	for(var r=2; r<rowCount; r++) {
+		for(var c=0; c<colCount; c++) {
+			var array = c + (colCount * r);
+			
+			if(brickArray[array] == 1) {
+				var newBrick = new brickClass();
+				newBrick.x = c*brickWidth;
+				newBrick.y = r*brickHeight;
+				newBrick.w = brickWidth;
+				newBrick.h = brickHeight;
+				
+				brick.push(newBrick);
+			}
+		}
+	}
+}
+
+function brickClass() {
+	this.x = 0;
+	this.y = 0;
+	this.w = 0;
+	this.h = 0;
+	this.color = "teal";
+	
+	this.draw = function() {
+		
+		if(this.y + this.h <= brickHeight*4) {
+			this.color = "yellow";
+		}
+		if(this.y + this.h <= brickHeight *6 &&
+		   this.y + this.h > brickHeight *4) {
+			this.color = "orange"
+		}
+		if(this.y + this.h <= brickHeight *8 &&
+		   this.y + this.h > brickHeight *6) {
+			this.color = "crimson"
+		}
+		if(this.y + this.h <= brickHeight *10 &&
+		   this.y + this.h > brickHeight *8) {
+			this.color = "teal"
+		}
+		
+		ctx.beginPath();
+		ctx.strokeStyle = "black";
+		ctx.lineWidth = 1;
+		ctx.fillStyle = this.color;
+		ctx.rect(this.x, this.y, this.w, this.h);
+		ctx.fill();
+		ctx.stroke();
+		ctx.closePath();
+	}
+}
+
+var ballX = 1000;
+var ballY = -1000;
+var ballW = 10;
+var ballH = 10;
+var ballS = 5;
+var xVelocity = 0;
+var yVelocity = 0;
+
+var ballServed = false;
+
+var paddleX = 10;
+var paddleY = 10;
+var paddleW = 65;
+var paddleH = 10;
+var velocity = 0;
+var score = 0;
+var playerLives = 3;
+
+var brickWidth = 50;
+var brickHeight = 15;
+var colCount = 7;
+var rowCount = 10;
+var bricksLeft = colCount*rowCount;
+
+var brickArray = [];
+var brick = [];
+
+function ballReset() {
+	ballX = paddleX + paddleW/2;
+	ballY = paddleY - ballS - 10;
+	
+	xVelocity = 2 - Math.random()*4;
+	yVelocity = -3.5;
+	}
+	
+	function brickReset() {
+	bricksLeft = colCount*rowCount;
+	bricksLeft -= colCount * 2;
+	brick.splice(0, brick.length);
+	pushBricks();
+	}
+
+function paddleReset() {
+	paddleX = canvas.width/2 - paddleW/2;
+ paddleY = canvas.height - 15 - paddleH;
+}
+
+function checkCollision() {
+	//Right Wall
+	if(ballX + ballS >= canvas.width && 
+	   xVelocity > 0 ||
+	   ballX - ballS <= 0 &&
+	   xVelocity < 0) {
+	   	xVelocity *= -1;
+	   }
+	//Left Wall
+	if(ballY - ballS <= 0 &&
+	   yVelocity < 0) {
+		yVelocity *= -1;
+	}
+	
+	//Paddle
+	if(ballX + ballS >= paddleX &&
+	   ballX - ballS <= paddleX + paddleW &&
+	   ballY + ballS >= paddleY &&
+	   ballY - ballS <= paddleY + paddleH) {
+	   	yVelocity *= -1;
+	   	var delta = (ballX + ballW/2) - (paddleX + paddleW/2);
+	   	xVelocity = delta * 0.15;
+	   }
+	   
+	//Reset Ball At Bottom
+	if(ballY - ballS >= canvas.height) {
+		ballY = -20;
+		yVelocity = 0;
+		//paddleReset();
+		ballServed = false;
+		playerLives--;
+		//ballReset();
+		//brickReset();
+	}
+	//Paddle Can't Go Off Left Side
+	if(paddleX <= 0) {
+		velocity = 0;
+		paddleX = 1;
+	}
+	//Paddle Cant't Go Off Right Side
+	if(paddleX + paddleW >= canvas.width) {
+		velocity = 0;
+		paddleX = canvas.width-paddleW -1;
+	}
+	
+	//Cycle Through All Bricks
+	for(var i=0; i<brick.length; i++) {
+		//Bottom of Brick
+		if(ballX + ballS >= brick[i].x &&
+		   ballX - ballS <= brick[i].x + brick[i].w &&
+		   ballY - ballS <= brick[i].y + brick[i].h &&
+		   ballY - ballS >= brick[i].y + brick[i].h -5 &&
+		   yVelocity < 0) {
+		   	
+		   	if(brick[i].color == "teal") {
+		   		score += 5;
+		   		yVelocity *= -1.1;
+		   	}
+		   	if(brick[i].color == "crimson") {
+		   		score += 10;
+		   		yVelocity *= -1.2;
+		   	}
+		   	if(brick[i].color == "orange") {
+		   		score += 15;
+		   		yVelocity *= -1.3;
+		   	}
+		   	if(brick[i].color == "yellow") {
+		   		score += 20;
+		   		yVelocity *= -1.4;
+		   	}
+		   	brick.splice(i, 1);
+		   	bricksLeft--;
+		   }
+		//Left Side Of A Brick
+		else if(ballX + ballS >= brick[i].x &&
+		        ballX + ballS <= brick[i].x +5 &&
+		        ballY + ballS >= brick[i].y &&
+		        ballY - ballS <= brick[i].y + brick[i].h &&
+		        xVelocity > 0) {
+		    if(brick[i].color == "teal") {
+		   		score += 5;
+		   	}
+		   	if(brick[i].color == "crimson") {
+		   		score += 10;
+		   	}
+		   	if(brick[i].color == "orange") {
+		   		score += 15;
+		   	}
+		   	if(brick[i].color == "yellow") {
+		   		score += 20;
+		   	}
+		   	    xVelocity *= -1;
+		        	brick.splice(i, 1);
+		        	bricksLeft--;
+		        }
+		//Right Side Of A Brick
+		else if(ballX - ballS <= brick[i].x + brick[i].w &&
+		        ballX - ballS >= brick[i].x + brick[i].w -5 &&
+		        ballY + ballS >= brick[i].y &&
+		        ballY - ballS <= brick[i].y + brick[i].h &&
+		        xVelocity < 0) {
+		   if(brick[i].color == "teal") {
+		   		score += 5;
+		   	}
+		   	if(brick[i].color == "crimson") {
+		   		score += 10;
+		   	}
+		   	if(brick[i].color == "orange") {
+		   		score += 15;
+		   	}
+		   	if(brick[i].color == "yellow") {
+		   		score += 20;
+		   	}
+		   	    xVelocity *= -1;
+		        	brick.splice(i, 1);
+		        	bricksLeft--;
+		        }
+		//Top Of A Brick
+		else if(ballX + ballS >= brick[i].x &&
+		        ballX - ballS <= brick[i].x + brick[i].w &&
+		        ballY + ballS >= brick[i].y &&
+		        ballY + ballS <= brick[i].y +5 &&
+		        yVelocity > 0) {
+		    if(brick[i].color == "teal") {
+		   		score += 5;
+		   	}
+		   	if(brick[i].color == "crimson") {
+		   		score += 10;
+		   	}
+		   	if(brick[i].color == "orange") {
+		   		score += 15;
+		   	}
+		   	if(brick[i].color == "yellow") {
+		   		score += 20;
+		   	}
+		        	yVelocity *= -1;
+		        	brick.splice(i, 1);
+		        	bricksLeft--;
+		        }
+	}
+}
+
+//Left Button
+function left() {
+	velocity = -4;
+}
+//Right Button
+function right() {
+	velocity = 4;
+}
+//Stop Moving After Button Press
+function clearMove() {
+	velocity = 0;
+}
+
+//Detect Key Input
+document.addEventListener("keydown", keyDown);
+document.addEventListener("keyup", keyUp);
+
+function keyDown(e) {
+	if(e.keyCode == "37") {
+		velocity = -4;
+	}
+	if(e.keyCode == "39") {
+		velocity = 4;
+	}
+}
+function keyUp(e) {
+	if(e.keyCode == "37" ||
+	   e.keyCode == "39") {
+	   	velocity = 0;
+	   }
+}
+
+document.addEventListener("click", ballServe);
+
+//Serve The Ball
+function ballServe() {
+	if(ballServed == false) {
+	ballServed = true;
+	ballReset();
+	}
+}
+
+//Rectangle Code
+function drawRect(topLeftX,topLeftY, width,height, color) {
+ctx.fillStyle = color;	ctx.fillRect(topLeftX,topLeftY,width,height);
+}
+
+//document.addEventListener("mousemove", cheatFunction);
+
+function cheatFunction(e) {
+	var root = document.documentElement;
+	var rect = canvas.getBoundingClientRect();
+	
+	ballX = e.clientX - root.scrollLeft - rect.left;
+	ballY = e.clientY - root.scrollTop - rect.top;
+	
+	xVelocity = -0.3;
+	yVelocity = -0.3;
+}
+
+var usingMouseControls = confirm("Do you want to use mouse controls instead of keyboard controls?");
+
+document.addEventListener("mousemove", mouseMove);
+
+function mouseMove(e) {
+	var root = document.documentElement;
+	var rect = canvas.getBoundingClientRect();
+	if(usingMouseControls) {
+		paddleX = e.clientX - root.scrollLeft - rect.left - paddleW/2;
+	}
+}
+
+function draw() {
+	drawRect(0,0, canvas.width,canvas.height, "black");
+	
+	for(var i=0; i<brick.length; i++) {
+		brick[i].draw();
+	}
+	
+	checkCollision();
+	
+	if(yVelocity < -4) {
+		yVelocity = -4;
+	}
+	if(yVelocity > 4) {
+		yVelocity = 4;
+	}
+	
+	ballX += xVelocity;
+	ballY += yVelocity;
+	paddleX += velocity;
+	
+	//drawRect(ballX, ballY, ballW, ballH, "white");
+	
+	ctx.beginPath();
+	ctx.fillStyle = "crimson";
+	ctx.arc(ballX, ballY, ballS, 0, Math.PI*2);
+	ctx.fill();
+	ctx.closePath();
+	
+	ctx.beginPath();
+	ctx.fillStyle = "orange";
+	ctx.rect(paddleX + 5, paddleY, paddleW-10, paddleH);
+	ctx.arc(paddleX + paddleW - 5, paddleY + paddleH/2, 5, Math.PI, Math.PI/2);
+	ctx.arc(paddleX + 5, paddleY + paddleH/2, 5, 0, Math.PI*2);
+	ctx.fill();
+	ctx.closePath();
+	
+//	drawRect(paddleX, paddleY, paddleW, paddleH, "white");
+	
+	if(ballServed == false) {
+	//	drawRect(paddleX + paddleW/2 - ballW/2, paddleY - ballH-1, ballW, ballH, "white");
+	
+	ctx.beginPath();
+	ctx.fillStyle = "crimson";
+	ctx.arc(paddleX + paddleW/2, paddleY - ballS - 1, ballS, 0, Math.PI*2);
+	ctx.fill();
+	ctx.closePath();
+		
+		ctx.textAlign = "center";
+		ctx.fillStyle = "white";
+		ctx.font = "15px arial";
+		ctx.fillText("Click To Serve", canvas.width/2, canvas.height/2)
+	}
+	
+	ctx.textAlign = "right";
+	ctx.fillStyle = "white";
+	ctx.fillText("Bricks: " + bricksLeft, canvas.width-10, 15);
+	
+	ctx.textAlign = "left";
+	ctx.fillText("Lives: " + playerLives, 10, 15);
+	
+	ctx.textAlign = "center";
+	ctx.fillText("Score: " + score, canvas.width/2, 15);
+	
+	if(playerLives <= 0) {
+		paddleReset();
+		score = 0;
+		brickReset();
+		playerLives = 3;
+	}
+	
+	if(bricksLeft <= 0) {
+		ballY = -20;
+		yVelocity = 0;
+		ballServed = false;
+		brickReset();
+		score += 100;
+	}
+}     	
+      	
+      </script>
+      
+      <style>
+      	
+      	button {
+      		width: 200px;
+      		height: 70px;
+      		font-size: 25px;
+      		font-weight: bold;
+      		border-radius: 5px;
+      		margin: 5px 2.5px;
+      		background: #888;
+      	}
+      	button:focus {
+      		outline: none;
+      	}
+      	body {
+      		background: black;
+      	}
+      	
+      	</style>
+      
+   </head>
+   <body>
+   <div style="display: flex; justify-content:center">
+      <canvas id="canvas" width="350px" height="450px" style="display: block; margin: 0px auto; border: 1px dashed white; border-radius: 5px;"></canvas>
+      </div>
+      
+      <div style="display: flex; justify-content: center">
+      	<button id="leftButton" 
+      	        onmousedown="left()"
+      	        onmouseup="clearMove()"
+      	        ontouchstart="left()"
+      	        ontouchend="clearMove()">
+      	<button id="rightButton" 
+      	        onmousedown="right()"
+      	        onmouseup="clearMove()"
+      	        ontouchstart="right()"
+      	        ontouchend="clearMove()">
+      	</button>
+      	
+      	</div>
+      
+   </body>
+</html>
