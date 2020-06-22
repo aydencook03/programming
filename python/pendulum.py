@@ -5,8 +5,9 @@ import math
 
 # setup window + canvas
 root = Tk()
+root.title("Pendulum Simulation")
 root.resizable(0,0)
-canvas = Canvas(root, width = 600, height = 600, bg="grey")
+canvas = Canvas(root, width = 600, height = 600, bg="grey", bd=0)
 canvas.pack()
 root.update()
 
