@@ -1,6 +1,6 @@
 #! /usr/bin/python
 from tkinter import *
-from time import sleep
+from threading import Timer
 import math
 
 # setup window + canvas
@@ -49,9 +49,14 @@ def moveObjects():
     aV += aA/fps
     a += aV/fps
 
-while True: # main loop
+
+def mainLoop():
+    canvas.delete(ALL)
     drawObjects()
     root.update()
-    sleep(round(1/fps, 2))
-    canvas.delete(ALL)
+    root.update_idletasks()
     moveObjects()
+    root.after(round(1000/fps), mainLoop)
+
+mainLoop()
+root.mainloop()
