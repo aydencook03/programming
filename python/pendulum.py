@@ -30,7 +30,10 @@ def mouseDownMotion(eventData):
     
     mouseX = eventData.x
     mouseY = canvas.winfo_height() - eventData.y
-
+    
+def keyPress(eventData):
+    if eventData.char == 'q':
+        root.quit()
 
 
 # setup window + canvas
@@ -41,6 +44,7 @@ canvas = Canvas(root, width = 600, height = 600, bg="grey", bd=0)
 canvas.bind("<ButtonPress-1>", mouseDown) # binds an event handler to the canvas widget, calls mouseDown()
 canvas.bind("<ButtonRelease-1>", mouseUp)
 canvas.bind("<B1-Motion>", mouseDownMotion) # event is called if mouse is moved while left button is down
+root.bind("<Key>", keyPress)
 canvas.pack()
 root.update()
 
