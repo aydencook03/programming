@@ -38,8 +38,9 @@ class Body:
         self.yA = kwargs.get('yA', 0)
         self.aA = kwargs.get('aA', 0)
         
-        self.radius = kwargs.get('radius', 10)
         self.mass = kwargs.get('mass', 6)
+        self.density = kwargs.get('density', 0.0075)
+        self.radius = kwargs.get('radius', math.sqrt(self.mass/(math.pi * self.density)))
         self.color = kwargs.get('color', 'crimson')
         self.lineWidth = kwargs.get('lineWidth', 2)
         
@@ -88,8 +89,8 @@ def bodyHandle():
             bodies[i].move()
 
 
-bodies.append(Body(x = canvas.winfo_width()/2, y = canvas.winfo_height()/2 + 90, xV = 150, color = 'teal', mass = 1, radius = 4))
-bodies.append(Body(x = canvas.winfo_width()/2, y = canvas.winfo_height()/2, xV = -20))
+bodies.append(Body(x = canvas.winfo_width()/2, y = canvas.winfo_height()/2 + 200, xV = 150, color = 'teal', mass = 1))
+bodies.append(Body(x = canvas.winfo_width()/2, y = canvas.winfo_height()/2, xV = -10, mass = 24))
 
 def mainLoop():
     root.after(round(1000/fps), mainLoop)
