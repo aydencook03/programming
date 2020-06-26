@@ -35,17 +35,23 @@ def keyPress(eventData):
     if eventData.char == 'q':
         root.quit()
 
+def configureWin(data):
+    global pinX
+    global pinY
+    pinX = data.width/2
+    pinY = data.height/2
+
 
 # setup window + canvas
 root = Tk()
 root.title("Pendulum Simulation")
-root.resizable(0,0)
 canvas = Canvas(root, width = 600, height = 600, bg="grey29", bd=0, highlightthickness = 0)
 canvas.bind("<ButtonPress-1>", mouseDown) # binds an event handler to the canvas widget, calls mouseDown()
 canvas.bind("<ButtonRelease-1>", mouseUp)
 canvas.bind("<B1-Motion>", mouseDownMotion) # event is called if mouse is moved while left button is down
+canvas.bind("<Configure>", configureWin) # called when window is resized
 root.bind("<Key>", keyPress)
-canvas.pack()
+canvas.pack(fill = BOTH, expand = 1)
 root.update()
 
 # world variables
@@ -55,6 +61,7 @@ gravity = -1250
 # Pendulum variables
 length = 240
 radius = 15
+lineWidth = 2
 pinX = canvas.winfo_width()/2
 pinY = canvas.winfo_height()/2
 a = 179 # angle to vertical
@@ -65,9 +72,9 @@ aV = 0 # angular velocity
 
 # two wrapper functions to draw shapes
 def drawLine(x1,y1,x2,y2):
-    id = canvas.create_line(x1,canvas.winfo_height()-y1,x2,canvas.winfo_height()-y2, width = 2)
+    id = canvas.create_line(x1,canvas.winfo_height()-y1,x2,canvas.winfo_height()-y2, width = lineWidth)
 def drawCircle(x,y,r,c):
-    id = canvas.create_oval(x - r,canvas.winfo_height()-y -r,x+r,canvas.winfo_height()-y+r, fill = c, width = 2)
+    id = canvas.create_oval(x - r,canvas.winfo_height()-y -r,x+r,canvas.winfo_height()-y+r, fill = c, width = lineWidth)
 
 
 
@@ -79,7 +86,7 @@ def drawObjects():
         y = mouseY
         endX = mouseX
         endY = mouseY
-        length = math.sqrt(math.pow(canvas.winfo_height()/2 - mouseY, 2) + math.pow(canvas.winfo_width()/2 - mouseX, 2))
+        length = math.sqrt(math.pow(pinY - mouseY, 2) + math.pow(pinX - mouseX, 2))
     else:
         x = pinX + length*math.sin(a)
         y = pinY - length*math.cos(a)
@@ -98,26 +105,26 @@ def moveObjects():
         aA = 0
         aV = 0
         
-        if mouseX > canvas.winfo_width()/2:
-            if mouseY == canvas.winfo_height()/2:
+        if mouseX > pinX:
+            if mouseY == pinY:
                 a = math.pi/2
             else:
-                a = math.atan((mouseX-canvas.winfo_width()/2)/(canvas.winfo_height()/2 - mouseY))
-                if mouseY > canvas.winfo_height()/2:
+                a = math.atan((mouseX-pinX)/(pinY - mouseY))
+                if mouseY > pinY:
                     a += math.pi
                     
-        elif mouseX == canvas.winfo_width()/2: 
-            if mouseY >= canvas.winfo_height()/2:
+        elif mouseX == pinX: 
+            if mouseY >= pinY:
                 a = math.pi
             else:
                 a = 0
                 
-        elif mouseX < canvas.winfo_width()/2:
-            if mouseY == canvas.winfo_height()/2:
+        elif mouseX < pinX:
+            if mouseY == pinY:
                 a = -math.pi/2
             else:
-                a = math.atan((mouseX-canvas.winfo_width()/2)/(canvas.winfo_height()/2 - mouseY)) + math.pi
-                if mouseY < canvas.winfo_height()/2:
+                a = math.atan((mouseX-pinX)/(pinY - mouseY)) + math.pi
+                if mouseY < pinY:
                     a += math.pi
     else:
         aA = gravity/length * math.sin(a)

@@ -6,13 +6,14 @@ import math
 
 root = Tk()
 root.title("N-Body Physics Simulation")
-root.resizable(0,0)
-canvas = Canvas(root, width = root.winfo_screenwidth(), height = root.winfo_screenheight(), bd = 0, bg = "grey27", highlightthickness = 0)
+canvas = Canvas(root, width = 600, height = 600, bd = 0, bg = "grey27", highlightthickness = 0)
 def key(data):
     if data.char == 'q':
         root.quit()
+    if data.char == 'r':
+        reset()
 root.bind('<Key>', key)
-canvas.pack()
+canvas.pack(fill = BOTH, expand = 1)
 root.update()
 
 # simulation variables
@@ -152,15 +153,17 @@ def bodyHandle():
                     bodies[i].yA += accel[1]
 
 
-bodies.append(Body(x = canvas.winfo_width()/2, y = canvas.winfo_height()/2 + 200, xV = 190, color = 'teal', mass = 1))
-bodies.append(Body(x = canvas.winfo_width()/2, y = canvas.winfo_height()/2, xV = -10, mass = 24))
+def reset():
+    canvas.delete(ALL)
+    bodies.clear()
+    bodies.append(Body(x = canvas.winfo_width()/2, y = canvas.winfo_height()/2 + 200, xV = 190, color = 'teal', mass = 1))
+    bodies.append(Body(x = canvas.winfo_width()/2, y = canvas.winfo_height()/2, xV = -10, mass = 24))
 
 def mainLoop():
     root.after(round(1000/fps), mainLoop)
     canvas.delete(ALL)
     bodyHandle() # draws and moves each Body in bodies[]
-    Vect(bodies[0].xA/2, bodies[0].yA/2).draw(bodies[0].x, bodies[0].y, color = "yellow")
-    Vect(bodies[0].xV/2, bodies[0].yV/2).draw(bodies[0].x, bodies[0].y, color = "red")
 
+reset()
 mainLoop()
 root.mainloop()
