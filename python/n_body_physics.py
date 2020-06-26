@@ -7,7 +7,7 @@ import math
 root = Tk()
 root.title("N-Body Physics Simulation")
 root.resizable(0,0)
-canvas = Canvas(root, width = 600, height = 600, bd = 0, bg = "grey27", highlightthickness = 0)
+canvas = Canvas(root, width = root.winfo_screenwidth(), height = root.winfo_screenheight(), bd = 0, bg = "grey27", highlightthickness = 0)
 def key(data):
     if data.char == 'q':
         root.quit()
@@ -155,6 +155,8 @@ def mainLoop():
     root.after(round(1000/fps), mainLoop)
     canvas.delete(ALL)
     bodyHandle() # draws and moves each Body in bodies[]
+    Vect(bodies[0].xA/2, bodies[0].yA/2).draw(bodies[0].x, bodies[0].y, color = "yellow")
+    Vect(bodies[0].xV/2, bodies[0].yV/2).draw(bodies[0].x, bodies[0].y, color = "red")
 
 mainLoop()
 root.mainloop()
