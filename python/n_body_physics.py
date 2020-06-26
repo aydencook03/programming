@@ -25,6 +25,8 @@ boundaryCollision = True # if true, objects collide with edges of canvas
 
 bodies = [] # a list of each Body object
 
+##########################################################################################################
+
 class Body:
     def __init__(self, **kwargs):
         # canvas widget that object belongs to, defaults to 'canvas' variable
@@ -87,7 +89,8 @@ class Body:
         yA = const * (y2 -y1)
         return [xA, yA]
     
-    
+##########################################################################################################
+
 class Vect:
     def __init__(self, i, j):
         self.i = i
@@ -129,7 +132,8 @@ class Vect:
         self.width = kwargs.get('width', 2)
         
         self.canvas.create_line(fromX, self.canvas.winfo_height() - fromY, fromX + self.i, self.canvas.winfo_height() - (fromY + self.j), width = self.width, fill = self.color)
-
+        
+##########################################################################################################
 
 def bodyHandle():
     for i in range(len(bodies)):

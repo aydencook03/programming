@@ -40,7 +40,7 @@ def keyPress(eventData):
 root = Tk()
 root.title("Pendulum Simulation")
 root.resizable(0,0)
-canvas = Canvas(root, width = 600, height = 600, bg="grey", bd=0)
+canvas = Canvas(root, width = 600, height = 600, bg="grey29", bd=0, highlightthickness = 0)
 canvas.bind("<ButtonPress-1>", mouseDown) # binds an event handler to the canvas widget, calls mouseDown()
 canvas.bind("<ButtonRelease-1>", mouseUp)
 canvas.bind("<B1-Motion>", mouseDownMotion) # event is called if mouse is moved while left button is down
