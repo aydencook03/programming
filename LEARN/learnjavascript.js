@@ -168,7 +168,7 @@ var myArray0 = [32,false,"js",12,56,90];
 myArray0.join(";"); // = "32;false;js;12;56;90"
 
 // Get subarray of elements from index 1 (include) to 4 (exclude)
-myArray0.slice(1,4); // = [false,"js",12]
+//myArray0.slice(1,4); // = [false,"js",12]
 
 // Remove 4 elements starting from index 2, and insert there strings
 // "hi","wr" and "ld"; return removed subarray
