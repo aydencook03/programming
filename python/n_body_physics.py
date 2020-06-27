@@ -10,18 +10,30 @@ canvas = Canvas(root, width = 600, height = 600, bd = 0, bg = "grey27", highligh
 def key(data):
     if data.char == 'q':
         root.quit()
-    if data.char == 'r':
+    elif data.char == 'r':
         reset()
+    elif data.char == 'g':
+        global gravityOn
+        gravityOn = not gravityOn
 root.bind('<Key>', key)
 canvas.pack(fill = BOTH, expand = 1)
 root.update()
 
 # simulation variables
-fps = 60
-gravity_c = 517500 # universe's gravitational constant
 running = True
-gravityOn = True
+fps = 120
+
+gravityOn = False
+gravity_c = 214000 # universe's gravitational constant
+
 boundaryCollision = True # if true, objects collide with edges of canvas
+wallDampen = 0.6
+
+bodyCollision = True
+bodyDampen = 0.7
+
+falling = True
+acceleration = 400
 
 
 bodies = [] # a list of each Body object
@@ -50,7 +62,7 @@ class Body:
         
         # is object influenced by gravity... defaults to value of 'gravityOn' variable
         self.gravity = kwargs.get('gravityOn', gravityOn)
-        
+
         self.mass = kwargs.get('mass', 6)
         self.density = kwargs.get('density', 0.008)
         self.radius = kwargs.get('radius', math.sqrt(self.mass/(math.pi * self.density)))
@@ -66,10 +78,18 @@ class Body:
         self.a += self.aV/fps
         
         if self.edgeBlock:
-            if self.x + self.radius > self.canvas.winfo_width() or self.x - self.radius < 0:
-                self.xV *= -1
-            if self.y + self.radius > self.canvas.winfo_height() or self.y - self.radius < 0:
-                self.yV *= -1
+            if self.x + self.radius > self.canvas.winfo_width():
+                self.x = self.canvas.winfo_width() - self.radius
+                self.xV *= -wallDampen
+            elif self.x - self.radius < 0:
+                self.x = self.radius
+                self.xV *= -wallDampen
+            if self.y + self.radius > self.canvas.winfo_height():
+                self.y = self.canvas.winfo_height() - self.radius
+                self.yV *= -wallDampen
+            elif self.y - self.radius < 0:
+                self.y = self.radius
+                self.yV *= -wallDampen
     
     def draw(self):
         x1 = self.x - self.radius
@@ -121,7 +141,7 @@ class Vect:
         return Vect(self.i/self.mag, self.j/self.mag)
     
     def dot(self, other): # dot product
-        return (self.i * other.i) + (self.j * other.j)
+        return ((self.i * other.i) + (self.j * other.j))
     
     def cross(self, other): # returns the magnitude of the cross product vector
         return ((self.i * other.j) - (self.j * other.i))
@@ -141,23 +161,65 @@ def bodyHandle():
         bodies[i].draw()
         
         if running:
+            if falling:
+                bodies[i].yV -= acceleration/fps
             bodies[i].move()
         
-        if gravityOn:
-            bodies[i].xA = 0
-            bodies[i].yA = 0
+        bodies[i].xA = 0
+        bodies[i].yA = 0
+        if gravityOn or bodyCollision:
             for b in range(len(bodies)):
-                if i != b and bodies[i].gravity:
-                    accel = bodies[i].gravityCalc(bodies[b])
-                    bodies[i].xA += accel[0]
-                    bodies[i].yA += accel[1]
+                if i != b:
+                    if bodyCollision:
+                        x1 = bodies[i].x
+                        y1 = bodies[i].y
+                        r1 = bodies[i].radius
+                        x2 = bodies[b].x
+                        y2 = bodies[b].y
+                        r2 = bodies[b].radius
+                        dist = Vect(x2-x1, y2-y1)
+                        if dist.mag < r1 + r2:
+                            m1 = bodies[i].mass
+                            m2 = bodies[b].mass
+                            overlap = (r1 + r2) - dist.mag
+                            bodies[i].x -= overlap/2 * dist.norm.i
+                            bodies[i].y -= overlap/2 * dist.norm.j
+                            bodies[b].x += overlap/2 * dist.norm.i
+                            bodies[b].y += overlap/2 * dist.norm.j
+                            
+                            norm = Vect(-dist.j, dist.i).norm # along 'wall' of collision
+                            perp = dist.norm # perpendicular to radius
+                            vel1 = Vect(bodies[i].xV, bodies[i].yV)
+                            vel2 = Vect(bodies[b].xV, bodies[b].yV)
+
+                            nV1Perp = (vel1.dot(perp))*(m1-m2)/(m1+m2) + (vel2.dot(perp))*(2*m2)/(m1+m2)
+                            nV2Perp = (vel1.dot(perp))*(2*m1)/(m1+m2) + (vel2.dot(perp))*(m2-m1)/(m1+m2)
+                            
+                            bodies[i].xV = vel1.dot(norm)*norm.i + nV1Perp*perp.i * bodyDampen
+                            bodies[i].yV = vel1.dot(norm)*norm.j + nV1Perp*perp.j * bodyDampen
+                            
+                            bodies[b].xV = vel2.dot(norm)*norm.i + nV2Perp*perp.i * bodyDampen
+                            bodies[b].yV = vel2.dot(norm)*norm.j + nV2Perp*perp.j * bodyDampen
+                            
+                    if gravityOn:
+                        if bodies[i].gravity:
+                            accel = bodies[i].gravityCalc(bodies[b])
+                            bodies[i].xA += accel[0]
+                            bodies[i].yA += accel[1]
+                    
 
 
 def reset():
     canvas.delete(ALL)
     bodies.clear()
-    bodies.append(Body(x = canvas.winfo_width()/2, y = canvas.winfo_height()/2 + 200, xV = 190, color = 'teal', mass = 1))
-    bodies.append(Body(x = canvas.winfo_width()/2, y = canvas.winfo_height()/2, xV = -10, mass = 24))
+    
+    for i in range(20):
+        mass = random.randint(1, 24)
+        x = random.randint(0, canvas.winfo_width())
+        y = random.randint(0, canvas.winfo_height())
+        xV = random.randint(-250, 250)
+        yV = random.randint(-250, 250)
+        bodies.append(Body(x = x, y = y, xV = xV, yV = yV, mass = mass))
 
 def mainLoop():
     root.after(round(1000/fps), mainLoop)
