@@ -178,7 +178,7 @@ def bodyHandle():
                         y2 = bodies[b].y
                         r2 = bodies[b].radius
                         dist = Vect(x2-x1, y2-y1)
-                        if dist.mag < r1 + r2:
+                        if dist.mag <= r1 + r2:
                             m1 = bodies[i].mass
                             m2 = bodies[b].mass
                             overlap = (r1 + r2) - dist.mag
