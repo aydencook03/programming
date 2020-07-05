@@ -1,5 +1,0 @@
-#! /usr/bin/bash
-
-python __setup__.py build_ext --inplace
-rm -r build n_body_physics.c
-clear
