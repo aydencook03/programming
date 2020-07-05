@@ -19,20 +19,22 @@ root.bind('<Key>', key)
 canvas.pack(fill = BOTH, expand = 1)
 root.update()
 
+##########################################################################################################
+
 # simulation variables
 running = True
 fps = 120
 
-gravityOn = True
+gravityOn = False
 gravity_c = 334000 # universe's gravitational constant
 
 boundaryCollision = True # if true, objects collide with edges of canvas
 wallDampen = 0.8
 
 bodyCollision = True
-bodyDampen = 0.8
+bodyDampen = 0.6
 
-falling = False
+falling = True
 acceleration = 400
 
 
@@ -236,7 +238,7 @@ def reset():
     Body.id = -1
     collidingPairs.clear()
     
-    for i in range(40):
+    for i in range(70):
         mass = randint(1, 24)
         x = randint(0, canvas.winfo_width())
         y = randint(0, canvas.winfo_height())
@@ -248,6 +250,7 @@ def reset():
     bodies.append(Body(x = canvas.winfo_width()/2, y = canvas.winfo_height()/2, mass = 24, xV = -10.83))
     bodies.append(Body(x = canvas.winfo_width()/2, y = canvas.winfo_height()/2 + 150, mass = 1, xV = 260, color = 'teal'))
     '''
+    
 def mainLoop():
     root.after(round(1000/fps), mainLoop)
     canvas.delete(ALL)

@@ -1,0 +1,6 @@
+#! /usr/bin/python
+try:
+    import n_body_physics
+except:
+    with open('n_body_physics.pyx') as f:
+        exec(f.read())

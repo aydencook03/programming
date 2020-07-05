@@ -27,7 +27,7 @@ while True:
 
     # Send HTTP response
     response = 'HTTP/1.0 200 OK\n\nHello World'
-    client_connection.sendall(response.encode())
+    client_connection.sendall(response.encode()) # sends response encode in UTF-8 (default)
     client_connection.close()
 
 # Close socket
