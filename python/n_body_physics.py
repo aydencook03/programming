@@ -1,8 +1,8 @@
 #! /usr/bin/python
 
 from tkinter import *
-import random
-import math
+from random import randint
+from math import sin, cos
 
 root = Tk()
 root.title("N-Body Physics Simulation")
@@ -27,20 +27,22 @@ gravityOn = True
 gravity_c = 334000 # universe's gravitational constant
 
 boundaryCollision = True # if true, objects collide with edges of canvas
-wallDampen = 0.6
+wallDampen = 0.8
 
 bodyCollision = True
-bodyDampen = 0.3
+bodyDampen = 0.8
 
 falling = False
 acceleration = 400
 
 
 bodies = [] # a list of each Body object
+collidingPairs = [] # a list of pairs of colliding bodies
 
 ##########################################################################################################
 
 class Body:
+    id = -1
     def __init__(self, **kwargs):
         # canvas widget that object belongs to, defaults to 'canvas' variable
         self.canvas = kwargs.get('canvas', canvas)
@@ -57,6 +59,9 @@ class Body:
         self.yA = kwargs.get('yA', 0)
         self.aA = kwargs.get('aA', 0)
         
+        Body.id += 1
+        self.id = Body.id
+        
         # does object bounce off canvas edge... defaults to value of 'boundaryCollision' variable
         self.edgeBlock = kwargs.get('edgeBlock', boundaryCollision)
         
@@ -65,7 +70,8 @@ class Body:
 
         self.mass = kwargs.get('mass', 6)
         self.density = kwargs.get('density', 0.008)
-        self.radius = kwargs.get('radius', math.sqrt(self.mass/(math.pi * self.density)))
+        pi = 3.141592653589793
+        self.radius = kwargs.get('radius', (self.mass/(pi * self.density))**0.5)
         self.color = kwargs.get('color', 'crimson')
         self.lineWidth = kwargs.get('lineWidth', 2)
         
@@ -97,15 +103,17 @@ class Body:
         x2 = self.x + self.radius
         y2 = self.canvas.winfo_height() - self.y + self.radius
         self.canvas.create_oval(x1, y1, x2, y2, fill = self.color, width = self.lineWidth)
-        self.canvas.create_line(self.x, self.canvas.winfo_height() - self.y, self.x + self.radius*math.cos(self.a), self.canvas.winfo_height()-(self.y+self.radius*math.sin(self.a)), width = self.lineWidth)
+        self.canvas.create_line(self.x, self.canvas.winfo_height() - self.y, self.x + self.radius*cos(self.a), self.canvas.winfo_height()-(self.y+self.radius*sin(self.a)), width = self.lineWidth)
+        
+        #self.canvas.create_text(self.x, self.canvas.winfo_height() - self.y, text=self.id)
         
     def gravityCalc(self, otherObject): #calculates gravitational attraction to 'otherObject'
         x1 = self.x
         y1 = self.y
         x2 = otherObject.x
         y2 = otherObject.y
-        dist = math.sqrt(math.pow(x2-x1, 2) + math.pow(y2 - y1, 2))
-        const = (gravity_c*otherObject.mass)/(math.pow(dist,3))
+        distSquare = ((x2-x1)**2 + (y2 - y1)**2)
+        const = (gravity_c*otherObject.mass)/((distSquare)**(3/2))
         xA = const * (x2 - x1)
         yA = const * (y2 -y1)
         return [xA, yA]
@@ -159,7 +167,8 @@ class Vect:
 def bodyHandle():
     for i in range(len(bodies)):
         bodies[i].draw()
-        
+            
+    
         if running:
             if falling:
                 bodies[i].yV -= acceleration/fps
@@ -167,6 +176,7 @@ def bodyHandle():
         
         bodies[i].xA = 0
         bodies[i].yA = 0
+        collidingPairs.clear()
         if gravityOn or bodyCollision:
             for b in range(len(bodies)):
                 if i != b:
@@ -178,51 +188,66 @@ def bodyHandle():
                         y2 = bodies[b].y
                         r2 = bodies[b].radius
                         dist = Vect(x2-x1, y2-y1)
-                        if dist.mag <= r1 + r2:
-                            m1 = bodies[i].mass
-                            m2 = bodies[b].mass
+                        if dist.mag <= r1 + r2: # handles static collision
                             overlap = (r1 + r2) - dist.mag
                             bodies[i].x -= overlap/2 * dist.norm.i
                             bodies[i].y -= overlap/2 * dist.norm.j
                             bodies[b].x += overlap/2 * dist.norm.i
                             bodies[b].y += overlap/2 * dist.norm.j
-                            
-                            norm = Vect(-dist.j, dist.i).norm # along 'wall' of collision
-                            perp = dist.norm # perpendicular to radius
-                            vel1 = Vect(bodies[i].xV, bodies[i].yV)
-                            vel2 = Vect(bodies[b].xV, bodies[b].yV)
-
-                            nV1Perp = (vel1.dot(perp))*(m1-m2)/(m1+m2) + (vel2.dot(perp))*(2*m2)/(m1+m2)
-                            nV2Perp = (vel1.dot(perp))*(2*m1)/(m1+m2) + (vel2.dot(perp))*(m2-m1)/(m1+m2)
-                            
-                            bodies[i].xV = vel1.dot(norm)*norm.i + nV1Perp*perp.i * bodyDampen
-                            bodies[i].yV = vel1.dot(norm)*norm.j + nV1Perp*perp.j * bodyDampen
-                            
-                            bodies[b].xV = vel2.dot(norm)*norm.i + nV2Perp*perp.i * bodyDampen
-                            bodies[b].yV = vel2.dot(norm)*norm.j + nV2Perp*perp.j * bodyDampen
+                            collidingPairs.append([bodies[i], bodies[b]])
                             
                     if gravityOn:
                         if bodies[i].gravity:
                             accel = bodies[i].gravityCalc(bodies[b])
                             bodies[i].xA += accel[0]
                             bodies[i].yA += accel[1]
+                            
+        for i in range(len(collidingPairs)):
+            x1 = collidingPairs[i][0].x
+            y1 = collidingPairs[i][0].y
+            r1 = collidingPairs[i][0].radius
+            x2 = collidingPairs[i][1].x
+            y2 = collidingPairs[i][1].y
+            r2 = collidingPairs[i][1].radius
+            dist = Vect(x2-x1, y2-y1)
+            m1 = collidingPairs[i][0].mass
+            m2 = collidingPairs[i][1].mass
+            
+            norm = Vect(-dist.j, dist.i).norm # along 'wall' of collision
+            perp = dist.norm # perpendicular to radius
+            
+            vel1 = Vect(collidingPairs[i][0].xV, collidingPairs[i][0].yV)
+            vel2 = Vect(collidingPairs[i][1].xV, collidingPairs[i][1].yV)
+            
+            nV1Perp = (vel1.dot(perp))*(m1-m2)/(m1+m2) + (vel2.dot(perp))*(2*m2)/(m1+m2)
+            nV2Perp = (vel1.dot(perp))*(2*m1)/(m1+m2) + (vel2.dot(perp))*(m2-m1)/(m1+m2)
+            
+            collidingPairs[i][0].xV = vel1.dot(norm)*norm.i + nV1Perp*perp.i * bodyDampen
+            collidingPairs[i][0].yV = vel1.dot(norm)*norm.j + nV1Perp*perp.j * bodyDampen
+                            
+            collidingPairs[i][1].xV = vel2.dot(norm)*norm.i + nV2Perp*perp.i * bodyDampen
+            collidingPairs[i][1].yV = vel2.dot(norm)*norm.j + nV2Perp*perp.j * bodyDampen
                     
 
 
 def reset():
     canvas.delete(ALL)
     bodies.clear()
-    '''
-    for i in range(10):
-        mass = random.randint(1, 24)
-        x = random.randint(0, canvas.winfo_width())
-        y = random.randint(0, canvas.winfo_height())
-        xV = random.randint(-250, 250)
-        yV = random.randint(-250, 250)
+    Body.id = -1
+    collidingPairs.clear()
+    
+    for i in range(40):
+        mass = randint(1, 24)
+        x = randint(0, canvas.winfo_width())
+        y = randint(0, canvas.winfo_height())
+        bounds = 200
+        xV = randint(-bounds, bounds)
+        yV = randint(-bounds, bounds)
         bodies.append(Body(x = x, y = y, xV = xV, yV = yV, mass = mass))
     '''
     bodies.append(Body(x = canvas.winfo_width()/2, y = canvas.winfo_height()/2, mass = 24, xV = -10.83))
     bodies.append(Body(x = canvas.winfo_width()/2, y = canvas.winfo_height()/2 + 150, mass = 1, xV = 260, color = 'teal'))
+    '''
 def mainLoop():
     root.after(round(1000/fps), mainLoop)
     canvas.delete(ALL)
