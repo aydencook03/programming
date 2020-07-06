@@ -20,8 +20,8 @@ canvas.pack(fill = BOTH, expand = 1)
 root.update()
 
 ##########################################################################################################
+# Simulation Variables
 
-# simulation variables
 running = True
 fps = 120
 
@@ -29,12 +29,12 @@ gravityOn = False
 gravity_c = 334000 # universe's gravitational constant
 
 boundaryCollision = True # if true, objects collide with edges of canvas
-wallDampen = 0.8
+wallDampen = 1
 
 bodyCollision = True
-bodyDampen = 0.6
+bodyDampen = 1
 
-falling = True
+falling = False
 acceleration = 400
 
 
@@ -42,6 +42,7 @@ bodies = [] # a list of each Body object
 collidingPairs = [] # a list of pairs of colliding bodies
 
 ##########################################################################################################
+# Body class
 
 class Body:
     id = -1
@@ -121,6 +122,7 @@ class Body:
         return [xA, yA]
     
 ##########################################################################################################
+# Vector class
 
 class Vect:
     def __init__(self, i, j):
@@ -165,6 +167,7 @@ class Vect:
         self.canvas.create_line(fromX, self.canvas.winfo_height() - fromY, fromX + self.i, self.canvas.winfo_height() - (fromY + self.j), width = self.width, fill = self.color)
         
 ##########################################################################################################
+# Simulation Code
 
 def bodyHandle():
     for i in range(len(bodies)):
@@ -238,7 +241,7 @@ def reset():
     Body.id = -1
     collidingPairs.clear()
     
-    for i in range(70):
+    for i in range(50):
         mass = randint(1, 24)
         x = randint(0, canvas.winfo_width())
         y = randint(0, canvas.winfo_height())
