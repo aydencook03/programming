@@ -1,12 +1,18 @@
 #! /usr/bin/python
 
-from tkinter import *
+from tkinter import Tk, Canvas
 from random import randint
 from math import sin, cos
 
 root = Tk()
 root.title("N-Body Physics Simulation")
 canvas = Canvas(root, width = 600, height = 600, bd = 0, bg = "grey27", highlightthickness = 0)
+
+mouseDown = False
+nothingGrabbed = True
+mouseX = 0
+mouseY = 0
+
 def key(data):
     if data.char == 'q':
         root.quit()
@@ -15,8 +21,37 @@ def key(data):
     elif data.char == 'g':
         global gravityOn
         gravityOn = not gravityOn
+        
+def buttonPress(data):
+    global mouseDown
+    global nothingGrabbed
+    mouseDown = True
+    nothingGrabbed = True
+    global mouseX
+    global mouseY
+    mouseX = data.x
+    mouseY = canvas.winfo_height() - data.y
+
+def buttonRelease(data):
+    global mouseDown
+    global nothingGrabbed
+    mouseDown = False
+    nothingGrabbed = True
+    for i in range(len(bodies)):
+        bodies[i].grabbed = False
+    
+def motion(data):
+    if mouseDown:
+        global mouseX
+        global mouseY
+        mouseX = data.x
+        mouseY = canvas.winfo_height() - data.y
+   
 root.bind('<Key>', key)
-canvas.pack(fill = BOTH, expand = 1)
+canvas.bind('<ButtonPress-1>', buttonPress)
+canvas.bind('<ButtonRelease-1>', buttonRelease)
+canvas.bind('<B1-Motion>', motion)
+canvas.pack(fill = 'both', expand = 1)
 root.update()
 
 ##########################################################################################################
@@ -62,6 +97,8 @@ class Body:
         self.yA = kwargs.get('yA', 0)
         self.aA = kwargs.get('aA', 0)
         
+        self.grabbed = False
+        
         Body.id += 1
         self.id = Body.id
         
@@ -99,6 +136,10 @@ class Body:
             elif self.y - self.radius < 0:
                 self.y = self.radius
                 self.yV *= -wallDampen
+                
+        if self.grabbed:
+            self.x = mouseX
+            self.y = mouseY
     
     def draw(self):
         x1 = self.x - self.radius
@@ -170,7 +211,14 @@ class Vect:
 # Simulation Code
 
 def bodyHandle():
+    global nothingGrabbed
     for i in range(len(bodies)):
+        
+        if mouseDown and nothingGrabbed:
+            if abs((mouseX - bodies[i].x)**2 + (mouseY - bodies[i].y)**2) <= bodies[i].radius ** 2:
+                bodies[i].grabbed = True
+                nothingGrabbed = False
+                
         bodies[i].draw()
             
     
@@ -236,7 +284,7 @@ def bodyHandle():
 
 
 def reset():
-    canvas.delete(ALL)
+    canvas.delete('all')
     bodies.clear()
     Body.id = -1
     collidingPairs.clear()
@@ -256,7 +304,7 @@ def reset():
     
 def mainLoop():
     root.after(round(1000/fps), mainLoop)
-    canvas.delete(ALL)
+    canvas.delete('all')
     bodyHandle() # draws and moves each Body in bodies[]
 
 reset()
