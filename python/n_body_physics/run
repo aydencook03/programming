@@ -1,8 +1,0 @@
-#! /usr/bin/bash
-
-echo $'from setuptools import setup;from Cython.Build import cythonize\nsetup(\n\text_modules = cythonize("n_body_physics.py")\n)' > __setup__.py
-python __setup__.py build_ext --inplace
-echo 'import n_body_physics' > run.py
-python run.py
-rm -r run.py n_body_physics.c build n_body_physics.cpython-38-x86_64-linux-gnu.so __setup__.py
-clear
