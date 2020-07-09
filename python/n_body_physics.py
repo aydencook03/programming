@@ -21,6 +21,19 @@ def key(data):
     elif data.char == 'g':
         global gravityOn
         gravityOn = not gravityOn
+    elif data.keycode == 119: # delete button
+        for i in range(len(bodies)):
+            if ((mouseX - bodies[i].x)**2 + (mouseY - bodies[i].y)**2) <= bodies[i].radius **2:
+                bodies.pop(i)
+    elif data.char == 'c':
+        global gravity_c
+        gravity_c *= -1
+    elif data.char == 'f':
+        global falling
+        falling = not falling
+    elif data.char == 'a':
+        global acceleration 
+        acceleration *= -1
         
 def buttonPress(data):
     global mouseDown
@@ -41,16 +54,15 @@ def buttonRelease(data):
         bodies[i].grabbed = False
     
 def motion(data):
-    if mouseDown:
-        global mouseX
-        global mouseY
-        mouseX = data.x
-        mouseY = canvas.winfo_height() - data.y
+    global mouseX
+    global mouseY
+    mouseX = data.x
+    mouseY = canvas.winfo_height() - data.y
    
 root.bind('<Key>', key)
 canvas.bind('<ButtonPress-1>', buttonPress)
 canvas.bind('<ButtonRelease-1>', buttonRelease)
-canvas.bind('<B1-Motion>', motion)
+canvas.bind('<Motion>', motion)
 canvas.pack(fill = 'both', expand = 1)
 root.update()
 
@@ -60,16 +72,16 @@ root.update()
 running = True
 fps = 120
 
-gravityOn = False
+gravityOn = True # if true, objects are gravitationally attracted to each other
 gravity_c = 334000 # universe's gravitational constant
 
 boundaryCollision = True # if true, objects collide with edges of canvas
-wallDampen = 1
+wallDampen = 0.7 # number to multiply by when an objects hit a wall
 
-bodyCollision = True
-bodyDampen = 1
+bodyCollision = True # if true, bodies will collide with each other
+bodyDampen = 0.7 # number to multiply when two objects collide
 
-falling = False
+falling = False # if true, objects will fall to the bottom of the screen
 acceleration = 400
 
 
@@ -138,6 +150,10 @@ class Body:
                 self.yV *= -wallDampen
                 
         if self.grabbed:
+            self.xA = 0
+            self.yA = 0
+            self.xV = 0
+            self.yV = 0
             self.x = mouseX
             self.y = mouseY
     
@@ -149,6 +165,7 @@ class Body:
         self.canvas.create_oval(x1, y1, x2, y2, fill = self.color, width = self.lineWidth)
         self.canvas.create_line(self.x, self.canvas.winfo_height() - self.y, self.x + self.radius*cos(self.a), self.canvas.winfo_height()-(self.y+self.radius*sin(self.a)), width = self.lineWidth)
         
+        # write body's id on it (testing)
         #self.canvas.create_text(self.x, self.canvas.winfo_height() - self.y, text=self.id)
         
     def gravityCalc(self, otherObject): #calculates gravitational attraction to 'otherObject'
@@ -236,13 +253,12 @@ def bodyHandle():
                     if bodyCollision:
                         x1 = bodies[i].x
                         y1 = bodies[i].y
-                        r1 = bodies[i].radius
                         x2 = bodies[b].x
                         y2 = bodies[b].y
-                        r2 = bodies[b].radius
+                        rSum = bodies[i].radius + bodies[b].radius
                         dist = Vect(x2-x1, y2-y1)
-                        if dist.mag <= r1 + r2: # handles static collision
-                            overlap = (r1 + r2) - dist.mag
+                        if dist.mag <= rSum: # handles static collision response
+                            overlap = (rSum) - dist.mag
                             bodies[i].x -= overlap/2 * dist.norm.i
                             bodies[i].y -= overlap/2 * dist.norm.j
                             bodies[b].x += overlap/2 * dist.norm.i
@@ -255,7 +271,7 @@ def bodyHandle():
                             bodies[i].xA += accel[0]
                             bodies[i].yA += accel[1]
                             
-        for i in range(len(collidingPairs)):
+        for i in range(len(collidingPairs)): # handles dynamic collision response
             x1 = collidingPairs[i][0].x
             y1 = collidingPairs[i][0].y
             r1 = collidingPairs[i][0].radius
@@ -265,6 +281,9 @@ def bodyHandle():
             dist = Vect(x2-x1, y2-y1)
             m1 = collidingPairs[i][0].mass
             m2 = collidingPairs[i][1].mass
+            
+            # draw line between colliding pair (testing)
+            #canvas.create_line(x1, canvas.winfo_height()-y1, x2, canvas.winfo_height()-y2, width = 2)
             
             norm = Vect(-dist.j, dist.i).norm # along 'wall' of collision
             perp = dist.norm # perpendicular to radius
@@ -280,7 +299,7 @@ def bodyHandle():
                             
             collidingPairs[i][1].xV = vel2.dot(norm)*norm.i + nV2Perp*perp.i * bodyDampen
             collidingPairs[i][1].yV = vel2.dot(norm)*norm.j + nV2Perp*perp.j * bodyDampen
-                    
+            
 
 
 def reset():
@@ -289,7 +308,8 @@ def reset():
     Body.id = -1
     collidingPairs.clear()
     
-    for i in range(50):
+
+    for i in range(30): # randomly place objects
         mass = randint(1, 24)
         x = randint(0, canvas.winfo_width())
         y = randint(0, canvas.winfo_height())
@@ -297,7 +317,7 @@ def reset():
         xV = randint(-bounds, bounds)
         yV = randint(-bounds, bounds)
         bodies.append(Body(x = x, y = y, xV = xV, yV = yV, mass = mass))
-    '''
+    ''' # uncomment for a stable gravity system
     bodies.append(Body(x = canvas.winfo_width()/2, y = canvas.winfo_height()/2, mass = 24, xV = -10.83))
     bodies.append(Body(x = canvas.winfo_width()/2, y = canvas.winfo_height()/2 + 150, mass = 1, xV = 260, color = 'teal'))
     '''
@@ -306,6 +326,10 @@ def mainLoop():
     root.after(round(1000/fps), mainLoop)
     canvas.delete('all')
     bodyHandle() # draws and moves each Body in bodies[]
+    if nothingGrabbed and mouseDown:
+        bodies.append(Body(x = mouseX, y = mouseY, mass = 90))
+        bodies[-1].move()
+        bodies[-1].draw()
 
 reset()
 mainLoop()
