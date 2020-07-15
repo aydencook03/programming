@@ -22,6 +22,12 @@ def motion(data):
     mouseX = data.x
     mouseY = data.y
     
+    if testing:
+        ball.x = mouseX
+        ball.y = mouseY
+        ball.xV = 50
+        ball.yV = -50
+    
 root.bind('<Key>', keyPress)
 root.bind('<Motion>', motion)
 canvas.pack(fill = 'both', expand = 1)
@@ -30,43 +36,34 @@ root.update()
 
 fps = 60
 
+testing = False
+
 colCount = 7
-rowCount = 10
+rowCount = 9
+emptyRowCount = 2
 brickWidth = canvas.winfo_width()/colCount
-brickHeight = canvas.winfo_height()/rowCount
+brickHeight = canvas.winfo_height()/2.2/rowCount
 brickC = 'teal'
 
-ballRadius = 11
+ballRadius = 4
 ballC = 'crimson'
 lineWidth = 2
 
 paddleW = 80
 paddleH = 15
-padding = paddleH
+padding = paddleH*1.5
 paddleC = 'white'
 paddleX = canvas.winfo_width()
 paddleY = canvas.winfo_height() - padding - paddleH
 
 
-bricks = []
+brick = []
 
-class Brick:
-    def __init__(self, **kwargs):
-        self.x = kwargs.get('x', 0)
-        self.y = kwargs.get('y', 0)
-        self.color = kwargs.get('color', brickC)
-        
-    def draw(self):
-        canvas.create_rectangle(self.x, self.y, self.x + brickWidth, self.y + brickHeight, fill = self.color, width = lineWidth)
-        
 
 class Ball:
-    cWidth = canvas.winfo_width()
-    cHeight = canvas.winfo_height()
-    
     def  __init__(self, **kwargs):
-        self.x = kwargs.get('x', Ball.cWidth/2)
-        self.y = kwargs.get('y', Ball.cHeight/2)
+        self.x = kwargs.get('x', canvas.winfo_width()/2)
+        self.y = kwargs.get('y', canvas.winfo_height()/2)
         self.xV = kwargs.get('xV', 0)
         self.yV = kwargs.get('yV', 0)
         self.color = kwargs.get('color', ballC)
@@ -81,53 +78,109 @@ class Ball:
         if self.x - self.r < 0:
             self.x = self.r
             self.xV *= -1
-        elif self.x + self.r > Ball.cWidth:
-            self.x = Ball.cWidth - self.r
+        elif self.x + self.r > canvas.winfo_width():
+            self.x = canvas.winfo_width() - self.r
             self.xV *= -1
         if self.y - self.r < 0:
             self.y = self.r
             self.yV *= -1
-        elif self.y - self.r > Ball.cHeight:
+        elif self.y - self.r > canvas.winfo_height():
             reset()
+            
+            
+        if self.x + self.r >= paddleX and self.x - self.r <= paddleX + paddleW and self.y + self.r > paddleY and self.y + self.r <= paddleY + paddleW/2:
+            self.y = paddleY - self.r
+            self.yV *= -1
+            val = paddleW/11
+            self.xV = (self.x - (paddleX + paddleW/2)) * val
         
         self.x += self.xV/fps
         self.y += self.yV/fps
         
+    def reset(self):
+        global ball
+        
+        lower = 10
+        upper = 300
+        xV = 0
+        yV = 0
+        
+        while abs(xV) < lower:
+            xV = randint(-upper, upper)
+        yV = -upper
+        
+        self.xV = xV
+        self.yV = yV
+        self.x = canvas.winfo_width()/2
+        self.y = paddleY - paddleH
+        
 
-
-ball = None
 
 def reset():
-    global ball
+    global brick
     
-    bricks.clear()
+    brick.clear()
+    brick = [False] * (rowCount * colCount)
+    ball.reset()
     
-    lower = 100
-    upper = 250
-    xV = 0
-    yV = 0
-    while abs(xV) < lower:
-        xV = randint(-upper, upper)
-    while abs(yV) < lower:
-        yV = randint(-upper, -lower)
+    for col in range(colCount):
+        for row in range(rowCount):
+            index = colCount*row + col
+            brick[index] = True
+    for i in range(emptyRowCount * colCount):
+        brick[i] = False
+  
+def paddleHandle():
+    global paddleX
     
-    ball = Ball(xV = xV, yV = yV)
-
+    paddleX = mouseX - paddleW/2
+    if paddleX < 0:
+        paddleX = 0
+    elif paddleX > canvas.winfo_width() - paddleW:
+        paddleX = canvas.winfo_width() - paddleW
+    canvas.create_rectangle(paddleX, paddleY, paddleX + paddleW, paddleY + paddleH, fill = paddleC, width = lineWidth)
+    
 def drawBricks():
-    for i in range(len(bricks)):
-        bricks[i].draw()
-
-
+    for col in range(colCount):
+        for row in range(rowCount):
+            index = colCount*row + col
+            
+            if brick[index]:
+                x1 = col*brickWidth
+                x2 = x1 + brickWidth
+                y1 = row*brickHeight
+                y2 = y1 + brickHeight
+                canvas.create_rectangle(x1, y1, x2, y2, fill = brickC, width = lineWidth)
+                
+def brickCollision():
+    prevC = int((ball.x - ball.xV/fps)//brickWidth)
+    prevR = int((ball.y - ball.yV)//brickHeight)
+    ballC = int(ball.x//brickWidth)
+    ballR = int(ball.y//brickHeight)
+    ballIndex = colCount*ballR + ballC
+    
+    try:
+        if brick[ballIndex]:
+            brick[ballIndex] = False
+            
+            if prevC != ballC:
+                ball.xV *= -1
+            elif prevR != ballR:
+                ball.yV *= -1
+    except:
+        pass
+    
 def main():
-    global paddleX, paddleY
     root.after(round(1000/fps), main)
     canvas.delete('all')
-    drawBricks()
     ball.draw()
     ball.move()
-    paddleX = mouseX - paddleW/2
-    canvas.create_rectangle(paddleX, paddleY, paddleX + paddleW, paddleY + paddleH, fill = paddleC, width = lineWidth)
+    paddleHandle()
+    drawBricks()
+    brickCollision()
 
+
+ball = Ball()
 reset()
 main()
 root.mainloop()
