@@ -40,6 +40,7 @@ testing = False
 
 colCount = 7
 rowCount = 9
+brickPadding = 4
 emptyRowCount = 2
 brickWidth = canvas.winfo_width()/colCount
 brickHeight = canvas.winfo_height()/2.2/rowCount
@@ -58,6 +59,8 @@ paddleY = canvas.winfo_height() - padding - paddleH
 
 
 brick = []
+bricksLeft = 0
+textC = 'white'
 
 
 class Ball:
@@ -117,18 +120,21 @@ class Ball:
 
 
 def reset():
-    global brick
+    global brick, bricksLeft
     
     brick.clear()
     brick = [False] * (rowCount * colCount)
     ball.reset()
+    bricksLeft = 0
     
     for col in range(colCount):
         for row in range(rowCount):
             index = colCount*row + col
             brick[index] = True
+            bricksLeft += 1
     for i in range(emptyRowCount * colCount):
         brick[i] = False
+        bricksLeft -= 1
   
 def paddleHandle():
     global paddleX
@@ -146,29 +152,49 @@ def drawBricks():
             index = colCount*row + col
             
             if brick[index]:
-                x1 = col*brickWidth
-                x2 = x1 + brickWidth
-                y1 = row*brickHeight
-                y2 = y1 + brickHeight
+                x1 = brickPadding/2 + col*brickWidth
+                x2 = x1 + brickWidth - brickPadding
+                y1 = brickPadding/2 + row*brickHeight
+                y2 = y1 + brickHeight - brickPadding
                 canvas.create_rectangle(x1, y1, x2, y2, fill = brickC, width = lineWidth)
                 
+def getIndex(col, row):
+    return int(col + colCount * row)
+                
 def brickCollision():
+    global bricksLeft
+    
     prevC = int((ball.x - ball.xV/fps)//brickWidth)
-    prevR = int((ball.y - ball.yV)//brickHeight)
+    prevR = int((ball.y - ball.yV/fps)//brickHeight)
     ballC = int(ball.x//brickWidth)
     ballR = int(ball.y//brickHeight)
-    ballIndex = colCount*ballR + ballC
     
-    try:
-        if brick[ballIndex]:
-            brick[ballIndex] = False
-            
-            if prevC != ballC:
-                ball.xV *= -1
-            elif prevR != ballR:
+    ballIndex = getIndex(ballC, ballR)
+    
+    bothTestsFailed = True
+    
+    if ballC >= 0 and ballC < colCount and ballR >= 0 and ballR < rowCount and brick[ballIndex]:
+        brick[ballIndex] = False
+        bricksLeft -= 1
+        
+        if prevC != ballC and brick[getIndex(prevC, ballR)] == False:
+            ball.xV *= -1
+            bothTestsFailed = False
+        try:
+            if prevR != ballR and brick[getIndex(ballC, prevR)] == False:
                 ball.yV *= -1
-    except:
-        pass
+                bothTestsFailed = False
+        except:
+            ball.yV *= -1
+            bothTestsFailed = False
+        if bothTestsFailed:
+            ball.xV *= -1
+            ball.yV *= -1
+            
+def text():
+    canvas.create_text(canvas.winfo_width()/2, brickHeight * emptyRowCount/2, fill = textC, text = 'Bricks: ' + str(bricksLeft))
+        
+        
     
 def main():
     root.after(round(1000/fps), main)
@@ -178,6 +204,7 @@ def main():
     paddleHandle()
     drawBricks()
     brickCollision()
+    text()
 
 
 ball = Ball()
