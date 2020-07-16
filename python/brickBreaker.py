@@ -41,18 +41,18 @@ testing = False
 
 colCount = 7
 rowCount = 9
-brickPadding = canvas.winfo_width()/150
+brickPadding = 4
 emptyRowCount = 2
 brickWidth = canvas.winfo_width()/colCount
 brickHeight = canvas.winfo_height()/2.2/rowCount
 brickC = 'teal'
 
-ballRadius = canvas.winfo_width()/150
+ballRadius = 4
 ballC = 'crimson'
-lineWidth = canvas.winfo_width()/300
+lineWidth = 2
 
-paddleW = canvas.winfo_width()/7.5
-paddleH = canvas.winfo_width()/40
+paddleW = 80
+paddleH = 15
 padding = paddleH
 paddleX = canvas.winfo_width()
 paddleY = canvas.winfo_height() - padding - paddleH
