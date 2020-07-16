@@ -34,6 +34,7 @@ canvas.pack(fill = 'both', expand = 1)
 root.update()
 
 
+
 fps = 60
 
 testing = False
@@ -52,8 +53,7 @@ lineWidth = 2
 
 paddleW = 80
 paddleH = 15
-padding = paddleH*1.5
-paddleC = 'white'
+padding = paddleH
 paddleX = canvas.winfo_width()
 paddleY = canvas.winfo_height() - padding - paddleH
 
@@ -61,6 +61,7 @@ paddleY = canvas.winfo_height() - padding - paddleH
 brick = []
 bricksLeft = 0
 textC = 'white'
+
 
 
 class Ball:
@@ -76,7 +77,7 @@ class Ball:
         canvas.create_oval(self.x - self.r, self.y - self.r, self.x + self.r, self.y + self.r, fill = self.color, width = lineWidth)
         
     def move(self):
-        global fps
+        global lives, paddleC
         
         if self.x - self.r < 0:
             self.x = self.r
@@ -88,14 +89,35 @@ class Ball:
             self.y = self.r
             self.yV *= -1
         elif self.y - self.r > canvas.winfo_height():
-            reset()
+            if lives > 0:
+                lives -= 1
+                self.reset()
+            if lives <= 0: 
+                reset()
+            if lives == 3:
+                paddleC = 'SpringGreen3'
+            elif lives == 2:
+                paddleC = 'orange'
+            elif lives == 1:
+                paddleC = 'crimson'
             
-            
-        if self.x + self.r >= paddleX and self.x - self.r <= paddleX + paddleW and self.y + self.r > paddleY and self.y + self.r <= paddleY + paddleW/2:
-            self.y = paddleY - self.r
-            self.yV *= -1
-            val = paddleW/11
-            self.xV = (self.x - (paddleX + paddleW/2)) * val
+        if self.x + self.r >= paddleX and self.x - self.r <= paddleX + paddleW:
+            if self.y + self.r >= paddleY and self.y - self.r <= paddleY + paddleH:
+                prevX = self.x - self.xV/fps
+                prevY = self.y - self.yV/fps
+                
+                if prevY + self.r < paddleY:
+                    self.y = paddleY - self.r
+                    self.yV *= -1
+                    val = paddleW/10
+                    self.xV = (self.x - (paddleX + paddleW/2)) * val
+                elif prevX + self.r < paddleX:
+                    self.x = paddleX - self.r
+                    self.xV *= -1
+                elif prevX - self.r > paddleX + paddleW:
+                    self.x = paddleX + paddleW + self.r
+                    self.xV *= -1
+                
         
         self.x += self.xV/fps
         self.y += self.yV/fps
@@ -104,7 +126,7 @@ class Ball:
         global ball
         
         lower = 10
-        upper = 300
+        upper = 350
         xV = 0
         yV = 0
         
@@ -120,12 +142,14 @@ class Ball:
 
 
 def reset():
-    global brick, bricksLeft
+    global brick, bricksLeft, lives, paddleC
     
     brick.clear()
     brick = [False] * (rowCount * colCount)
     ball.reset()
     bricksLeft = 0
+    lives = 3
+    paddleC = 'SpringGreen3'
     
     for col in range(colCount):
         for row in range(rowCount):
@@ -176,6 +200,8 @@ def brickCollision():
     if ballC >= 0 and ballC < colCount and ballR >= 0 and ballR < rowCount and brick[ballIndex]:
         brick[ballIndex] = False
         bricksLeft -= 1
+        if bricksLeft <= 0:
+            reset()
         
         if prevC != ballC and brick[getIndex(prevC, ballR)] == False:
             ball.xV *= -1
@@ -192,9 +218,10 @@ def brickCollision():
             ball.yV *= -1
             
 def text():
-    canvas.create_text(canvas.winfo_width()/2, brickHeight * emptyRowCount/2, fill = textC, text = 'Bricks: ' + str(bricksLeft))
-        
-        
+    canvas.create_text(canvas.winfo_width()/2, brickHeight * 1*emptyRowCount/3, fill = textC, text = 'Bricks: ' + str(bricksLeft))
+    canvas.create_text(canvas.winfo_width()/2, brickHeight * 2*emptyRowCount/3, fill = textC, text = 'Lives: ' + str(lives))
+    
+    
     
 def main():
     root.after(round(1000/fps), main)
@@ -204,8 +231,7 @@ def main():
     paddleHandle()
     drawBricks()
     brickCollision()
-    text()
-
+    #text()
 
 ball = Ball()
 reset()
