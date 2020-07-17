@@ -1,0 +1,106 @@
+<html>
+<meta name='viewport' content='width=device-width,height=device-height'>
+<script>
+
+
+
+window.onload = function() {
+    reset()
+}
+
+
+function pen(can, context) { // a pen object to draw on a canvas
+    this.canvas = can
+    this.context = context
+    this.border = true; // border
+    this.borderColor = 'black' // color of shape border
+    this.borderSize = 2; // width of shape borders
+    this.topLeft = true // (0, 0) at the top-left
+    
+    this.rect = function(x, y, w, h, fill) {
+        this.context.beginPath();
+        this.context.fillStyle = fill;
+        this.context.strokeStyle = this.borderColor;
+        this.context.lineWidth = this.borderSize;
+        if(this.topLeft) {
+            this.context.rect(x, y, w, h);
+        } else {
+            this.context.rect(x, this.canvas.height - y - h, w, h)
+        }
+        this.context.fill();
+        if(this.border) {
+            this.context.stroke();
+        }
+        this.context.closePath()
+    }
+    this.circle = function(x, y, r, fill) {
+        this.context.beginPath();
+        this.context.fillStyle = fill
+        this.context.strokeStyle = this.borderColor;
+        this.context.lineWidth = this.borderSize;
+        if(this.topLeft) {
+            this.context.arc(x, y, r, 0, Math.PI*2, true);
+        } else {
+            this.context.arc(x, this.canvas.height - y, r, 0, Math.PI*2, true);
+        }
+        this.context.fill();
+        if(this.border) {
+            this.context.stroke();
+        }
+        this.context.closePath()
+    }
+    this.line = function(x1, y1, x2, y2, width, color) {
+        this.context.beginPath();
+        this.context.strokeStyle = color;
+        this.context.lineWidth = width;
+        if(this.topLeft) {
+            this.context.moveTo(x1, y1);
+            this.context.lineTo(x2, y2);
+        } else {
+            this.context.moveTo(x1, this.canvas.height - y1)
+            this.context.lineTo(x2, this.canvas.height - y2)
+        }
+        this.context.stroke();
+        this.context.closePath()
+    }
+}
+
+
+function reset() {
+    canvas = document.getElementById("canvas");
+    ctx = canvas.getContext('2d');
+    
+    fps = 60;
+    running = true;
+    
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.color = 'rgb(70, 70, 70)'
+    
+    loop = setInterval(main, 1000/fps);
+    
+    draw = new pen(canvas, ctx);
+}
+
+function main() {
+    // blank out canvas
+    draw.border = false;
+    draw.rect(0, 0, canvas.width, canvas.height, canvas.color);
+    draw.border = true;
+}
+
+
+
+</script>
+<body>
+<canvas id="canvas" width='300px' height='300px'></canvas>
+<style>
+body {
+    padding: 0;
+    margin: 0;
+}
+canvas {
+    padding: 0;
+    margin: 0
+}
+</html>

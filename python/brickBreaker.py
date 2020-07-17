@@ -2,6 +2,7 @@
 
 from tkinter import Tk, Canvas
 from random import randint
+from math import cos, sin, atan
 
 root = Tk()
 root.title("BrickBreaker")
@@ -27,42 +28,21 @@ def motion(data):
         ball.y = mouseY
         ball.xV = 50
         ball.yV = -50
+        
+def button(data):
+    global running
+    
+    if not running:
+        running = True
     
 root.bind('<Key>', keyPress)
 root.bind('<Motion>', motion)
+root.bind('<Button-1>', button)
 canvas.pack(fill = 'both', expand = 1)
 root.update()
 
-
-
-fps = 60
-
-testing = False
-
-colCount = 7
-rowCount = 9
-brickPadding = 4
-emptyRowCount = 2
-brickWidth = canvas.winfo_width()/colCount
-brickHeight = canvas.winfo_height()/2.2/rowCount
-brickC = 'teal'
-
-ballRadius = 4
-ballC = 'crimson'
-lineWidth = 2
-
-paddleW = 80
-paddleH = 15
-padding = paddleH
-paddleX = canvas.winfo_width()
-paddleY = canvas.winfo_height() - padding - paddleH
-
-
-brick = []
-bricksLeft = 0
-textC = 'white'
-
-
+######################################################################################################################
+# Ball Class
 
 class Ball:
     def  __init__(self, **kwargs):
@@ -89,6 +69,8 @@ class Ball:
             self.y = self.r
             self.yV *= -1
         elif self.y - self.r > canvas.winfo_height():
+            global running
+            running = False
             if lives > 0:
                 lives -= 1
                 self.reset()
@@ -109,7 +91,7 @@ class Ball:
                 if prevY + self.r < paddleY:
                     self.y = paddleY - self.r
                     self.yV *= -1
-                    val = paddleW/10
+                    val = paddleW/9
                     self.xV = (self.x - (paddleX + paddleW/2)) * val
                 elif prevX + self.r < paddleX:
                     self.x = paddleX - self.r
@@ -123,10 +105,8 @@ class Ball:
         self.y += self.yV/fps
         
     def reset(self):
-        global ball
-        
         lower = 10
-        upper = 350
+        upper = 400
         xV = 0
         yV = 0
         
@@ -136,20 +116,51 @@ class Ball:
         
         self.xV = xV
         self.yV = yV
-        self.x = canvas.winfo_width()/2
+        self.x = paddleX + paddleW/2
         self.y = paddleY - paddleH
         
-
+######################################################################################################################
+# Initialization Code
 
 def reset():
-    global brick, bricksLeft, lives, paddleC
+    global fps; fps = 60
+    global running; running = False
+    
+    global testing; testing = False
+
+    global colCount; colCount = 7
+    global rowCount; rowCount = 9
+    global brickPadding; brickPadding = 4
+    global emptyRowCount; emptyRowCount = 2
+    global heightDown; heightDown = canvas.winfo_height()/2.2
+    global brickWidth; brickWidth = canvas.winfo_width()/colCount
+    global brickHeight; brickHeight = heightDown/rowCount
+    global brickC; brickC = 'teal'
+
+    global ballRadius; ballRadius = 4
+    global ballC; ballC = 'crimson'
+    global lineWidth; lineWidth = 2
+
+    global paddleW; paddleW = 80
+    global paddleH; paddleH = 15
+    global padding; padding = paddleH
+    global paddleX; paddleX = canvas.winfo_width()
+    global paddleY; paddleY = canvas.winfo_height() - padding - paddleH
+    global paddleC; paddleC = 'SpringGreen3'
+
+
+    global brick; brick = []
+    global bricksLeft; bricksLeft = 0
+    global textC; textC = 'white'
+    global lives; lives = 3
     
     brick.clear()
     brick = [False] * (rowCount * colCount)
-    ball.reset()
+    try:
+        ball.reset()
+    except:
+        pass
     bricksLeft = 0
-    lives = 3
-    paddleC = 'SpringGreen3'
     
     for col in range(colCount):
         for row in range(rowCount):
@@ -159,6 +170,9 @@ def reset():
     for i in range(emptyRowCount * colCount):
         brick[i] = False
         bricksLeft -= 1
+
+######################################################################################################################
+# Game Logic
   
 def paddleHandle():
     global paddleX
@@ -220,19 +234,28 @@ def brickCollision():
 def text():
     canvas.create_text(canvas.winfo_width()/2, brickHeight * 1*emptyRowCount/3, fill = textC, text = 'Bricks: ' + str(bricksLeft))
     canvas.create_text(canvas.winfo_width()/2, brickHeight * 2*emptyRowCount/3, fill = textC, text = 'Lives: ' + str(lives))
+    val = canvas.winfo_height() - (canvas.winfo_height()-heightDown)/2
+    canvas.create_text(mouseX, mouseY, fill = textC, text = 'Click to Continue')
+    canvas.create_text(canvas.winfo_height()/2, val, fill = textC, text = 'Game by Ayden Cook')
     
-    
+######################################################################################################################
+# Game Loop
     
 def main():
     root.after(round(1000/fps), main)
     canvas.delete('all')
     ball.draw()
-    ball.move()
+    if running:
+        ball.move()
+    else:
+        ball.x = paddleX + paddleW/2
     paddleHandle()
     drawBricks()
     brickCollision()
-    #text()
+    if not running:
+        text()
 
+reset()
 ball = Ball()
 reset()
 main()
