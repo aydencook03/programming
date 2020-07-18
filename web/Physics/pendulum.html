@@ -11,6 +11,7 @@ document.addEventListener('mousedown', mouseDown);
 document.addEventListener('mouseup', mouseUp);
 document.addEventListener('mousemove', mouseMove);
 document.addEventListener('touchstart', touchStart);
+document.addEventListener('touchmove', touchMove);
 document.addEventListener('touchend', touchEnd);
 window.addEventListener('resize', resize);
 leftDown = false;
@@ -40,6 +41,12 @@ function touchStart(data) {
     leftDown = true;
     mouseX = data.touches[0].clientX;
     mouseY = canvas.height - data.touches[0].clientY;
+}
+function touchMove(data) {
+    if(leftDown) {
+        mouseX = data.touches[0].clientX;
+        mouseY = canvas.height - data.touches[0].clientY;
+    }
 }
 function touchEnd(data) {
     leftDown = false;

@@ -10,6 +10,7 @@ document.addEventListener('mousedown', mouseDown)
 document.addEventListener('mouseup', mouseUp)
 document.addEventListener('mousemove', mouseMove);
 document.addEventLister('touchstart', touchStart);
+document.addEventListener('touchmove', touchMove);
 document.addEventListener('touchend', touchEnd);
 window.addEventListener('resize', resize);
 window.onload = function() {reset()}
@@ -64,6 +65,10 @@ function mouseMove(data) {
 function touchStart(data) {
     mouseDown = true;
     nothingGrabbed = true;
+    mouseX = data.touches[0].clientX;
+    mouseY = canvas.height - data.touches[0].clientY;
+}
+function touchMove(data) {
     mouseX = data.touches[0].clientX;
     mouseY = canvas.height - data.touches[0].clientY;
 }
