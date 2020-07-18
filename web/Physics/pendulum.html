@@ -1,0 +1,165 @@
+<html>
+<meta name='viewport' content='width=device-width,height=device-height'>
+<script>
+
+
+
+// Event Handling
+window.onload = function() {reset()}
+document.addEventListener('keydown', keyDown);
+document.addEventListener('mousedown', mouseDown);
+document.addEventListener('mouseup', mouseUp);
+document.addEventListener('mousemove', mouseMove);
+leftDown = false;
+mouseX = 0;
+mouseY = 0;
+function keyDown(data) {
+    if(data.key == 'r') {
+        clearInterval(loop);
+        reset();
+    }
+}
+function mouseDown(data) {
+    leftDown = true;
+    mouseX = event.clientX;
+    mouseY = canvas.height - event.clientY;
+}
+function mouseUp(data) {
+    leftDown = false;
+}
+function mouseMove(data) {
+    if(leftDown) {
+        mouseX = data.clientX;
+        mouseY = canvas.height - data.clientY;
+    }
+}
+
+function reset() {
+    canvas = document.getElementById('canvas');
+    ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.color = 'rgb(50,50,50)';
+    
+    
+    // Sim Variables
+    fps = 60;
+    gravity = -1250;
+    
+    // Pendulum Variables
+    length = 240;
+    radius = 15;
+    color = 'crimson';
+    lineWidth = 2;
+    pinX = canvas.width/2;
+    pinY = canvas.height/2;
+    a = 179; // angle to vertical
+    a *= Math.PI/180; // convert to radians
+    aV = 0;
+    
+    
+    loop = setInterval(main, 1000/fps);
+}
+
+function drawObjects() {
+    if(leftDown) {
+        x = mouseX;
+        y = mouseY;
+        endX = mouseX;
+        endY = mouseY;
+        length =  ((pinY-mouseY)**2 + (pinX-mouseX)**2)**0.5;
+    } else {
+        x = pinX + length*Math.sin(a);
+        y = pinY - length*Math.cos(a);
+        endX = pinX + length*Math.sin(a);
+        endY = pinY - length*Math.cos(a);
+    }
+    
+    ctx.beginPath();
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = lineWidth;
+    ctx.moveTo(pinX, canvas.height-pinY);
+    ctx.lineTo(endX, canvas.height-endY);
+    ctx.stroke();
+    ctx.closePath();
+    ctx.beginPath();
+    ctx.fillStyle = 'black';
+    ctx.arc(pinX, canvas.height-pinY, lineWidth,0,Math.PI*2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.closePath();
+    ctx.beginPath();
+    ctx.fillStyle = color;
+    ctx.arc(x,canvas.height-y,radius,0,Math.PI*2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.closePath();
+    
+}
+
+function moveObjects() {
+    if(leftDown) {
+        aA = 0;
+        aV = 0;
+        
+        if(mouseX > pinX) {
+            if(mouseY == pinY) {
+                a = Math.PI/2;
+            } else {
+                a = Math.atan((mouseX-pinX)/(pinY-mouseY));
+                if(mouseY > pinY) {
+                    a += Math.PI;
+                }
+            }
+        }
+        else if(mouseX == pinX) {
+            if(mouseY >= pinY) {
+                a = Math.PI;
+            } else {
+                a = 0;
+            }
+        }
+        else if(mouseX < pinX) {
+            if(mouseY == pinY) {
+                a = -Math.PI/2;
+            } else {
+                a = Math.atan((mouseX-pinX)/(pinY-mouseY)) + Math.PI;
+                if(mouseY < pinY) {
+                    a += Math.PI;
+                }
+            }
+        }
+    } else {
+        aA = gravity/length * Math.sin(a);
+    }
+    
+    aV += aA/fps;
+    a += aV/fps;
+}
+
+function main() {
+    // blank out canvas
+    ctx.fillStyle = canvas.color;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    drawObjects();
+    moveObjects();
+}
+
+
+
+</script>
+<body>
+<canvas id = 'canvas' width='300px' height='300px'></canvas>
+</body>
+<style>
+body {
+    padding: 0;
+    margin: 0;
+}
+canvas {
+    padding: 0;
+    margin: 0;
+}
+</style>
+</html>

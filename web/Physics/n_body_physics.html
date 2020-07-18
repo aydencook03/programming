@@ -18,6 +18,7 @@ mouseY = 0;
 
 function keyDown(data) {
     if(data.key == "r") {
+        clearInterval(loop);
         reset();
     }
     else if(data.key == 'g') {
@@ -25,8 +26,8 @@ function keyDown(data) {
     }
     else if(data.key == 'Delete') {
         for(i = 0; i < bodies.length ; i++) {
-            if(((mouseX - bodies[i].x)**2 + mouseY - bodies[i].y)**2 <= bodies[i].radius**2) {
-                bodies.pop(i);
+            if(((mouseX - bodies[i].x)**2 + (mouseY - bodies[i].y)**2) <= bodies[i].radius**2) {
+                bodies.splice(i, 1);
             }
         }
     }
@@ -66,22 +67,24 @@ function reset() {
     ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    canvas.color = 'rgb(70, 70, 70)'
+    canvas.color = 'rgb(70, 70, 70)';
     
     
-    fps = 120
-    running = true
+    fps = 120;
+    running = true;
+    
+    
     loop = setInterval(main, 1000/fps);
 
     
-    gravityOn = true // if true, objects are gravitationally attracted to each other
+    gravityOn = false // if true, objects are gravitationally attracted to each other
     gravity_c = 334000 // universe's gravitational constant
 
     boundaryCollision = true // if true, objects collide with edges of canvas
-    wallDampen = 0.7 // number to multiply by when an objects hit a wall
+    wallDampen = 1 // number to multiply by when an objects hit a wall
 
     bodyCollision = true // if true, bodies will collide with each other
-    bodyDampen = 0.7 // number to multiply when two objects collide
+    bodyDampen = 1 // number to multiply when two objects collide
 
     falling = false // if true, objects will fall to the bottom of the screen
     acceleration = 400
@@ -89,8 +92,8 @@ function reset() {
     bodies = [] // a list of each Body object
     collidingPairs = [] // a list of pairs of colliding bodies
     
-    
-    for(i = 0; i<30; i++) { // randomly place bodies
+    /*
+    for(i = 0; i<70; i++) { // randomly place bodies
         var mass = Math.ceil(Math.random()*23);
         var x = Math.floor(Math.random()*canvas.width);
         var y = Math.floor(Math.random()*canvas.height);
@@ -100,24 +103,43 @@ function reset() {
         
         bodies.push(new Body({
             x: x, 
-            y: y, 
+            y: y,
+            a: Math.random()*Math.PI*2,
             xV: xV, 
             yV: yV, 
             mass: mass}));
     }
+    */
+    
+    bodies.push(new Body({
+        x: canvas.width/2 - 50,
+        xV: 10,
+        yV: 0,
+        aV: 3,
+        y: canvas.height/2 + 0,
+        mass: 10
+    }))
+    bodies.push(new Body({
+        x: canvas.width/2 + 50,
+        xV: 0,
+        aV: 0,
+        y: canvas.height/2,
+        mass: 10
+    }))
+    
     
     /*
-     * bodies.push(new Body({
-     * x: canvas.width/2, 
-     * y: canvas.height/2, 
-     * mass: 24, 
-     * xV: -10.83}));
-     * bodies.push(new Body({
-     * x: canvas.width/2, 
-     * y: canvas.height/2 + 150, 
-     * mass: 1, 
-     * xV: 260, 
-     * color: 'teal}))
+    bodies.push(new Body({
+    x: canvas.width/2, 
+    y: canvas.height/2, 
+    mass: 24, 
+    xV: -10.83}));
+    bodies.push(new Body({
+    x: canvas.width/2, 
+    y: canvas.height/2 + 150, 
+    mass: 1, 
+    xV: 260, 
+    color: 'teal'}))
     */
 }
 
@@ -225,7 +247,7 @@ function Body(params) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Simulation Code
+// Physics Code
 
 function bodyHandle() {
     for(i = 0; i < bodies.length; i++) {
@@ -294,7 +316,7 @@ function bodyHandle() {
             var x2 = collidingPairs[c][1].x;
             var y2 = collidingPairs[c][1].y;
             var r2 = collidingPairs[c][1].radius;
-            var dist = { // vector
+            var dist = { // vector from b1 to b2
                     i: x2 - x1,
                     j: y2 - y1,
                     mag: ((x2-x1)**2 + (y2-y1)**2)**0.5,
@@ -306,23 +328,23 @@ function bodyHandle() {
             var m1 = collidingPairs[c][0].mass;
             var m2 = collidingPairs[c][1].mass;
             
-            var norm = { // vector
+            var norm = { // vector normal along 'wall' of collision
                 i: -dist.j/(((dist.i)**2 + (-dist.j)**2)**0.5),
                 j: dist.i/(((dist.i)**2 + (-dist.j)**2)**0.5)
             }
-            var perp = { // vector
+            var perp = { // vector normal pointing from b1 to b2
                 i: dist.norm.i,
                 j: dist.norm.j
             }
             
-            var vel1 = { // vector
+            var vel1 = { // vector of b1 velocity
                 i: collidingPairs[c][0].xV,
                 j: collidingPairs[c][0].yV,
                 dot: function(vect) {
                     return collidingPairs[c][0].xV * vect.i + collidingPairs[c][0].yV * vect.j
                 }
             }
-            var vel2 = { // vector
+            var vel2 = { // vector of b2 velocity
                 i: collidingPairs[c][1].xV,
                 j: collidingPairs[c][1].yV,
                 dot: function(vect) {
@@ -330,8 +352,57 @@ function bodyHandle() {
                 }
             }
             
+            // new velocities along perp^ of b1 and b2
             var nV1Perp = (vel1.dot(perp))*(m1-m2)/(m1+m2) + (vel2.dot(perp))*(2*m2)/(m1+m2);
             var nV2Perp = (vel1.dot(perp))*(2*m1)/(m1+m2) + (vel2.dot(perp))*(m2-m1)/(m1+m2);
+            
+            // velocities of the points of collision on b1 and b2
+            var pVel1M = vel1.dot(norm) + collidingPairs[c][0].aV*r1;
+            var pVel2M = vel2.dot(norm) + collidingPairs[c][1].aV*r2;
+            
+            // moment of inertia for b1 and b2
+            var I1 = 1/2 * m1 * r1**2;
+            var I2 = 1/2 * m2 * r2**2;
+            
+            // new velocities of the points of collisions on b1 and b2
+            var newpVel1M = ((I1-I2)/(I1+I2))*pVel1M + ((2*I2)/(I1+I2))*pVel2M;
+            var newpVel2M = ((2*I1)/(I1+I2))*pVel1M + ((I2-I1)/(I1+I2))*pVel2M;
+            
+            var vectToCol1 = { // vector from x1,y1 to point of collision on b1
+                i: r1*perp.i,
+                j: r1*perp.j
+            };
+            var vectToCol2 = { // vector from x2,y2 to point of collision on b2
+                i: r2*-perp.i,
+                j: r2*-perp.j
+            };
+            
+            // sign of cross product of pVelM and vectToCol
+            var vCrossR1 = (pVel1M*norm.i)*(vectToCol1.j) - (pVel1M*norm.j)*(vectToCol1.i);
+            vCrossR1 = vCrossR1/Math.abs(vCrossR1);
+            var vCrossR2 = (pVel2M*norm.i)*(vectToCol2.j) - (pVel2M*norm.j)*(vectToCol2.i);
+            vCrossR2 = vCrossR2/Math.abs(vCrossR2);
+
+            
+            collidingPairs[c][0].aV = vCrossR1 * (newpVel1M)/r1;
+            collidingPairs[c][1].aV = vCrossR2 * (newpVel2M)/r2;
+            
+            /* draw collision point velocity vectors [debugging]
+            ctx.beginPath();
+            ctx.strokeStyle = 'black';
+            ctx.moveTo(x1 + vectToCol1.i, canvas.height - (y1 + vectToCol1.j));
+            ctx.lineTo((x1+vectToCol1.i) + pVel1M*norm.i, (canvas.height- (y1+vectToCol1.j + pVel1M*norm.j)));
+            ctx.stroke();
+            ctx.closePath();
+            ctx.beginPath();
+            ctx.strokeStyle = 'white';
+            ctx.moveTo(x2 + vectToCol2.i, canvas.height - (y2 + vectToCol2.j));
+            ctx.lineTo((x2+vectToCol2.i) + pVel2M*norm.i, (canvas.height- (y2+vectToCol2.j + pVel2M*norm.j)));
+            ctx.stroke();
+            ctx.closePath();
+            console.log(pVel1M, pVel2M);
+            clearInterval(loop);
+            */
             
             collidingPairs[c][0].xV = vel1.dot(norm)*norm.i + nV1Perp*perp.i * bodyDampen;
             collidingPairs[c][0].yV = vel1.dot(norm)*norm.j + nV1Perp*perp.j * bodyDampen;
@@ -348,14 +419,14 @@ function bodyHandle() {
 
 function main() {
     // blank out canvas
-    ctx.beginPath();
     ctx.fillStyle = canvas.color;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.closePath()
     
     bodyHandle();
     if(nothingGrabbed && mouseDown) {
-        bodies.push(new Body(x = mouseX, y = mouseY, mass = 90));
+        bodies.push(new Body({x: mouseX, 
+            y: mouseY, 
+            mass: 90}));
         bodies[bodies.length-1].move();
         bodies[bodies.length-1].draw();
     }
@@ -373,6 +444,7 @@ body {
 }
 canvas {
     padding: 0;
-    margin: 0
+    margin: 0;
 }
+</style>
 </html>
