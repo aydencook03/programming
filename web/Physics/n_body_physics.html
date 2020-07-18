@@ -94,6 +94,12 @@ function reset() {
     canvas.height = window.innerHeight;
     canvas.color = 'rgb(70, 70, 70)';
     
+    if(canvas.width >= canvas.height) {
+        scale = canvas.height;
+    } else {
+        scale = canvas.width;
+    }
+    
     
     fps = 120;
     running = true;

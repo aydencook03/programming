@@ -65,16 +65,22 @@ function reset() {
     canvas.height = window.innerHeight;
     canvas.color = 'rgb(50,50,50)';
     
+    if(canvas.width >= canvas.height) {
+        scale = canvas.height;
+    } else {
+        scale = canvas.width;
+    }
+    
     
     // Sim Variables
     fps = 60;
     gravity = -1250;
     
     // Pendulum Variables
-    length = 240;
-    radius = 15;
+    radius = scale/35;
+    length = scale/2 - radius*3/2;
     color = 'crimson';
-    lineWidth = 2;
+    lineWidth = radius/10;
     pinX = canvas.width/2;
     pinY = canvas.height/2;
     a = 179; // angle to vertical
