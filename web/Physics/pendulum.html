@@ -52,15 +52,10 @@ function touchEnd(data) {
     leftDown = false;
 }
 function resize(data) {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    pinX = canvas.width/2;
-    pinY = canvas.height/2;
+    variables();
 }
 
-function reset() {
-    canvas = document.getElementById('canvas');
-    ctx = canvas.getContext('2d');
+function variables() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     canvas.color = 'rgb(50,50,50)';
@@ -74,7 +69,7 @@ function reset() {
     
     // Sim Variables
     fps = 60;
-    gravity = -1250;
+    gravity = -scale*2;
     
     // Pendulum Variables
     radius = scale/35;
@@ -86,7 +81,13 @@ function reset() {
     a = 179; // angle to vertical
     a *= Math.PI/180; // convert to radians
     aV = 0;
+}
+
+function reset() {
+    canvas = document.getElementById('canvas');
+    ctx = canvas.getContext('2d');
     
+    variables();
     
     loop = setInterval(main, 1000/fps);
 }
