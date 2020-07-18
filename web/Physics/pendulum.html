@@ -10,6 +10,9 @@ document.addEventListener('keydown', keyDown);
 document.addEventListener('mousedown', mouseDown);
 document.addEventListener('mouseup', mouseUp);
 document.addEventListener('mousemove', mouseMove);
+document.addEventListener('touchstart', touchStart);
+document.addEventListener('touchend', touchEnd);
+window.addEventListener('resize', resize);
 leftDown = false;
 mouseX = 0;
 mouseY = 0;
@@ -32,6 +35,20 @@ function mouseMove(data) {
         mouseX = data.clientX;
         mouseY = canvas.height - data.clientY;
     }
+}
+function touchStart(data) {
+    leftDown = true;
+    mouseX = data.touches[0].clientX;
+    mouseY = canvas.height - data.touches[0].clientY;
+}
+function touchEnd(data) {
+    leftDown = false;
+}
+function resize(data) {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    pinX = canvas.width/2;
+    pinY = canvas.height/2;
 }
 
 function reset() {
