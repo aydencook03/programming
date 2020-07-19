@@ -108,18 +108,18 @@ function variables() {
         x: function() {return padding}, 
         y: function() {return padding}, 
         w: function() {return buttonW}, 
-        h: function() {return buttonH*3}, 
-        text: function() {return 'Graph →'}
+        h: function() {return buttonH*2.5}, 
+        text: function() {return 'Graph'}
     });
     button2 = new Button({
         x: function() {return button1.x()},
         y: function() {return button1.y()+button1.h() + padding/2},
         w: function() {return buttonW},
         h: function() {return buttonH},
-        text: function() {return 'Data ↓'}
+        text: function() {return 'Data'}
     });
     buttonW = Math.max(ctx.measureText(button1.text()).width, ctx.measureText(button2.text()).width) + padding;
-    buttonH = Math.max(ctx.measureText(button1.text()).actualBoundingBoxDescent, ctx.measureText(button1.text()).actualBoundingBoxAscent, ctx.measureText(button2.text()).actualBoundingBoxDescent, ctx.measureText(button2.text()).actualBoundingBoxAscent) + padding;
+    buttonH = Math.max(ctx.measureText(button1.text()).actualBoundingBoxDescent, ctx.measureText(button1.text()).actualBoundingBoxAscent, ctx.measureText(button2.text()).actualBoundingBoxDescent, ctx.measureText(button2.text()).actualBoundingBoxAscent) + padding*2;
 }
 
 function Button(params) {
