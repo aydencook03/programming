@@ -119,7 +119,7 @@ function variables() {
         text: function() {return 'Data ↓'}
     });
     buttonW = Math.max(ctx.measureText(button1.text()).width, ctx.measureText(button2.text()).width) + padding;
-    buttonH = Math.max(ctx.measureText(button1.text()).actualBoundingBoxDescent, ctx.measureText(button2.text()).actualBoundingBoxDescent) + padding;
+    buttonH = Math.max(ctx.measureText(button1.text()).actualBoundingBoxDescent, ctx.measureText(button1.text()).actualBoundingBoxAscent, ctx.measureText(button2.text()).actualBoundingBoxDescent, ctx.measureText(button2.text()).actualBoundingBoxAscent) + padding;
 }
 
 function Button(params) {
