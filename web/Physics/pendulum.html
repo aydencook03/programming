@@ -15,41 +15,50 @@ document.addEventListener('touchmove', touchMove);
 document.addEventListener('touchend', touchEnd);
 window.addEventListener('resize', resize);
 leftDown = false;
-mouseX = 0;
-mouseY = 0;
+nothingClicked = true;
+mouse = [];
+start = [];
+end = [];
 function keyDown(data) {
     if(data.key == 'r') {
         clearInterval(loop);
         reset();
     }
+    if(data.key == 'w') {
+        wallCollision = !wallCollision;
+    }
 }
 function mouseDown(data) {
     leftDown = true;
-    mouseX = event.clientX;
-    mouseY = canvas.height - event.clientY;
+    nothingClicked = true;
+    start[0] = mouse[0] = event.clientX;
+    start[1] = mouse[1] = canvas.height - event.clientY;
 }
 function mouseUp(data) {
     leftDown = false;
+    nothingClicked = true;
+    end[0] = mouse[0];
+    end[1] = mouse[1];
 }
 function mouseMove(data) {
-    if(leftDown) {
-        mouseX = data.clientX;
-        mouseY = canvas.height - data.clientY;
-    }
+    mouse[0] = data.clientX;
+    mouse[1] = canvas.height - data.clientY;
 }
 function touchStart(data) {
     leftDown = true;
-    mouseX = data.touches[0].clientX;
-    mouseY = canvas.height - data.touches[0].clientY;
+    nothingClicked = true;
+    start[0] = mouse[0] = data.touches[0].clientX;
+    start[1] = mouse[1] = canvas.height - data.touches[0].clientY;
 }
 function touchMove(data) {
-    if(leftDown) {
-        mouseX = data.touches[0].clientX;
-        mouseY = canvas.height - data.touches[0].clientY;
-    }
+    mouse[0] = data.touches[0].clientX;
+    mouse[1] = canvas.height - data.touches[0].clientY;
 }
 function touchEnd(data) {
     leftDown = false;
+    nothingClicked = true;
+    end[0] = mouse[0];
+    end[1] = mouse[1];
 }
 function resize(data) {
     variables();
@@ -71,16 +80,83 @@ function variables() {
     fps = 60;
     gravity = -scale*2;
     
+    wallCollision = false;
+    dampen = 0.3;
+    
     // Pendulum Variables
     radius = scale/35;
     length = scale/2 - radius*3/2;
     color = 'crimson';
-    lineWidth = radius/10;
+    lineWidth = radius/9;
     pinX = canvas.width/2;
     pinY = canvas.height/2;
     a = 179; // angle to vertical
     a *= Math.PI/180; // convert to radians
     aV = 0;
+    
+    // Button Variables
+    buttonColor = 'white';
+    textColor = 'black';
+    padding = radius;
+    ctx.font = `bold ${scale/20}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    buttonW = radius;
+    buttonH = radius;
+    
+    button1 = new Button({
+        x: function() {return padding}, 
+        y: function() {return padding}, 
+        w: function() {return buttonW}, 
+        h: function() {return buttonH*3}, 
+        text: function() {return 'Graph →'}
+    });
+    button2 = new Button({
+        x: function() {return button1.x()},
+        y: function() {return button1.y()+button1.h() + padding/2},
+        w: function() {return buttonW},
+        h: function() {return buttonH},
+        text: function() {return 'Data ↓'}
+    });
+    buttonW = Math.max(ctx.measureText(button1.text()).width, ctx.measureText(button2.text()).width) + padding;
+    buttonH = Math.max(ctx.measureText(button1.text()).actualBoundingBoxDescent, ctx.measureText(button2.text()).actualBoundingBoxDescent) + padding;
+}
+
+function Button(params) {
+    this.x = params.x;
+    this.y = params.y;
+    this.active = false;
+    this.text = params.text;
+    this.w = params.w;
+    this.h = params.h;
+    this.color = buttonColor;
+    this.update = function() {
+        if(this.active) {
+            this.color = 'grey';
+        } else {
+            this.color = buttonColor;
+        }
+        if(leftDown && nothingClicked) {
+            if(mouse[0] >= this.x() && start[0] <= this.x() + this.w()) {
+                if(canvas.height - start[1] >= this.y() && canvas.height - start[1] <= this.y() + this.h()) {
+                    nothingClicked = false;
+                    this.active = !this.active;
+                }
+            }
+        }
+        ctx.beginPath();
+        ctx.fillStyle = this.color;
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = lineWidth*2.5;
+        ctx.rect(this.x(), this.y(), this.w(), this.h());
+        ctx.stroke();
+        ctx.fill();
+        ctx.closePath();
+        ctx.beginPath();
+        ctx.fillStyle = textColor;
+        ctx.fillText(this.text(),this.x()+this.w()/2, this.y()+this.h()/2);
+        ctx.closePath();
+    }
 }
 
 function reset() {
@@ -94,11 +170,11 @@ function reset() {
 
 function drawObjects() {
     if(leftDown) {
-        x = mouseX;
-        y = mouseY;
-        endX = mouseX;
-        endY = mouseY;
-        length =  ((pinY-mouseY)**2 + (pinX-mouseX)**2)**0.5;
+        x = mouse[0];
+        y = mouse[1];
+        endX = mouse[0];
+        endY = mouse[1];
+        length =  ((pinY-mouse[1])**2 + (pinX-mouse[0])**2)**0.5;
     } else {
         x = pinX + length*Math.sin(a);
         y = pinY - length*Math.cos(a);
@@ -133,35 +209,54 @@ function moveObjects() {
         aA = 0;
         aV = 0;
         
-        if(mouseX > pinX) {
-            if(mouseY == pinY) {
+        if(mouse[0] > pinX) {
+            if(mouse[1] == pinY) {
                 a = Math.PI/2;
             } else {
-                a = Math.atan((mouseX-pinX)/(pinY-mouseY));
-                if(mouseY > pinY) {
+                a = Math.atan((mouse[0]-pinX)/(pinY-mouse[1]));
+                if(mouse[1] > pinY) {
                     a += Math.PI;
                 }
             }
         }
-        else if(mouseX == pinX) {
-            if(mouseY >= pinY) {
+        else if(mouse[0] == pinX) {
+            if(mouse[1] >= pinY) {
                 a = Math.PI;
             } else {
                 a = 0;
             }
         }
-        else if(mouseX < pinX) {
-            if(mouseY == pinY) {
+        else if(mouse[0] < pinX) {
+            if(mouse[1] == pinY) {
                 a = -Math.PI/2;
             } else {
-                a = Math.atan((mouseX-pinX)/(pinY-mouseY)) + Math.PI;
-                if(mouseY < pinY) {
+                a = Math.atan((mouse[0]-pinX)/(pinY-mouse[1])) + Math.PI;
+                if(mouse[1] < pinY) {
                     a += Math.PI;
                 }
             }
         }
     } else {
         aA = gravity/length * Math.sin(a);
+    }
+    
+    if(wallCollision) {
+        if(x - radius <= 0) {
+            a -= aV/fps;
+            aV *= -dampen;
+        }
+        else if(x + radius >= canvas.width) {
+            a -= aV/fps;
+            aV *= -dampen;
+        }
+        if(y - radius <= 0) {
+            a -= aV/fps;
+            aV *= -dampen;
+        }
+        else if(y + radius >= canvas.height) {
+            a -= aV/fps;
+            aV *= -dampen;
+        }
     }
     
     aV += aA/fps;
@@ -175,6 +270,8 @@ function main() {
     
     drawObjects();
     moveObjects();
+    button1.update();
+    button2.update();
 }
 
 
