@@ -6,8 +6,8 @@
 // event handling
 
 document.addEventListener('keydown', keyDown);
-document.addEventListener('mousedown', mouseDown);
-document.addEventListener('mouseup', mouseUp);
+document.addEventListener('mousedown', mouseDown)
+document.addEventListener('mouseup', mouseUp)
 document.addEventListener('mousemove', mouseMove);
 document.addEventListener('touchstart', touchStart);
 document.addEventListener('touchmove', touchMove);
@@ -46,9 +46,6 @@ function keyDown(data) {
     }
     else if(data.key == 'n') {
         Body.create();
-    }
-    else if(data.key == 'p') {
-        running = !running;
     }
 }
 function mouseDown(data) {
@@ -124,7 +121,6 @@ function reset() {
     
     Body.clear() // clears all bodies
     
-
     /*
     const bounds = 200;
     for(let i = 0; i<70; i++) { // randomly place bodies
@@ -138,19 +134,18 @@ function reset() {
         })
     } */
     
-    
-    Body.create({ // big first
+    Body.create({
         x: canvas.width/2,
         y: canvas.height/2,
         color: 'crimson',
         mass: 100
     })
-    Body.create({ // small second
+    Body.create({
         mass: 20,
         radius: 10,
         color: 'teal',
         x: bodies[0].x + bodies[0].radius + 10
-    }) 
+    })
     
     /*
     Body.create({
@@ -285,16 +280,6 @@ Body.prototype.draw = function() { // available to all instances, but not a part
     ctx.lineTo(this.x + this.radius*Math.cos(this.a), canvas.height - (this.y + this.radius*Math.sin(this.a)))
     ctx.stroke();
     ctx.closePath();
-    
-    //draw force vector scaled down
-    ctx.beginPath();
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 2;
-    ctx.moveTo(this.x, canvas.height - this.y);
-    let val = 3900;
-    ctx.lineTo(this.x + this.mass*this.xA/val, canvas.height - (this.y + this.mass*this.yA/val));
-    ctx.stroke();
-    ctx.closePath();
 }
 
 // calculates gravitational attraction to 'otherObject'
@@ -303,10 +288,10 @@ Body.prototype.gravityCalc = function(otherObject) { // available to all instanc
     const y1 = this.y;
     const x2 = otherObject.x;
     const y2 = otherObject.y;
-    const dist = ((x2-x1)**2 + (y2-y1)**2)**0.5;
-    const strength = (gravity_c*otherObject.mass)/(dist**2); // F = Gm1m2/r^2
-    const xA = strength * (x2 - x1)/dist;
-    const yA = strength * (y2 - y1)/dist;
+    const distSquare = ((x2-x1)**2 + (y2-y1)**2);
+    const val = (gravity_c*otherObject.mass)/((distSquare)**(3/2));
+    const xA = val * (x2 - x1);
+    const yA = val * (y2 - y1);
     
     return [xA, yA]
 }
@@ -314,8 +299,8 @@ Body.prototype.gravityCalc = function(otherObject) { // available to all instanc
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Physics Code
 
-const bodyHandle = function() {
-    for(let i = 0; i < bodies.length; i++) {
+const drawMove = function() {
+    for(let i=0 ; i<bodies.length; i++) {
         
         if(mouseDown && nothingGrabbed) {
             if(Math.abs((mouseX - bodies[i].x)**2 + (mouseY - bodies[i].y)**2) <= bodies[i].radius**2) {
@@ -324,159 +309,123 @@ const bodyHandle = function() {
             }
         }
         
-        bodies[i].draw()
+        if(falling) {
+            bodies[i].yA -= acceleration;
+        }
+        
+        bodies[i].draw();
         
         if(running) {
-            if(falling) {
-                bodies[i].yA -= acceleration;
-            }
             bodies[i].move();
         }
-        
+    }
+}
+
+const collision = function() {
+    if(bodyCollision) {
+        let collidingPairs = [];
+        for(let i=0; i<bodies.length; i++) {
+            
+            //static
+            for(let b=0; b<bodies.length; b++) {
+                if(i != b) {
+                    const x1 = bodies[i].x;
+                    const y1 = bodies[i].y;
+                    const x2 = bodies[b].x;
+                    const y2 = bodies[b].y;
+                    const rSum = bodies[i].radius + bodies[b].radius;
+                    const dist = { // vector
+                        i: x2 - x1,
+                        j: y2 - y1,
+                        mag: ((x2-x1)**2 + (y2-y1)**2)**0.5,
+                        norm: {
+                            i: (x2-x1)/(((x2-x1)**2 + (y2-y1)**2)**0.5),
+                            j: (y2-y1)/(((x2-x1)**2 + (y2-y1)**2)**0.5)
+                        }
+                    }
+                    if(dist.mag <= rSum) { // static collision
+                        const overlap = rSum - dist.mag;
+                        bodies[i].x -= overlap/2 * dist.norm.i;
+                        bodies[i].y -= overlap/2 * dist.norm.j;
+                        bodies[b].x += overlap/2 * dist.norm.i;
+                        bodies[b].y += overlap/2 * dist.norm.j;
+                        
+                        collidingPairs.push([bodies[i], bodies[b]]);
+                    }
+                }
+            }
+            
+            // dynamic
+            for(let c = 0; c < collidingPairs.length; c++) {
+                const x1 = collidingPairs[c][0].x;
+                const y1 = collidingPairs[c][0].y;
+                const r1 = collidingPairs[c][0].radius;
+                const x2 = collidingPairs[c][1].x;
+                const y2 = collidingPairs[c][1].y;
+                const r2 = collidingPairs[c][1].radius;
+                const dist = { // vector from b1 to b2
+                        i: x2 - x1,
+                        j: y2 - y1,
+                        mag: ((x2-x1)**2 + (y2-y1)**2)**0.5,
+                        norm: {
+                            i: (x2-x1)/(((x2-x1)**2 + (y2-y1)**2)**0.5),
+                            j: (y2-y1)/(((x2-x1)**2 + (y2-y1)**2)**0.5)
+                        }
+                }
+                const m1 = collidingPairs[c][0].mass;
+                const m2 = collidingPairs[c][1].mass;
+                
+                const norm = { // vector normal along 'wall' of collision
+                    i: -dist.j/(((dist.i)**2 + (-dist.j)**2)**0.5),
+                    j: dist.i/(((dist.i)**2 + (-dist.j)**2)**0.5)
+                }
+                const perp = { // vector normal pointing from b1 to b2
+                    i: dist.norm.i,
+                    j: dist.norm.j
+                }
+                
+                const vel1 = { // vector of b1 velocity
+                    i: collidingPairs[c][0].xV,
+                    j: collidingPairs[c][0].yV,
+                    dot: function(vect) {
+                        return collidingPairs[c][0].xV * vect.i + collidingPairs[c][0].yV * vect.j
+                    }
+                }
+                const vel2 = { // vector of b2 velocity
+                    i: collidingPairs[c][1].xV,
+                    j: collidingPairs[c][1].yV,
+                    dot: function(vect) {
+                        return collidingPairs[c][1].xV * vect.i + collidingPairs[c][1].yV * vect.j
+                    }
+                }
+                
+                // new velocities along perp^ of b1 and b2
+                const nV1Perp = (vel1.dot(perp))*(m1-m2)/(m1+m2) + (vel2.dot(perp))*(2*m2)/(m1+m2);
+                const nV2Perp = (vel1.dot(perp))*(2*m1)/(m1+m2) + (vel2.dot(perp))*(m2-m1)/(m1+m2);
+                
+                collidingPairs[c][0].xV = vel1.dot(norm)*norm.i + nV1Perp*perp.i * bodyDampen;
+                collidingPairs[c][0].yV = vel1.dot(norm)*norm.j + nV1Perp*perp.j * bodyDampen;
+                
+                collidingPairs[c][1].xV = vel2.dot(norm)*norm.i + nV2Perp*perp.i * bodyDampen;
+                collidingPairs[c][1].yV = vel2.dot(norm)*norm.j + nV2Perp*perp.j * bodyDampen;
+            }
+        }
+    }
+}
+
+const gravity = function() {
+    for(let i=0; i<bodies.length; i++) {
         bodies[i].xA = 0;
         bodies[i].yA = 0;
-        let collidingPairs = []
-        if(gravityOn || bodyCollision) {
-            for(b = 0; b < bodies.length; b++) {
+        if(bodies[i].gravity && gravityOn) {
+            for(let b=0; b<bodies.length; b++) {
                 if(i != b) {
-                    if(bodyCollision) {
-                        const x1 = bodies[i].x;
-                        const y1 = bodies[i].y;
-                        const x2 = bodies[b].x;
-                        const y2 = bodies[b].y;
-                        const rSum = bodies[i].radius + bodies[b].radius;
-                        const dist = { // vector
-                            i: x2 - x1,
-                            j: y2 - y1,
-                            mag: ((x2-x1)**2 + (y2-y1)**2)**0.5,
-                            norm: {
-                                i: (x2-x1)/(((x2-x1)**2 + (y2-y1)**2)**0.5),
-                                j: (y2-y1)/(((x2-x1)**2 + (y2-y1)**2)**0.5)
-                            }
-                        }
-                        if(dist.mag <= rSum) { // static collision
-                            const overlap = rSum - dist.mag;
-                            bodies[i].x -= overlap/2 * dist.norm.i;
-                            bodies[i].y -= overlap/2 * dist.norm.j;
-                            bodies[b].x += overlap/2 * dist.norm.i;
-                            bodies[b].y += overlap/2 * dist.norm.j;
-                           
-                            collidingPairs.push([bodies[i], bodies[b]]);
-                        }
-                    }
-                    if(gravityOn) {
-                        if(bodies[i].gravity) {
-                            const accel = bodies[i].gravityCalc(bodies[b]);
-                            bodies[i].xA += accel[0];
-                            bodies[i].yA += accel[1];
-                        }
-                    }
+                    const accel = bodies[i].gravityCalc(bodies[b]);
+                    bodies[i].xA += accel[0];
+                    bodies[i].yA += accel[1];
                 }
             }
         }
-        for(let c = 0; c < collidingPairs.length; c++) { // dynamic collision
-            const x1 = collidingPairs[c][0].x;
-            const y1 = collidingPairs[c][0].y;
-            const r1 = collidingPairs[c][0].radius;
-            const x2 = collidingPairs[c][1].x;
-            const y2 = collidingPairs[c][1].y;
-            const r2 = collidingPairs[c][1].radius;
-            const dist = { // vector from b1 to b2
-                    i: x2 - x1,
-                    j: y2 - y1,
-                    mag: ((x2-x1)**2 + (y2-y1)**2)**0.5,
-                    norm: {
-                        i: (x2-x1)/(((x2-x1)**2 + (y2-y1)**2)**0.5),
-                        j: (y2-y1)/(((x2-x1)**2 + (y2-y1)**2)**0.5)
-                    }
-            }
-            const m1 = collidingPairs[c][0].mass;
-            const m2 = collidingPairs[c][1].mass;
-            
-            const norm = { // vector normal along 'wall' of collision
-                i: -dist.j/(((dist.i)**2 + (-dist.j)**2)**0.5),
-                j: dist.i/(((dist.i)**2 + (-dist.j)**2)**0.5)
-            }
-            const perp = { // vector normal pointing from b1 to b2
-                i: dist.norm.i,
-                j: dist.norm.j
-            }
-            
-            const vel1 = { // vector of b1 velocity
-                i: collidingPairs[c][0].xV,
-                j: collidingPairs[c][0].yV,
-                dot: function(vect) {
-                    return collidingPairs[c][0].xV * vect.i + collidingPairs[c][0].yV * vect.j
-                }
-            }
-            const vel2 = { // vector of b2 velocity
-                i: collidingPairs[c][1].xV,
-                j: collidingPairs[c][1].yV,
-                dot: function(vect) {
-                    return collidingPairs[c][1].xV * vect.i + collidingPairs[c][1].yV * vect.j
-                }
-            }
-            
-            // new velocities along perp^ of b1 and b2
-            const nV1Perp = (vel1.dot(perp))*(m1-m2)/(m1+m2) + (vel2.dot(perp))*(2*m2)/(m1+m2);
-            const nV2Perp = (vel1.dot(perp))*(2*m1)/(m1+m2) + (vel2.dot(perp))*(m2-m1)/(m1+m2);
-            
-            /* testing rotation after collision
-            // velocities of the points of collision on b1 and b2
-            const pVel1M = vel1.dot(norm) + collidingPairs[c][0].aV*r1;
-            const pVel2M = vel2.dot(norm) + collidingPairs[c][1].aV*r2;
-            
-            // moment of inertia for b1 and b2
-            const I1 = 1/2 * m1 * r1**2;
-            const I2 = 1/2 * m2 * r2**2;
-            
-            // new velocities of the points of collisions on b1 and b2
-            const newpVel1M = ((I1-I2)/(I1+I2))*pVel1M + ((2*I2)/(I1+I2))*pVel2M;
-            const newpVel2M = ((2*I1)/(I1+I2))*pVel1M + ((I2-I1)/(I1+I2))*pVel2M;
-            
-            const vectToCol1 = { // vector from x1,y1 to point of collision on b1
-                i: r1*perp.i,
-                j: r1*perp.j
-            };
-            const vectToCol2 = { // vector from x2,y2 to point of collision on b2
-                i: r2*-perp.i,
-                j: r2*-perp.j
-            };
-            
-            // sign of cross product of pVelM and vectToCol
-            let vCrossR1 = (pVel1M*norm.i)*(vectToCol1.j) - (pVel1M*norm.j)*(vectToCol1.i);
-            vCrossR1 = vCrossR1/Math.abs(vCrossR1);
-            let vCrossR2 = (pVel2M*norm.i)*(vectToCol2.j) - (pVel2M*norm.j)*(vectToCol2.i);
-            vCrossR2 = vCrossR2/Math.abs(vCrossR2);
-
-            
-            collidingPairs[c][0].aV = vCrossR1 * (newpVel1M)/r1;
-            collidingPairs[c][1].aV = vCrossR2 * (newpVel2M)/r2;
-            
-            /* draw collision point velocity vectors [debugging]
-            ctx.beginPath();
-            ctx.strokeStyle = 'black';
-            ctx.moveTo(x1 + vectToCol1.i, canvas.height - (y1 + vectToCol1.j));
-            ctx.lineTo((x1+vectToCol1.i) + pVel1M*norm.i, (canvas.height- (y1+vectToCol1.j + pVel1M*norm.j)));
-            ctx.stroke();
-            ctx.closePath();
-            ctx.beginPath();
-            ctx.strokeStyle = 'white';
-            ctx.moveTo(x2 + vectToCol2.i, canvas.height - (y2 + vectToCol2.j));
-            ctx.lineTo((x2+vectToCol2.i) + pVel2M*norm.i, (canvas.height- (y2+vectToCol2.j + pVel2M*norm.j)));
-            ctx.stroke();
-            ctx.closePath();
-            console.log(pVel1M, pVel2M);
-            clearInterval(loop);
-            */
-            
-            collidingPairs[c][0].xV = vel1.dot(norm)*norm.i + nV1Perp*perp.i * bodyDampen;
-            collidingPairs[c][0].yV = vel1.dot(norm)*norm.j + nV1Perp*perp.j * bodyDampen;
-            
-            collidingPairs[c][1].xV = vel2.dot(norm)*norm.i + nV2Perp*perp.i * bodyDampen;
-            collidingPairs[c][1].yV = vel2.dot(norm)*norm.j + nV2Perp*perp.j * bodyDampen;
-        }
-        
     }
 }
 
@@ -488,7 +437,9 @@ const main = function() {
     ctx.fillStyle = canvas.color;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    bodyHandle();
+    drawMove();
+    collision();
+    gravity();
     if(nothingGrabbed && mouseDown) {
         Body.create({
             x: mouseX, 
@@ -496,12 +447,6 @@ const main = function() {
             mass: 90});
         bodies[bodies.length-1].move();
         bodies[bodies.length-1].draw();
-    }
-    
-    if((bodies[0].xA**2 + bodies[0].yA**2)**0.5 > (bodies[1].xA**2 + bodies[1].yA**2)**0.5) {
-        console.log(Math.abs((bodies[0].xA**2 + bodies[0].yA**2)**0.5 - (bodies[1].xA**2 + bodies[1].yA**2)**0.5), 'first is larger')
-    } else {
-        console.log(Math.abs((bodies[0].xA**2 + bodies[0].yA**2)**0.5 - (bodies[1].xA**2 + bodies[1].yA**2)**0.5), 'second is larger')
     }
 }
 
