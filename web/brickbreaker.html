@@ -30,8 +30,9 @@ function keyDown(data) {
 
 function mouseMove(data) {
     if(usingMouse) {
-        mouseX = data.clientX - (window.innerWidth/2 - canvas.width/2);
-        mouseY = data.clientY - (window.innerHeight/2 - canvas.height/2);
+        rect = canvas.getBoundingClientRect();
+        mouseX = data.clientX - (rect.left);
+        mouseY = data.clientY - (rect.top);
         touchX = null;
         touchY = null;
     } else {
@@ -42,16 +43,18 @@ function mouseMove(data) {
 
 function touchMove(data) {
     usingMouse = false;
-    touchX = data.touches[0].clientX - (window.innerWidth/2 - canvas.width/2);
-    touchY = data.touches[0].clientY - (window.innerHeight/2 - canvas.height/2);
+    rect = canvas.getBoundingClientRect();
+    touchX = data.touches[0].clientX - rect.left;
+    touchY = data.touches[0].clientY - rect.top;
     mouseX = null;
     mouseY = null;
 }
 
 function touchStart(data) {
     usingMouse = false;
-    touchX = data.touches[0].clientX - (window.innerWidth/2 - canvas.width/2);
-    touchY = data.touches[0].clientY - (window.innerHeight/2 - canvas.height/2);
+    rect = canvas.getBoundingClientRect();
+    touchX = data.touches[0].clientX - rect.left;
+    touchY = data.touches[0].clientY - rect.top;
     mouseX = null;
     mouseY = null;
 }
@@ -73,9 +76,14 @@ function resizeEvent() {
 function variables() {
     scale = Math.min(window.innerWidth, window.innerHeight);
     
-    canvas.width = scale;
-    canvas.height = scale;
-    canvas.color = 'grey';
+    ratio = window.devicePixelRatio || 1;
+    
+    canvas.style.width = scale;
+    canvas.style.height = scale;
+    canvas.width = scale * ratio;
+    canvas.height = scale * ratio;
+    ctx.scale(ratio, ratio);
+    canvas.color = 'rgb(100,100,100)';
     
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 2;
@@ -104,8 +112,8 @@ function variables() {
     rowCount = 9;
     brickPadding = 4;
     emptyRowCount = 2;
-    heightDown = canvas.height/2.2;
-    brickW = canvas.width/colCount;
+    heightDown = scale/2.2;
+    brickW = scale/colCount;
     brickH = heightDown/rowCount;
     brickC = 'teal';
     
@@ -117,8 +125,8 @@ function variables() {
     paddleW = 80;
     paddleH = 15;
     padding = paddleH;
-    paddleX = canvas.width/2;
-    paddleY = canvas.height - padding - paddleH;
+    paddleX = scale/2;
+    paddleY = scale - padding - paddleH;
     paddleC = 'lightgreen';
     
     initBall();
@@ -186,15 +194,15 @@ function initBall() {
                 this.x = this.r;
                 this.xV *= -1;
             }
-            else if(this.x + this.r > canvas.width) {
-                this.x = canvas.width - this.r;
+            else if(this.x + this.r > scale) {
+                this.x = scale - this.r;
                 this.xV *= -1;
             }
             if(this.y - this.r < 0) {
                 this.y = this.r;
                 this.yV *= -1;
             }
-            else if(this.y - this.r > canvas.height) {
+            else if(this.y - this.r > scale) {
                 running = false;
                 if(lives > 0) {
                     lives -= 1;
@@ -244,13 +252,13 @@ function initBall() {
 // Game Logic
 
 function paddleHandle() {
-    paddleX = (mouseX||(touchX||canvas.width/2)) - paddleW/2;
+    paddleX = (mouseX||(touchX||scale/2)) - paddleW/2;
     
     if(paddleX < ctx.lineWidth) {
         paddleX = ctx.lineWidth;
     }
-    else if(paddleX > canvas.width - paddleW - ctx.lineWidth) {
-        paddleX = canvas.width - paddleW - ctx.lineWidth;
+    else if(paddleX > scale - paddleW - ctx.lineWidth) {
+        paddleX = scale - paddleW - ctx.lineWidth;
     }
     ctx.beginPath();
     ctx.fillStyle = paddleC;
@@ -322,13 +330,13 @@ function text() {
     ctx.fillStyle = textC;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`Bricks: ${bricksLeft}`, canvas.width/2, brickH * 1 *emptyRowCount/3);
-    ctx.fillText(`Lives: ${lives}`, canvas.width/2, brickH * 2 * emptyRowCount/3);
-    const val = canvas.height - (canvas.height - heightDown)/2;
+    ctx.fillText(`Bricks: ${bricksLeft}`, scale/2, brickH * 1 *emptyRowCount/3);
+    ctx.fillText(`Lives: ${lives}`, scale/2, brickH * 2 * emptyRowCount/3);
+    const val = scale - (scale - heightDown)/2;
     if(!running) {
-        ctx.fillText('Game by Ayden Cook', canvas.width/2, val);
+        ctx.fillText('Game by Ayden Cook', scale/2, val);
         ctx.textBaseline = 'bottom';
-        ctx.fillText('Click to Continue', mouseX||canvas.width/2, mouseY||(val - (val-heightDown)/2));
+        ctx.fillText('Click to Continue', mouseX||scale/2, mouseY||(val - (val-heightDown)/2));
     }
 }
 
@@ -338,7 +346,7 @@ function text() {
 function main() {
     // blank out canvas
     ctx.fillStyle = canvas.color;
-    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillRect(0,0,scale,scale);
     
     ball.draw();
     if(running) {
