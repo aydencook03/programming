@@ -30,7 +30,6 @@ function keyDown(data) {
 
 function mouseMove(data) {
     if(usingMouse) {
-        rect = canvas.getBoundingClientRect();
         mouseX = data.clientX - (rect.left);
         mouseY = data.clientY - (rect.top);
         touchX = null;
@@ -43,7 +42,6 @@ function mouseMove(data) {
 
 function touchMove(data) {
     usingMouse = false;
-    rect = canvas.getBoundingClientRect();
     touchX = data.touches[0].clientX - rect.left;
     touchY = data.touches[0].clientY - rect.top;
     mouseX = null;
@@ -52,7 +50,6 @@ function touchMove(data) {
 
 function touchStart(data) {
     usingMouse = false;
-    rect = canvas.getBoundingClientRect();
     touchX = data.touches[0].clientX - rect.left;
     touchY = data.touches[0].clientY - rect.top;
     mouseX = null;
@@ -84,6 +81,8 @@ function variables() {
     canvas.height = scale * ratio;
     ctx.scale(ratio, ratio);
     canvas.color = 'rgb(100,100,100)';
+    
+    rect = canvas.getBoundingClientRect();
     
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 2;

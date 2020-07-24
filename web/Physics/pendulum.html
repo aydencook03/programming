@@ -32,7 +32,7 @@ function mouseDown(data) {
     leftDown = true;
     nothingClicked = true;
     start[0] = mouse[0] = event.clientX;
-    start[1] = mouse[1] = canvas.height - event.clientY;
+    start[1] = mouse[1] = window.innerHeight - event.clientY;
 }
 function mouseUp(data) {
     leftDown = false;
@@ -42,17 +42,17 @@ function mouseUp(data) {
 }
 function mouseMove(data) {
     mouse[0] = data.clientX;
-    mouse[1] = canvas.height - data.clientY;
+    mouse[1] = window.innerHeight - data.clientY;
 }
 function touchStart(data) {
     leftDown = true;
     nothingClicked = true;
     start[0] = mouse[0] = data.touches[0].clientX;
-    start[1] = mouse[1] = canvas.height - data.touches[0].clientY;
+    start[1] = mouse[1] = window.innerHeight - data.touches[0].clientY;
 }
 function touchMove(data) {
     mouse[0] = data.touches[0].clientX;
-    mouse[1] = canvas.height - data.touches[0].clientY;
+    mouse[1] = window.innerHeight - data.touches[0].clientY;
 }
 function touchEnd(data) {
     leftDown = false;
@@ -65,16 +65,17 @@ function resize(data) {
 }
 
 function variables() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    scale = Math.min(window.innerWidth, window.innerHeight);
+    ratio = window.devicePixelRatio || 1;
+    
+    
+    canvas.style.width = window.innerWidth;
+    canvas.style.height = window.innerHeight;
+    canvas.width = window.innerWidth * ratio;
+    canvas.height = window.innerHeight * ratio;
     canvas.color = 'rgb(50,50,50)';
     
-    if(canvas.width >= canvas.height) {
-        scale = canvas.height;
-    } else {
-        scale = canvas.width;
-    }
-    
+    ctx.scale(ratio, ratio);
     
     // Sim Variables
     fps = 60;
@@ -88,8 +89,8 @@ function variables() {
     length = scale/2 - radius*3/2;
     color = 'crimson';
     lineWidth = radius/9;
-    pinX = canvas.width/2;
-    pinY = canvas.height/2;
+    pinX = window.innerWidth/2;
+    pinY = window.innerHeight/2;
     a = 179; // angle to vertical
     a *= Math.PI/180; // convert to radians
     aV = 0;
@@ -138,7 +139,7 @@ function Button(params) {
         }
         if(leftDown && nothingClicked) {
             if(mouse[0] >= this.x() && start[0] <= this.x() + this.w()) {
-                if(canvas.height - start[1] >= this.y() && canvas.height - start[1] <= this.y() + this.h()) {
+                if(window.innerHeight - start[1] >= this.y() && window.innerHeight - start[1] <= this.y() + this.h()) {
                     nothingClicked = false;
                     this.active = !this.active;
                 }
@@ -185,19 +186,19 @@ function drawObjects() {
     ctx.beginPath();
     ctx.strokeStyle = 'black';
     ctx.lineWidth = lineWidth;
-    ctx.moveTo(pinX, canvas.height-pinY);
-    ctx.lineTo(endX, canvas.height-endY);
+    ctx.moveTo(pinX, window.innerHeight-pinY);
+    ctx.lineTo(endX, window.innerHeight-endY);
     ctx.stroke();
     ctx.closePath();
     ctx.beginPath();
     ctx.fillStyle = 'black';
-    ctx.arc(pinX, canvas.height-pinY, lineWidth,0,Math.PI*2);
+    ctx.arc(pinX, window.innerHeight-pinY, lineWidth,0,Math.PI*2);
     ctx.fill();
     ctx.stroke();
     ctx.closePath();
     ctx.beginPath();
     ctx.fillStyle = color;
-    ctx.arc(x,canvas.height-y,radius,0,Math.PI*2);
+    ctx.arc(x,window.innerHeight-y,radius,0,Math.PI*2);
     ctx.fill();
     ctx.stroke();
     ctx.closePath();
@@ -245,7 +246,7 @@ function moveObjects() {
             a -= aV/fps;
             aV *= -dampen;
         }
-        else if(x + radius >= canvas.width) {
+        else if(x + radius >= window.innerWidth) {
             a -= aV/fps;
             aV *= -dampen;
         }
@@ -253,7 +254,7 @@ function moveObjects() {
             a -= aV/fps;
             aV *= -dampen;
         }
-        else if(y + radius >= canvas.height) {
+        else if(y + radius >= window.innerHeight) {
             a -= aV/fps;
             aV *= -dampen;
         }
@@ -266,7 +267,7 @@ function moveObjects() {
 function main() {
     // blank out canvas
     ctx.fillStyle = canvas.color;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
     
     drawObjects();
     moveObjects();
