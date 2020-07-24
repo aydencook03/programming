@@ -15,8 +15,11 @@ document.addEventListener('click', click);
 document.addEventListener('touchstart', click);
 window.addEventListener('resize', resizeEvent);
 
-mouseX = window.innerWidth/2;
-mouseY = window.innerHeight/2;
+mouseX = null;
+mouseY = null;
+
+touchX = null;
+touchY = null;
 
 function keyDown(data) {
     if(data.key == 'r') {
@@ -31,8 +34,8 @@ function mouseMove(data) {
 }
 
 function touchMove(data) {
-    mouseX = data.touches[0].clientX - (window.innerWidth/2 - canvas.width/2);
-    mouseY = data.touches[0].clientY - (window.innerHeight/2 - canvas.height/2);
+    touchX = data.touches[0].clientX - (window.innerWidth/2 - canvas.width/2);
+    touchY = data.touches[0].clientY - (window.innerHeight/2 - canvas.height/2);
 }
 
 function click(data) {
@@ -223,7 +226,7 @@ function initBall() {
 // Game Logic
 
 function paddleHandle() {
-    paddleX = mouseX - paddleW/2;
+    paddleX = mouseX||touchX - paddleW/2;
     
     if(paddleX < ctx.lineWidth) {
         paddleX = ctx.lineWidth;
@@ -307,7 +310,7 @@ function text() {
     if(!running) {
         ctx.fillText('Game by Ayden Cook', canvas.width/2, val);
         ctx.textBaseline = 'bottom';
-        ctx.fillText('Click to Continue', mouseX, mouseY);
+        ctx.fillText('Click to Continue', mouseX||canvas.width/2, mouseY||canvas.height/2);
     }
 }
 
@@ -338,7 +341,7 @@ function main() {
 body {
     padding: 0;
     margin: 0;
-    background: black;
+    background: darkgrey;
 }
 div {
     display: flex;
