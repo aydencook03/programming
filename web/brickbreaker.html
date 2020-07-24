@@ -26,13 +26,13 @@ function keyDown(data) {
 }
 
 function mouseMove(data) {
-    mouseX = data.clientX;
-    mouseY = data.clientY;
+    mouseX = data.clientX - (window.innerWidth/2 - canvas.width/2);
+    mouseY = data.clientY - (window.innerHeight/2 - canvas.height/2);
 }
 
 function touchMove(data) {
-    mouseX = data.touches[0].clientX;
-    mouseY = data.touches[0].clientY;
+    mouseX = data.touches[0].clientX - (window.innerWidth/2 - canvas.width/2);
+    mouseY = data.touches[0].clientY - (window.innerHeight/2 - canvas.height/2);
 }
 
 function click(data) {
@@ -50,15 +50,28 @@ function resizeEvent() {
 // Initialization
 
 function variables() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    scale = Math.min(window.innerWidth, window.innerHeight);
+    
+    canvas.width = scale;
+    canvas.height = scale;
     canvas.color = 'grey';
     
-    scale = Math.min(canvas.width, canvas.height);
-    
     ctx.strokeStyle = 'black';
-    ctx.lineWidth = 2.5;
-    ctx.font = `bold ${scale/50}px arial`;
+    ctx.lineWidth = 2;
+    ctx.font = `bold ${scale/40}px arial`;
+    
+    if(scale < window.innerWidth) {
+        canvas.style.borderLeft = `${ctx.lineWidth}px solid black`;
+        canvas.style.borderRight = `${ctx.lineWidth}px solid black`;
+        canvas.style.borderTop = 'none';
+        canvas.style.borderBottom = 'none';
+    } 
+    if(scale < window.innerHeight) {
+        canvas.style.borderTop = `${ctx.lineWidth}px solid black`;
+        canvas.style.borderBottom = `${ctx.lineWidth}px solid black`;
+        canvas.style.borderLeft = 'none';
+        canvas.style.borderRight = 'none';
+    }
     
     // game variables
     textC = 'white';
@@ -66,7 +79,7 @@ function variables() {
     bricksLeft = 0;
     
     // brick variables
-    colCount = 9;
+    colCount = 7;
     rowCount = 9;
     brickPadding = 4;
     emptyRowCount = 2;
@@ -129,7 +142,6 @@ function initBall() {
         while(Math.abs(xV) < lower) {
             xV = Math.floor(-upper + Math.random()*upper*2);
         }
-        console.log(xV);
         yV = -upper;
         
         this.x = paddleX + paddleW/2;
@@ -213,11 +225,11 @@ function initBall() {
 function paddleHandle() {
     paddleX = mouseX - paddleW/2;
     
-    if(paddleX < 0) {
-        paddleX = 0;
+    if(paddleX < ctx.lineWidth) {
+        paddleX = ctx.lineWidth;
     }
-    else if(paddleX > canvas.width - paddleW) {
-        paddleX = canvas.width - paddleW;
+    else if(paddleX > canvas.width - paddleW - ctx.lineWidth) {
+        paddleX = canvas.width - paddleW - ctx.lineWidth;
     }
     ctx.beginPath();
     ctx.fillStyle = paddleC;
@@ -326,6 +338,15 @@ function main() {
 body {
     padding: 0;
     margin: 0;
+    background: black;
+}
+div {
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    margin: 0;
 }
 canvas {
     padding: 0;
@@ -334,6 +355,8 @@ canvas {
 
 </style>
 <body>
+<div>
 <canvas id = 'canvas' width='300px' height='300px'></canvas>
+</div>
 </body>
 </html>
