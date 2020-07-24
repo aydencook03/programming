@@ -55,7 +55,7 @@ function mouseDown(data) {
     mouseDown = true;
     nothingGrabbed = true;
     mouseX = data.clientX;
-    mouseY = canvas.height - data.clientY;
+    mouseY = window.innerHeight - data.clientY;
 }
 function mouseUp(data) {
     mouseDown = false;
@@ -66,17 +66,17 @@ function mouseUp(data) {
 }
 function mouseMove(data) {
     mouseX = data.clientX;
-    mouseY = canvas.height - data.clientY;
+    mouseY = window.innerHeight - data.clientY;
 }
 function touchStart(data) {
     mouseDown = true;
     nothingGrabbed = true;
     mouseX = data.touches[0].clientX;
-    mouseY = canvas.height - data.touches[0].clientY;
+    mouseY = window.innerHeight - data.touches[0].clientY;
 }
 function touchMove(data) {
     mouseX = data.touches[0].clientX;
-    mouseY = canvas.height - data.touches[0].clientY;
+    mouseY = window.innerHeight - data.touches[0].clientY;
 }
 function touchEnd(data) {
     mouseDown = false;
@@ -86,8 +86,11 @@ function touchEnd(data) {
     }
 }
 function resize(data) {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.style.width = window.innerWidth;
+    canvas.style.height = window.innerHeight;
+    ratio = window.devicePixelRatio || 1;
+    canvas.width = window.innerWidth * ratio;
+    canvas.height = window.innerHeight * ratio;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -96,11 +99,20 @@ function resize(data) {
 function reset() {
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    
+    canvas.style.width = window.innerWidth;
+    canvas.style.height = window.innerHeight;
+    
+    ratio = window.devicePixelRatio || 1;
+    
+    canvas.width = window.innerWidth * ratio;
+    canvas.height = window.innerHeight * ratio;
+    
+    ctx.scale(ratio, ratio);
+    
     canvas.color = 'rgb(70, 70, 70)';
     
-    scale = Math.min(canvas.width, canvas.height);
+    scale = Math.min(window.innerWidth, window.innerHeight);
     
     
     fps = 120;
@@ -129,8 +141,8 @@ function reset() {
     const bounds = 200;
     for(let i = 0; i<70; i++) { // randomly place bodies
         Body.create({
-            x: Math.floor(Math.random()*canvas.width),
-            y: Math.floor(Math.random()*canvas.height),
+            x: Math.floor(Math.random()*window.innerWidth),
+            y: Math.floor(Math.random()*window.innerHeight),
             a: Math.random()*Math.PI*2,
             xV: Math.floor(Math.random() * (bounds - -bounds)) + -bounds,
             yV: Math.floor(Math.random() * (bounds - -bounds)) + -bounds,
@@ -140,8 +152,8 @@ function reset() {
     
     
     Body.create({ // big first
-        x: canvas.width/2,
-        y: canvas.height/2,
+        x: window.innerWidth/2,
+        y: window.innerHeight/2,
         color: 'crimson',
         mass: 100
     })
@@ -154,18 +166,18 @@ function reset() {
     
     /*
     Body.create({
-        x: canvas.width/2 - 50,
+        x: window.innerWidth/2 - 50,
         xV: 10,
         yV: 0,
         aV: 3,
-        y: canvas.height/2 + 0,
+        y: window.innerHeight/2 + 0,
         mass: 10
     });
     Body.create({
-        x: canvas.width/2 + 50,
+        x: window.innerWidth/2 + 50,
         xV: 0,
         aV: 0,
-        y: canvas.height/2,
+        y: window.innerHeight/2,
         mass: 10
     });
     
@@ -174,14 +186,14 @@ function reset() {
     
     /*
     Body.create({
-    x: canvas.width/2, 
-    y: canvas.height/2, 
+    x: window.innerWidth/2, 
+    y: window.innerHeight/2, 
     mass: 24, 
     xV: -10.83
     });
     Body.create({
-    x: canvas.width/2, 
-    y: canvas.height/2 + 150, 
+    x: window.innerWidth/2, 
+    y: window.innerHeight/2 + 150, 
     mass: 1, 
     xV: 260, 
     color: 'teal'
@@ -193,8 +205,8 @@ function reset() {
 // Body Type Object
 
 function Body(params) {
-    this.x = params.x || canvas.width/2;
-    this.y = params.y || canvas.height/2;
+    this.x = params.x || window.innerWidth/2;
+    this.y = params.y || window.innerHeight/2;
     this.a = params.a || 0;
     
     this.xV = params.xV || 0;
@@ -241,16 +253,16 @@ Body.prototype.move = function() { // available to all instances, but not a part
     this.a += this.aV/fps;
     
     if(this.edgeBlock) {
-        if(this.x + this.radius > canvas.width) {
-            this.x = canvas.width - this.radius;
+        if(this.x + this.radius > window.innerWidth) {
+            this.x = window.innerWidth - this.radius;
             this.xV *= -wallDampen
         }
         else if(this.x - this.radius < 0) {
             this.x = this.radius;
             this.xV *= -wallDampen;
         }
-        if(this.y + this.radius > canvas.height) {
-            this.y = canvas.height - this.radius;
+        if(this.y + this.radius > window.innerHeight) {
+            this.y = window.innerHeight - this.radius;
             this.yV *= -wallDampen;
         }
         else if(this.y - this.radius < 0) {
@@ -273,7 +285,7 @@ Body.prototype.draw = function() { // available to all instances, but not a part
     ctx.strokeStyle = 'black';
     ctx.lineWidth = this.lineWidth;
     ctx.fillStyle =  this.color;
-    ctx.arc(this.x, canvas.height - this.y, this.radius, 0, Math.PI*2, true);
+    ctx.arc(this.x, window.innerHeight - this.y, this.radius, 0, Math.PI*2, true);
     ctx.fill();
     ctx.stroke();
     ctx.closePath()
@@ -281,8 +293,8 @@ Body.prototype.draw = function() { // available to all instances, but not a part
     ctx.beginPath();
     ctx.strokeStyle = 'black';
     ctx.lineWidth = this.linewidth;
-    ctx.moveTo(this.x, canvas.height - this.y);
-    ctx.lineTo(this.x + this.radius*Math.cos(this.a), canvas.height - (this.y + this.radius*Math.sin(this.a)))
+    ctx.moveTo(this.x, window.innerHeight - this.y);
+    ctx.lineTo(this.x + this.radius*Math.cos(this.a), window.innerHeight - (this.y + this.radius*Math.sin(this.a)))
     ctx.stroke();
     ctx.closePath();
     
@@ -290,9 +302,9 @@ Body.prototype.draw = function() { // available to all instances, but not a part
     ctx.beginPath();
     ctx.strokeStyle = 'white';
     ctx.lineWidth = 2;
-    ctx.moveTo(this.x, canvas.height - this.y);
+    ctx.moveTo(this.x, window.innerHeight - this.y);
     let val = 3900;
-    ctx.lineTo(this.x + this.mass*this.xA/val, canvas.height - (this.y + this.mass*this.yA/val));
+    ctx.lineTo(this.x + this.mass*this.xA/val, window.innerHeight - (this.y + this.mass*this.yA/val));
     ctx.stroke();
     ctx.closePath();
 }
@@ -486,7 +498,7 @@ const bodyHandle = function() {
 const main = function() {
     // blank out canvas
     ctx.fillStyle = canvas.color;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
     
     bodyHandle();
     if(nothingGrabbed && mouseDown) {
