@@ -11,6 +11,7 @@ document.addEventListener('mousemove', mouseMove);
 document.addEventListener('touchmove', touchMove);
 document.addEventListener('click', click);
 document.addEventListener('touchstart', touchStart);
+document.addEventListener('touchend', touchEnd);
 window.addEventListener('resize', resizeEvent);
 
 mouseX = null;
@@ -49,6 +50,11 @@ function click(data) {
 function touchStart(data) {
     touchX = data.touches[0].clientX - (window.innerWidth/2 - canvas.width/2);
     touchY = data.touches[0].clientY - (window.innerHeight/2 - canvas.height/2);
+    mouseX = null;
+    mouseY = null;
+}
+
+function touchEnd(data) {
     mouseX = null;
     mouseY = null;
 }
