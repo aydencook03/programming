@@ -1,5 +1,6 @@
 <html>
     <meta name='viewport' content='width=device-width, height=device-height, user-scalable=no'>
+    <title>BrickBreaker</title>
 <head>
 <script>
 //////////////////////////////////////////////////////////////
@@ -59,7 +60,7 @@ function touchStart(data) {
 }
 
 function click() {
-    if(!running) {
+    if(!running && !won && !lost) {
         running = true;
     }
 }
@@ -87,18 +88,27 @@ function variables() {
     rect = canvas.getBoundingClientRect();
     
     ctx.strokeStyle = 'black';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = `${Math.round(scale/319)}`;
     ctx.font = `bold ${scale/40}px arial`;
     
-    if(scale < window.innerWidth) {
-        canvas.style.borderLeft = `${Math.ceil(ctx.lineWidth)}px solid black`;
-        canvas.style.borderRight = `${Math.ceil(ctx.lineWidth)}px solid black`;
+    lost = false;
+    won = false;
+    
+    if(scale + 2*ctx.lineWidth < window.innerWidth) {
+        canvas.style.borderLeft = `${Math.round(ctx.lineWidth)}px solid black`;
+        canvas.style.borderRight = `${Math.round(ctx.lineWidth)}px solid black`;
         canvas.style.borderTop = 'none';
         canvas.style.borderBottom = 'none';
     } 
-    if(scale < window.innerHeight) {
+    if(scale + 2*ctx.lineWidth < window.innerHeight) {
         canvas.style.borderTop = `${ctx.lineWidth}px solid black`;
         canvas.style.borderBottom = `${ctx.lineWidth}px solid black`;
+        canvas.style.borderLeft = 'none';
+        canvas.style.borderRight = 'none';
+    } 
+    if(scale + 2*ctx.lineWidth > window.innerWidth && scale + 2*ctx.lineWidth > window.innerHeight) {
+        canvas.style.borderTop = 'none';
+        canvas.style.borderBottom = 'none';
         canvas.style.borderLeft = 'none';
         canvas.style.borderRight = 'none';
     }
@@ -109,9 +119,9 @@ function variables() {
     bricksLeft = 0;
     
     // brick variables
-    colCount = 7;
+    colCount = 8;
     rowCount = 9;
-    brickPadding = 4;
+    brickPadding = `${Math.round(scale/159.5)}`;
     emptyRowCount = 2;
     heightDown = scale/2.2;
     brickW = scale/colCount;
@@ -120,14 +130,14 @@ function variables() {
     
     // ball variables
     ballC = 'crimson';
-    ballR = 4;
+    ballR = Math.round(scale/165);
     
     // paddle variables
-    paddleW = 80;
-    paddleH = 15;
+    paddleW = Math.round(scale/6);
+    paddleH = Math.round(scale/40);
     padding = paddleH;
     paddleX = scale/2;
-    paddleY = scale - padding - paddleH;
+    paddleY = scale - padding - paddleH*2;
     paddleC = 'lightgreen';
     
     initBall();
@@ -148,6 +158,7 @@ function variables() {
 
 function reset() {
     canvas = document.getElementById('canvas');
+    body = document.getElementsByTagName('body')[0];
     ctx = canvas.getContext('2d');
     
     fps = 60;
@@ -164,8 +175,8 @@ function reset() {
 function initBall() {
     ball = new function() {
         
-        const lower = 10;
-        const upper = 400;
+        const lower = Math.round(scale/63);
+        upper = Math.round(scale/1.3);
         let xV = 0;
         let yV = 0;
         
@@ -210,7 +221,14 @@ function initBall() {
                     initBall();
                 }
                 if(lives <= 0) {
-                    variables();
+                    running = false;
+                    body.style.background = 'crimson';
+                    lost = true;
+                    setTimeout(function() {
+                        body.style.background = 'darkgrey';
+                        variables();
+                        lost = false;
+                    }, 2000);
                 }
                 if(lives == 3) {
                     paddleC = 'lightgreen';
@@ -228,10 +246,19 @@ function initBall() {
                     const prevY = this.y - this.yV/fps;
                     
                     if(prevY + this.r < paddleY) {
+                        if(bricksLeft <= 0) {
+                            running = false;
+                            body.style.background = 'lightgreen';
+                            won = true;
+                            setTimeout(function() {
+                                body.style.background = "darkgrey";
+                                variables();
+                                won = false;
+                            }, 2000);
+                        }
                         this.y = paddleY - this.r;
                         this.yV *= -1;
-                        const val = paddleW/9;
-                        this.xV = (this.x - (paddleX + paddleW/2)) *val;
+                        this.xV = (this.x - (paddleX + paddleW/2)) * upper/(paddleW/2);
                     }
                     else if(prevX + this.r < paddleX) {
                         this.x = paddleX - this.r;
@@ -307,9 +334,6 @@ function brickCollision() {
         
         brick[ballIndex] = false;
         bricksLeft -= 1;
-        if(bricksLeft <= 0) {
-            variables();
-        }
         
         if(prevC != ballC && !brick[getIndex(prevC, ballR)]) {
             ball.xV *= -1;
@@ -337,7 +361,23 @@ function text() {
     if(!running) {
         ctx.fillText('Game by Ayden Cook', scale/2, val);
         ctx.textBaseline = 'bottom';
-        ctx.fillText('Click to Continue', mouseX||scale/2, mouseY||(val - (val-heightDown)/2));
+        if(!won && !lost) {
+            ctx.fillText('Click to Continue', mouseX||scale/2, mouseY||(val - (val-heightDown)/2));
+        }
+    }
+    if(won) {
+        ctx.font = `bold ${scale/10}px arial`;
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'lightgreen';
+        ctx.fillText('You Won!!!', scale/2, (val - (val-heightDown)/2));
+        ctx.font = `bold ${scale/40}px arial`;
+    }
+    else if(lost) {
+        ctx.font = `bold ${scale/10}px arial`;
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'crimson';
+        ctx.fillText('You Lost!!!', scale/2, (val - (val-heightDown)/2));
+        ctx.font = `bold ${scale/40}px arial`;
     }
 }
 
