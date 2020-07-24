@@ -69,12 +69,14 @@ function mouseMove(data) {
     mouseY = window.innerHeight - data.clientY;
 }
 function touchStart(data) {
+    data.preventDefault();
     mouseDown = true;
     nothingGrabbed = true;
     mouseX = data.touches[0].clientX;
     mouseY = window.innerHeight - data.touches[0].clientY;
 }
 function touchMove(data) {
+    data.preventDefault();
     mouseX = data.touches[0].clientX;
     mouseY = window.innerHeight - data.touches[0].clientY;
 }

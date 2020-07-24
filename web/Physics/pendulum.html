@@ -45,16 +45,19 @@ function mouseMove(data) {
     mouse[1] = window.innerHeight - data.clientY;
 }
 function touchStart(data) {
+    data.preventDefault();
     leftDown = true;
     nothingClicked = true;
     start[0] = mouse[0] = data.touches[0].clientX;
     start[1] = mouse[1] = window.innerHeight - data.touches[0].clientY;
 }
 function touchMove(data) {
+    data.preventDefault();
     mouse[0] = data.touches[0].clientX;
     mouse[1] = window.innerHeight - data.touches[0].clientY;
 }
 function touchEnd(data) {
+    data.preventDefault();
     leftDown = false;
     nothingClicked = true;
     end[0] = mouse[0];
