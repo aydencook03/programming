@@ -32,9 +32,10 @@ function mouseMove(data) {
 }
 
 function touchMove(data) {
-    data.preventDefault();
     touchX = data.touches[0].clientX - (window.innerWidth/2 - canvas.width/2);
     touchY = data.touches[0].clientY - (window.innerHeight/2 - canvas.height/2);
+    mouseX = null;
+    mouseY = null;
 }
 
 function click(data) {
