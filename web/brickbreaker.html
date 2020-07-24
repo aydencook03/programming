@@ -2,8 +2,6 @@
     <meta name='viewport' content='width=device-width, height=device-height, user-scalable=no'>
 <head>
 <script>
-
-
 //////////////////////////////////////////////////////////////
 // Event Handling
 
@@ -34,6 +32,7 @@ function mouseMove(data) {
 }
 
 function touchMove(data) {
+    data.preventDefault();
     touchX = data.touches[0].clientX - (window.innerWidth/2 - canvas.width/2);
     touchY = data.touches[0].clientY - (window.innerHeight/2 - canvas.height/2);
 }
@@ -226,7 +225,7 @@ function initBall() {
 // Game Logic
 
 function paddleHandle() {
-    paddleX = mouseX||touchX - paddleW/2;
+    paddleX = (mouseX||(touchX||canvas.width/2)) - paddleW/2;
     
     if(paddleX < ctx.lineWidth) {
         paddleX = ctx.lineWidth;
@@ -310,7 +309,7 @@ function text() {
     if(!running) {
         ctx.fillText('Game by Ayden Cook', canvas.width/2, val);
         ctx.textBaseline = 'bottom';
-        ctx.fillText('Click to Continue', mouseX||canvas.width/2, mouseY||canvas.height/2);
+        ctx.fillText('Click to Continue', mouseX||canvas.width/2, mouseY||(val - (val-heightDown)/2));
     }
 }
 
@@ -335,6 +334,7 @@ function main() {
     text();
 }
 
+//////////////////////////////////////////////////////////////
 </script>
 <style>
 
