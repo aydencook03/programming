@@ -10,7 +10,7 @@ document.addEventListener('keydown', keyDown);
 document.addEventListener('mousemove', mouseMove);
 document.addEventListener('touchmove', touchMove);
 document.addEventListener('click', click);
-document.addEventListener('touchstart', click);
+document.addEventListener('touchstart', touchStart);
 window.addEventListener('resize', resizeEvent);
 
 mouseX = null;
@@ -29,6 +29,8 @@ function keyDown(data) {
 function mouseMove(data) {
     mouseX = data.clientX - (window.innerWidth/2 - canvas.width/2);
     mouseY = data.clientY - (window.innerHeight/2 - canvas.height/2);
+    touchX = null;
+    touchY = null;
 }
 
 function touchMove(data) {
@@ -42,6 +44,13 @@ function click(data) {
     if(!running) {
         running = true;
     }
+}
+
+function touchStart(data) {
+    touchX = data.touches[0].clientX - (window.innerWidth/2 - canvas.width/2);
+    touchY = data.touches[0].clientY - (window.innerHeight/2 - canvas.height/2);
+    mouseX = null;
+    mouseY = null;
 }
 
 function resizeEvent() {
@@ -64,8 +73,8 @@ function variables() {
     ctx.font = `bold ${scale/40}px arial`;
     
     if(scale < window.innerWidth) {
-        canvas.style.borderLeft = `${ctx.lineWidth}px solid black`;
-        canvas.style.borderRight = `${ctx.lineWidth}px solid black`;
+        canvas.style.borderLeft = `${Math.ceil(ctx.lineWidth)}px solid black`;
+        canvas.style.borderRight = `${Math.ceil(ctx.lineWidth)}px solid black`;
         canvas.style.borderTop = 'none';
         canvas.style.borderBottom = 'none';
     } 
@@ -159,8 +168,8 @@ function initBall() {
             ctx.fillStyle = this.c;
             ctx.strokeStyle = 'black';
             ctx.arc(this.x, this.y, this.r, 0, Math.PI*2, true);
-            ctx.stroke();
             ctx.fill();
+            ctx.stroke();
             ctx.closePath();
         }
         this.move = function() {
@@ -237,8 +246,8 @@ function paddleHandle() {
     ctx.beginPath();
     ctx.fillStyle = paddleC;
     ctx.rect(paddleX, paddleY, paddleW, paddleH);
-    ctx.stroke();
     ctx.fill();
+    ctx.stroke();
     ctx.closePath();
 }
 
