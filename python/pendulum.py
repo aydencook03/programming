@@ -1,5 +1,5 @@
 #! /usr/bin/python
-from tkinter import *
+from tkinter import Canvas, Tk, ALL, BOTH
 from threading import Timer
 import math
 
@@ -72,9 +72,9 @@ aV = 0 # angular velocity
 
 # two wrapper functions to draw shapes
 def drawLine(x1,y1,x2,y2):
-    id = canvas.create_line(x1,canvas.winfo_height()-y1,x2,canvas.winfo_height()-y2, width = lineWidth)
+    canvas.create_line(x1,canvas.winfo_height()-y1,x2,canvas.winfo_height()-y2, width = lineWidth)
 def drawCircle(x,y,r,c):
-    id = canvas.create_oval(x - r,canvas.winfo_height()-y -r,x+r,canvas.winfo_height()-y+r, fill = c, width = lineWidth)
+    canvas.create_oval(x - r,canvas.winfo_height()-y -r,x+r,canvas.winfo_height()-y+r, fill = c, width = lineWidth)
 
 
 
