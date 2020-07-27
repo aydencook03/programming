@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang='en'>
+<head>
     <meta charset="UTF-8" />
     <meta name='viewport' content='width=device-width,height=device-height, initial-scale=1.0' />
     <title>N-Body Physics Simulation</title>
@@ -8,6 +9,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 // event handling
 
+window.onload = function() {reset()}
 document.addEventListener('keydown', keyDown);
 document.addEventListener('mousedown', mouseDown);
 document.addEventListener('mouseup', mouseUp);
@@ -16,7 +18,6 @@ document.addEventListener('touchstart', touchStart);
 document.addEventListener('touchmove', touchMove);
 document.addEventListener('touchend', touchEnd);
 window.addEventListener('resize', resize);
-window.onload = function() {reset()}
 
 mouseDown = false;
 nothingGrabbed = true;
@@ -72,14 +73,12 @@ function mouseMove(data) {
     mouseY = window.innerHeight - data.clientY;
 }
 function touchStart(data) {
-    data.preventDefault();
     mouseDown = true;
     nothingGrabbed = true;
     mouseX = data.touches[0].clientX;
     mouseY = window.innerHeight - data.touches[0].clientY;
 }
 function touchMove(data) {
-    data.preventDefault();
     mouseX = data.touches[0].clientX;
     mouseY = window.innerHeight - data.touches[0].clientY;
 }
@@ -91,11 +90,14 @@ function touchEnd(data) {
     }
 }
 function resize(data) {
-    canvas.style.width = window.innerWidth;
-    canvas.style.height = window.innerHeight;
+    scale = Math.min(window.innerWidth, window.innerHeight);
+    canvas.style.width = `${window.innerWidth}px`;
+    canvas.style.height =  `${window.innerHeight}px`;
     ratio = window.devicePixelRatio || 1;
     canvas.width = window.innerWidth * ratio;
     canvas.height = window.innerHeight * ratio;
+    
+    ctx.scale(ratio, ratio);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -103,22 +105,10 @@ function resize(data) {
 
 function reset() {
     canvas = document.getElementById("canvas");
+    canvas.color = 'rgb(70, 70, 70)';
     ctx = canvas.getContext('2d');
     
-    canvas.style.width = window.innerWidth;
-    canvas.style.height = window.innerHeight;
-    
-    ratio = window.devicePixelRatio || 1;
-    
-    canvas.width = window.innerWidth * ratio;
-    canvas.height = window.innerHeight * ratio;
-    
-    ctx.scale(ratio, ratio);
-    
-    canvas.color = 'rgb(70, 70, 70)';
-    
-    scale = Math.min(window.innerWidth, window.innerHeight);
-    
+    resize();
     
     fps = 120;
     running = true;
@@ -525,21 +515,24 @@ const main = function() {
 
 
 </script>
+<style>
+    html {
+        height: 100%;
+        width: 100%;
+    }
+    body {
+        height: 100%;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        overscroll-behavior: contain;
+    }
+    canvas {
+        padding: 0;
+        margin: 0;
+    }
+    </style>
+</head>
 <body>
 <canvas id="canvas" width='300px' height='300px'></canvas>
-<style>
-html {
-    height: 100%;
-}
-body {
-    height: 100%;
-    padding: 0;
-    margin: 0;
-    overscroll-behavior: contain;
-}
-canvas {
-    padding: 0;
-    margin: 0;
-}
-</style>
 </html>

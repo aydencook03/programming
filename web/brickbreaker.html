@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang='en'>
+<head>
     <meta charset="UTF-8" />
     <meta name='viewport' content='width=device-width, height=device-height, user-scalable=no, initial-scale=1.0'/>
     <title>BrickBreaker</title>
-<head>
 <script>
 //////////////////////////////////////////////////////////////
 // Event Handling
@@ -44,7 +44,6 @@ function mouseMove(data) {
 }
 
 function touchMove(data) {
-    data.preventDefault();
     usingMouse = false;
     touchX = data.touches[0].clientX - rect.left;
     touchY = data.touches[0].clientY - rect.top;
@@ -53,7 +52,6 @@ function touchMove(data) {
 }
 
 function touchStart(data) {
-    data.preventDefault();
     usingMouse = false;
     touchX = data.touches[0].clientX - rect.left;
     touchY = data.touches[0].clientY - rect.top;
@@ -80,8 +78,8 @@ function variables() {
     
     ratio = window.devicePixelRatio || 1;
     
-    canvas.style.width = scale;
-    canvas.style.height = scale;
+    canvas.style.width = `${scale}px`;
+    canvas.style.height = `${scale}px`;
     canvas.width = scale * ratio;
     canvas.height = scale * ratio;
     ctx.scale(ratio, ratio);
@@ -410,9 +408,11 @@ function main() {
 
 html {
     height: 100%;
+    width: 100%;
 }
 body {
     height: 100%;
+    width: 100%;
     padding: 0;
     margin: 0;
     background: darkgrey;
@@ -432,6 +432,7 @@ canvas {
 }
 
 </style>
+</head>
 <body>
 <div>
 <canvas id = 'canvas' width='300px' height='300px'></canvas>
