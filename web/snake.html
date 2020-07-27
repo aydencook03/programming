@@ -34,10 +34,6 @@ function resize(data) {
 
     canvas.style.width = scale;
     canvas.style.height = scale;
-    html.style.width = window.innerWidth;
-    html.style.height = window.innerHeight;
-    body.style.width = window.innerWidth;
-    body.style.height = window.innerHeight;
     canvas.width = scale * ratio;
     canvas.height = scale * ratio;
     ctx.scale(ratio, ratio);
@@ -73,7 +69,6 @@ function resize(data) {
 function reset() {
     canvas = document.getElementById('canvas');
     body = document.getElementsByTagName('body')[0];
-    html = document.getElementsByTagName('html')[0];
     ctx = canvas.getContext('2d');
     canvas.color = 'rgb(100,100,100)';
 
@@ -282,10 +277,12 @@ function main() {
 </script>
 <style>
     html {
-        height: 1;
+        width: 100%;
+        height: 100%;
     }
     body {
-        height: 1;
+        width: 100%;
+        height: 100%;
         padding: 0;
         margin: 0;
         background: darkgrey;
