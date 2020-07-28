@@ -74,7 +74,7 @@ function resizeEvent() {
 // Initialization
 
 function variables() {
-    scale = Math.min(window.innerWidth, window.innerHeight);
+    scale = Math.min(window.innerWidth, window.innerHeight) * 0.95;
     
     ratio = window.devicePixelRatio || 1;
     
@@ -83,17 +83,20 @@ function variables() {
     canvas.width = scale * ratio;
     canvas.height = scale * ratio;
     ctx.scale(ratio, ratio);
-    canvas.color = 'rgb(100,100,100)';
     
     rect = canvas.getBoundingClientRect();
     
     ctx.strokeStyle = 'black';
     ctx.lineWidth = `${Math.round(scale/319)}`;
     ctx.font = `bold ${scale/40}px arial`;
+
+    canvas.style.border = `${Math.round(ctx.lineWidth)}px solid black`;
+    canvas.style.borderRadius = `${Math.round(ctx.lineWidth) * 5}px`;
     
     lost = false;
     won = false;
     
+    /*
     if(scale + 2*ctx.lineWidth < window.innerWidth) {
         canvas.style.borderLeft = `${Math.round(ctx.lineWidth)}px solid black`;
         canvas.style.borderRight = `${Math.round(ctx.lineWidth)}px solid black`;
@@ -112,11 +115,21 @@ function variables() {
         canvas.style.borderLeft = 'none';
         canvas.style.borderRight = 'none';
     }
+    */
     
     // game variables
-    textC = 'white';
     lives = 3;
     bricksLeft = 0;
+
+    // colors
+    textC = 'white';
+    bodyC = '#37474f';
+    canvas.color = 'rgb(100,100,100)';
+    winC = 'lightgreen';
+    loseC = 'crimson';
+    paddleC = 'lightgreen';
+    brickC = 'teal';
+    ballC = 'crimson';
     
     // brick variables
     colCount = 8;
@@ -126,10 +139,8 @@ function variables() {
     heightDown = scale/2.2;
     brickW = scale/colCount;
     brickH = heightDown/rowCount;
-    brickC = 'teal';
     
     // ball variables
-    ballC = 'crimson';
     ballR = Math.round(scale/165);
     
     // paddle variables
@@ -138,7 +149,6 @@ function variables() {
     padding = paddleH;
     paddleX = scale/2;
     paddleY = scale - padding - paddleH*2;
-    paddleC = 'lightgreen';
     
     initBall();
     brick = new Array(colCount*rowCount);
@@ -165,6 +175,8 @@ function reset() {
     running = false;
     
     variables();
+
+    body.style.background = bodyC;
     
     loop = setInterval(main, 1000/fps);
 }
@@ -222,16 +234,16 @@ function initBall() {
                 }
                 if(lives <= 0) {
                     running = false;
-                    body.style.background = 'crimson';
+                    body.style.background = loseC;
                     lost = true;
                     setTimeout(function() {
-                        body.style.background = 'darkgrey';
+                        body.style.background = bodyC;
                         variables();
                         lost = false;
                     }, 3000);
                 }
                 if(lives == 3) {
-                    paddleC = 'lightgreen';
+                    paddleC = paddleC;
                 }
                 else if(lives == 2) {
                     paddleC = 'orange';
@@ -248,10 +260,10 @@ function initBall() {
                     if(prevY + this.r < paddleY) {
                         if(bricksLeft <= 0) {
                             running = false;
-                            body.style.background = 'lightgreen';
+                            body.style.background = winC;
                             won = true;
                             setTimeout(function() {
-                                body.style.background = "darkgrey";
+                                body.style.background = bodyC;
                                 variables();
                                 won = false;
                             }, 3000);

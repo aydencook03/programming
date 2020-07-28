@@ -26,10 +26,14 @@ function keyDown(data) {
     else if(data.key == 'ArrowDown') {
         snake.setDir('down');
     }
+    else if(data.key == 'r') {
+        clearInterval(loop);
+        reset();
+    }
 }
 
 function resize(data) {
-    scale = Math.min(window.innerWidth, window.innerHeight);
+    scale = Math.min(window.innerWidth, window.innerHeight)*0.95;
     ratio = window.devicePixelRatio || 1;
 
     canvas.style.width = `${scale}px`;
@@ -42,7 +46,11 @@ function resize(data) {
     
     ctx.strokeStyle = 'black';
     ctx.lineWidth = `${Math.round(scale/319)}`;
+
+    canvas.style.border = `${Math.round(ctx.lineWidth)}px solid black`;
+    canvas.style.borderRadius = `${Math.round(ctx.lineWidth) * 5}px`;
     
+    /*
     if(scale + 2*ctx.lineWidth < window.innerWidth) {
         canvas.style.borderLeft = `${Math.round(ctx.lineWidth)}px solid black`;
         canvas.style.borderRight = `${Math.round(ctx.lineWidth)}px solid black`;
@@ -61,6 +69,7 @@ function resize(data) {
         canvas.style.borderLeft = 'none';
         canvas.style.borderRight = 'none';
     }
+    */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,18 +78,26 @@ function resize(data) {
 function reset() {
     canvas = document.getElementById('canvas');
     body = document.getElementsByTagName('body')[0];
+    div = document.getElementsByTagName('div')[0];
     ctx = canvas.getContext('2d');
-    canvas.color = 'rgb(100,100,100)';
 
-    fps = 9;
+    fps = 12;
 
     resize();
 
-    gridCount = 15;
+    gridCount = 18;
+    squarePadding = 0;
     wrapping = false;
 
     appleC = 'crimson';
-    snakeC = 'lightgreen';
+    snakeC = '#69f0ae';
+    headC = '#00c853';
+    canvas.color = 'rgb(100,100,100)';
+    bodyC = '#37474f';
+    dieC = 'crimson';
+
+
+    body.style.background = bodyC;
 
     apple = new Apple();
     snake = new Snake();
@@ -91,31 +108,28 @@ function reset() {
 ////////////////////////////////////////////////////////////////////
 // Snake Constructor Function
 
-function Snake() {
-    this.vel = [0,0];
-    let x = apple.x;
-    let y = apple.y;
-    while(x == apple.x) {
-        x = Math.floor(Math.random()*gridCount);
+function Snake(pos) {
+
+    if(typeof pos === 'undefined') {
+        pos = {};
     }
-    while(y == apple.y) {
-        y = Math.floor(Math.random()*gridCount);
+
+    let x = pos.x || Math.floor(Math.random()*gridCount);
+    let y = pos.y || Math.floor(Math.random()*gridCount);
+    
+    if(x == apple.x && y == apple.y) {
+        snake = new Snake();
     }
+
     this.x = x;
     this.y = y;
+    this.vel = [0,0];
     this.body = [[]];
-    this.past = [x, y];
-    this.length = 1;
     this.dead = false;
+    this.eaten = false;
 
     this.update = function() {
-        if(this.body.length >= this.length) {
-            this.body.splice(0, 1);
-        }
-
-        this.body.push(this.past);
-
-
+        // wall collision
         if(!wrapping) {
             if(this.x == 0 && this.vel[0] < 0) {
                 this.x = 0;
@@ -152,6 +166,7 @@ function Snake() {
             }
         }
 
+        // apple eating
         const dist = ((this.x - apple.x)**2 + (this.y - apple.y)**2)**0.5;
         const vect = [(apple.x - this.x)/dist, (apple.y - this.y)/dist];
         if(dist <=1 && this.vel[0] == vect[0] && this.vel[1] == vect[1]) {
@@ -159,29 +174,36 @@ function Snake() {
             apple = new Apple();
         }
 
-        
-        
 
-
-        this.x += this.vel[0];
-        this.y += this.vel[1];
-        this.past = [this.x, this.y];
-
+        // hitting its own tail
         for(let i = 0; i < this.body.length; i++) {
             if(i != 0 && this.body[i][0] == this.x && this.body[i][1] == this.y) {
                 this.kill();
             }
         }
+
+        // calculate new head position
+        this.x += this.vel[0];
+        this.y += this.vel[1];
+
+        // put that head position at front of body
+        this.body.unshift([this.x, this.y]);
+
+        if(!this.eaten) {
+            this.body.pop(); // take off end of body
+        }
+        this.eaten = false;
         
 
-        for(let i = 0; i < this.body.length; i++) {
+        // draw body
+        for(let i = this.body.length-1; i >= 0; i--) {
             const size = scale/gridCount;
-            const pad = ctx.lineWidth;
+            const pad = squarePadding;
             const x = this.body[i][0];
             const y = this.body[i][1];
             ctx.beginPath();
-            if(i == this.body.length-1) {
-                ctx.fillStyle = 'green';
+            if(i == 0) {
+                ctx.fillStyle = headC;
             } else{
                 ctx.fillStyle = snakeC;
             }
@@ -193,34 +215,19 @@ function Snake() {
     }
 
     this.setDir = function(dir) {
+        const val = 1;
         if(!this.dead) {
-            if(this.body.length == 1) {
-                if(dir == 'left' && this.vel[0] != 1) {
-                    this.vel = [-1, 0];
-                }
-                else if(dir == 'right' && this.vel[0] != -1) {
-                    this.vel = [1, 0];
-                }
-                else if(dir == 'up' && this.vel[1] != 1) {
-                    this.vel = [0, -1];
-                }
-                else if(dir == 'down' && this.vel[1] != -1) {
-                    this.vel = [0, 1];
-                }
-            } else {
-                const vect = [Math.round(this.body[this.body.length-1][0] - this.x), Math.round(this.body[this.body.length-1][1] - this.y)];
-                if(dir == 'left' && this.vel[0] != 1 && vect[0] != -1 && vect[1] != 0) {
-                    this.vel = [-1, 0];
-                }
-                else if(dir == 'right' && this.vel[0] != -1 && vect[0] != 1 && vect[1] != 0) {
-                    this.vel = [1, 0];
-                }
-                else if(dir == 'up' && this.vel[1] != 1 && vect[0] != 0 && vect[1] != -1) {
-                    this.vel = [0, -1];
-                }
-                else if(dir == 'down' && this.vel[1] != -1 && vect[0] != 0 && vect[1] != 1) {
-                    this.vel = [0, 1];
-                }
+            if(dir == 'left' && this.vel[0] != val) {
+                this.vel = [-val, 0];
+            }
+            else if(dir == 'right' && this.vel[0] != -val) {
+                this.vel = [val, 0];
+            }
+            else if(dir == 'up' && this.vel[1] != val) {
+                this.vel = [0, -val];
+            }
+            else if(dir == 'down' && this.vel[1] != -val) {
+                this.vel = [0, val];
             }
         }
     }
@@ -228,15 +235,15 @@ function Snake() {
     this.kill = function() {
         this.dead = true;
         this.vel = [0, 0];
-        body.style.background = 'crimson';
+        body.style.background = dieC;
         setTimeout(function() {
-            body.style.background = 'darkgrey';
+            body.style.background = bodyC;
             snake = new Snake();
         }, 3000);
     }
 
     this.grow = function() {
-        this.length += 1;
+        this.eaten = true;
     }
 }
 
@@ -250,9 +257,20 @@ function Apple(pos) {
     this.x = pos.x || Math.floor(Math.random()*gridCount);
     this.y = pos.y || Math.floor(Math.random()*gridCount);
 
+    if(typeof snake === 'undefined') {
+        
+    } else {
+        for(let i = 0; i < snake.body.length; i++) {
+            while(this.x == snake.body[i][0] && this.y == snake.body[i][1]) {
+                this.x = Math.floor(Math.random()*gridCount);
+                this.y = Math.floor(Math.random()*gridCount);
+            }
+        }
+    }
+
     this.draw = function() {
         const size = scale/gridCount;
-        const pad = ctx.lineWidth;
+        const pad = squarePadding;
         ctx.beginPath();
         ctx.fillStyle = appleC;
         ctx.rect(pad + this.x*size, pad + this.y*size, size - 2*pad, size - 2*pad);
