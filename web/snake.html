@@ -17,16 +17,16 @@ document.addEventListener('touchmove', touchMove);
 document.addEventListener('touchend', touchEnd);
 
 function keyDown(data) {
-    if(data.key == 'ArrowLeft') {
+    if(data.key == 'ArrowLeft' || data.key == 'a') {
         snake.setDir('left');
     }
-    if(data.key == 'ArrowRight') {
+    if(data.key == 'ArrowRight' || data.key == 'd') {
         snake.setDir('right');
     }
-    if(data.key == 'ArrowUp') {
+    if(data.key == 'ArrowUp' || data.key == 'w') {
         snake.setDir('up');
     }
-    if(data.key == 'ArrowDown') {
+    if(data.key == 'ArrowDown' || data.key == 's') {
         snake.setDir('down');
     }
     if(data.key == 'r') {
@@ -43,6 +43,24 @@ end = [];
 
 function touchStart(data) {
     placeHolder = [data.touches[0].clientX-rect.left, data.touches[0].clientY-rect.top];
+
+    if(!swiping) {
+        if(placeHolder[0] >= scale/3 && placeHolder[0] <= 2*scale/3) {
+            if(placeHolder[1] >= 0 && placeHolder[1] <= scale/3) {
+                snake.setDir('up');
+            }
+            else if(placeHolder[1] <= scale && placeHolder[1] >= scale - scale/3) {
+                snake.setDir('down');
+            }
+        }
+        else if(placeHolder[0] >= 0 && placeHolder[0] <= scale/3) {
+            snake.setDir('left');
+        }
+        else if(placeHolder[0] <= scale && placeHolder[0] >= scale - scale/3) {
+            snake.setDir('right');
+        }
+    }
+
 }
 
 function touchMove(data) {
@@ -56,7 +74,9 @@ function touchEnd(data) {
         end = [current[0], current[1]];
     }
     moved = false;
-    evaluateSwipe();
+    if(swiping) {
+        evaluateSwipe();
+    }
 }
 
 function evaluateSwipe() {
@@ -121,6 +141,7 @@ function reset() {
     squarePadding = 0;
     wrapping = false;
     grid = false;
+    swiping = false; // touchscreen
 
     appleC = 'crimson';
     snakeC = '#69f0ae';
@@ -361,13 +382,6 @@ function main() {
         }
         ctx.strokeStyle = val;
     }
-
-    // touch debugging
-    ctx.beginPath();
-    ctx.moveTo(start[0], start[1]);
-    ctx.lineTo(end[0], end[1]);
-    ctx.stroke();
-    ctx.closePath();
 
     apple.draw();
     snake.update();
