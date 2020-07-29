@@ -49,27 +49,6 @@ function resize(data) {
 
     canvas.style.border = `${Math.round(ctx.lineWidth)}px solid black`;
     canvas.style.borderRadius = `${Math.round(ctx.lineWidth) * 5}px`;
-    
-    /*
-    if(scale + 2*ctx.lineWidth < window.innerWidth) {
-        canvas.style.borderLeft = `${Math.round(ctx.lineWidth)}px solid black`;
-        canvas.style.borderRight = `${Math.round(ctx.lineWidth)}px solid black`;
-        canvas.style.borderTop = 'none';
-        canvas.style.borderBottom = 'none';
-    } 
-    if(scale + 2*ctx.lineWidth < window.innerHeight) {
-        canvas.style.borderTop = `${ctx.lineWidth}px solid black`;
-        canvas.style.borderBottom = `${ctx.lineWidth}px solid black`;
-        canvas.style.borderLeft = 'none';
-        canvas.style.borderRight = 'none';
-    } 
-    if(scale + 2*ctx.lineWidth > window.innerWidth && scale + 2*ctx.lineWidth > window.innerHeight) {
-        canvas.style.borderTop = 'none';
-        canvas.style.borderBottom = 'none';
-        canvas.style.borderLeft = 'none';
-        canvas.style.borderRight = 'none';
-    }
-    */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -88,6 +67,7 @@ function reset() {
     gridCount = 18;
     squarePadding = 0;
     wrapping = false;
+    grid = true;
 
     appleC = 'crimson';
     snakeC = '#69f0ae';
@@ -95,6 +75,7 @@ function reset() {
     canvas.color = 'rgb(100,100,100)';
     bodyC = '#37474f';
     dieC = 'crimson';
+    gridC = 'grey';
 
 
     body.style.background = bodyC;
@@ -312,6 +293,21 @@ function main() {
     // Clear Screen
     ctx.fillStyle = canvas.color;
     ctx.fillRect(0, 0, scale, scale);
+
+    if(grid) {
+        const size = scale/gridCount;
+        const val = ctx.strokeStyle;
+        ctx.strokeStyle = gridC;
+        for(let c = 0; c<gridCount; c++) {
+            for(let r = 0; r<gridCount; r++) {
+                ctx.beginPath();
+                ctx.rect(c*size, r*size, size, size);
+                ctx.stroke();
+                ctx.closePath();
+            }
+        }
+        ctx.strokeStyle = val;
+    }
 
     apple.draw();
     snake.update();
