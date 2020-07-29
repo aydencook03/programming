@@ -120,6 +120,7 @@ function variables() {
     // game variables
     lives = 3;
     bricksLeft = 0;
+    vibr = 4;
 
     // colors
     textC = 'white';
@@ -236,6 +237,7 @@ function initBall() {
                     running = false;
                     body.style.background = loseC;
                     lost = true;
+                    window.navigator.vibrate(1000);
                     setTimeout(function() {
                         body.style.background = bodyC;
                         variables();
@@ -262,6 +264,7 @@ function initBall() {
                             running = false;
                             body.style.background = winC;
                             won = true;
+                            window.navigator.vibrate(1000);
                             setTimeout(function() {
                                 body.style.background = bodyC;
                                 variables();
@@ -271,14 +274,17 @@ function initBall() {
                         this.y = paddleY - this.r;
                         this.yV *= -1;
                         this.xV = (this.x - (paddleX + paddleW/2)) * upper/(paddleW/2);
+                        window.navigator.vibrate(vibr);
                     }
                     else if(prevX + this.r < paddleX) {
                         this.x = paddleX - this.r;
                         this.xV *= -1;
+                        window.navigator.vibrate(vibr);
                     }
                     else if(prevX - this.r > paddleX + paddleW) {
                         this.x = paddleX + paddleW + this.r;
                         this.xV *= -1;
+                        window.navigator.vibrate(vibr);
                     }
                 }
             }
@@ -345,19 +351,22 @@ function brickCollision() {
     if(ballC >= 0 && ballC < colCount && ballR >= 0 && ballR < rowCount && brick[ballIndex]) {
         
         brick[ballIndex] = false;
-        bricksLeft -= 1;
+        bricksLeft -= 1; 
         
         if(prevC != ballC && !brick[getIndex(prevC, ballR)]) {
             ball.xV *= -1;
             bothTestsFailed = false;
+            window.navigator.vibrate(vibr);
         }
         if(prevR != ballR && !brick[getIndex(ballC, prevR)]) {
             ball.yV *= -1;
             bothTestsFailed = false;
+            window.navigator.vibrate(vibr);
         }
         if(bothTestsFailed) {
             ball.xV *= -1;
             ball.yV *= -1;
+            window.navigator.vibrate(vibr);
         }
     }
 }

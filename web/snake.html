@@ -46,10 +46,10 @@ function touchStart(data) {
 
     if(!swiping) {
         if(placeHolder[0] >= scale/3 && placeHolder[0] <= 2*scale/3) {
-            if(placeHolder[1] >= 0 && placeHolder[1] <= scale/3) {
+            if(placeHolder[1] >= 0 && placeHolder[1] <= scale/2) {
                 snake.setDir('up');
             }
-            else if(placeHolder[1] <= scale && placeHolder[1] >= scale - scale/3) {
+            else if(placeHolder[1] <= scale && placeHolder[1] >= scale - scale/2) {
                 snake.setDir('down');
             }
         }
@@ -260,7 +260,8 @@ function Snake(pos) {
             }
         }
 
-        
+
+        if(!this.dead) {
         // calculate new head position
         this.x += this.vel[0];
         this.y += this.vel[1];
@@ -272,6 +273,7 @@ function Snake(pos) {
             this.body.pop(); // take off end of body
         }
         this.eaten = false;
+        }
         
 
         // draw body
@@ -316,6 +318,7 @@ function Snake(pos) {
         this.vel = [0, 0];
         this.inputs = [];
         body.style.background = dieC;
+        window.navigator.vibrate(1000);
         setTimeout(function() {
             body.style.background = bodyC;
             snake = new Snake();
@@ -324,6 +327,7 @@ function Snake(pos) {
 
     this.grow = function() {
         this.eaten = true;
+        window.navigator.vibrate(4);
     }
 }
 
