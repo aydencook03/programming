@@ -80,7 +80,6 @@ function touchEnd(data) {
 }
 
 function evaluateSwipe() {
-
     let axis;
     if(Math.abs(end[0] - start[0]) > Math.abs(end[1] - start[1])) {
         axis = 'x';
@@ -102,7 +101,6 @@ function evaluateSwipe() {
             snake.setDir('up');
         }
     }
-
 }
 
 function resize(data) {
