@@ -12,6 +12,9 @@
 window.onload = function() {reset()}
 document.addEventListener('keydown', keyDown);
 window.addEventListener('resize', resize);
+document.addEventListener('touchstart', touchStart);
+document.addEventListener('touchmove', touchMove);
+document.addEventListener('touchend', touchEnd);
 
 function keyDown(data) {
     if(data.key == 'ArrowLeft') {
@@ -30,6 +33,56 @@ function keyDown(data) {
         clearInterval(loop);
         reset();
     }
+}
+
+placeHolder = [];
+start = [];
+moved = false;
+current = [];
+end = [];
+
+function touchStart(data) {
+    placeHolder = [data.touches[0].clientX-rect.left, data.touches[0].clientY-rect.top];
+}
+
+function touchMove(data) {
+    current = [data.touches[0].clientX-rect.left, data.touches[0].clientY-rect.top];
+    moved = true;
+}
+
+function touchEnd(data) {
+    if(moved) {
+        start = [placeHolder[0], placeHolder[1]];
+        end = [current[0], current[1]];
+    }
+    moved = false;
+    evaluateSwipe();
+}
+
+function evaluateSwipe() {
+
+    let axis;
+    if(Math.abs(end[0] - start[0]) > Math.abs(end[1] - start[1])) {
+        axis = 'x';
+    } else {
+        axis = 'y';
+    }
+
+    if(axis == 'x') {
+        if(end[0] - start[0] > 0) {
+            snake.setDir('right');
+        } else {
+            snake.setDir('left');
+        }
+    }
+    else if(axis == 'y') {
+        if(end[1] - start[1] > 0) {
+            snake.setDir('down');
+        } else {
+            snake.setDir('up');
+        }
+    }
+
 }
 
 function resize(data) {
@@ -67,7 +120,7 @@ function reset() {
     gridCount = 18;
     squarePadding = 0;
     wrapping = false;
-    grid = true;
+    grid = false;
 
     appleC = 'crimson';
     snakeC = '#69f0ae';
@@ -308,6 +361,13 @@ function main() {
         }
         ctx.strokeStyle = val;
     }
+
+    // touch debugging
+    ctx.beginPath();
+    ctx.moveTo(start[0], start[1]);
+    ctx.lineTo(end[0], end[1]);
+    ctx.stroke();
+    ctx.closePath();
 
     apple.draw();
     snake.update();
