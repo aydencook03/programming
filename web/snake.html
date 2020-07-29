@@ -17,16 +17,16 @@ function keyDown(data) {
     if(data.key == 'ArrowLeft') {
         snake.setDir('left');
     }
-    else if(data.key == 'ArrowRight') {
+    if(data.key == 'ArrowRight') {
         snake.setDir('right');
     }
-    else if(data.key == 'ArrowUp') {
+    if(data.key == 'ArrowUp') {
         snake.setDir('up');
     }
-    else if(data.key == 'ArrowDown') {
+    if(data.key == 'ArrowDown') {
         snake.setDir('down');
     }
-    else if(data.key == 'r') {
+    if(data.key == 'r') {
         clearInterval(loop);
         reset();
     }
@@ -114,6 +114,7 @@ function Snake(pos) {
         pos = {};
     }
 
+
     let x = pos.x || Math.floor(Math.random()*gridCount);
     let y = pos.y || Math.floor(Math.random()*gridCount);
     
@@ -127,8 +128,30 @@ function Snake(pos) {
     this.body = [[]];
     this.dead = false;
     this.eaten = false;
+    this.inputs = [];
 
     this.update = function() {
+
+        if(this.inputs.length >= 3) {
+            this.inputs.splice(this.inputs.length-1-3, 3);
+        }
+
+        let newV;
+        if(this.inputs.length > 0) {
+            newV = this.inputs.shift();
+            if(newV[0] == -this.vel[0] && newV[1] == 0) { // if newV is opposite of this.vel, don't use it
+                newV = this.vel;
+            }
+            else if(newV[1] == -this.vel[1] && newV[0] == 0) {
+                newV = this.vel;
+            }
+        } else {
+            newV = this.vel;
+        }
+
+        this.vel = newV;
+
+
         // wall collision
         if(!wrapping) {
             if(this.x == 0 && this.vel[0] < 0) {
@@ -182,6 +205,7 @@ function Snake(pos) {
             }
         }
 
+        
         // calculate new head position
         this.x += this.vel[0];
         this.y += this.vel[1];
@@ -217,17 +241,17 @@ function Snake(pos) {
     this.setDir = function(dir) {
         const val = 1;
         if(!this.dead) {
-            if(dir == 'left' && this.vel[0] != val) {
-                this.vel = [-val, 0];
+            if(dir == 'left') {
+                this.inputs.push([-val, 0]);
             }
-            else if(dir == 'right' && this.vel[0] != -val) {
-                this.vel = [val, 0];
+            if(dir == 'right') {
+                this.inputs.push([val, 0]);
             }
-            else if(dir == 'up' && this.vel[1] != val) {
-                this.vel = [0, -val];
+            if(dir == 'up') {
+                this.inputs.push([0, -val]);
             }
-            else if(dir == 'down' && this.vel[1] != -val) {
-                this.vel = [0, val];
+            if(dir == 'down') {
+                this.inputs.push([0, val]);
             }
         }
     }
@@ -235,6 +259,7 @@ function Snake(pos) {
     this.kill = function() {
         this.dead = true;
         this.vel = [0, 0];
+        this.inputs = [];
         body.style.background = dieC;
         setTimeout(function() {
             body.style.background = bodyC;
