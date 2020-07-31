@@ -44,25 +44,6 @@ end = [];
 function touchStart(data) {
     placeHolder = [data.touches[0].clientX-rect.left, data.touches[0].clientY-rect.top];
 
-    /*
-    if(!swiping) {
-        if(placeHolder[0] >= scale/3 && placeHolder[0] <= 2*scale/3) {
-            if(placeHolder[1] >= 0 && placeHolder[1] <= scale/2) {
-                snake.setDir('up');
-            }
-            else if(placeHolder[1] <= scale && placeHolder[1] >= scale - scale/2) {
-                snake.setDir('down');
-            }
-        }
-        else if(placeHolder[0] >= 0 && placeHolder[0] <= scale/3) {
-            snake.setDir('left');
-        }
-        else if(placeHolder[0] <= scale && placeHolder[0] >= scale - scale/3) {
-            snake.setDir('right');
-        }
-    }
-    */
-
     if(!swiping) {
         const x = placeHolder[0];
         const y = placeHolder[1];
@@ -162,7 +143,7 @@ function reset() {
     squarePadding = 0;
     wrapping = false;
     grid = false;
-    swiping = false; // touchscreen
+    swiping = true; // touchscreen swiping vs buttons
     text = false;
 
     appleC = 'crimson';
@@ -420,22 +401,6 @@ function main() {
         ctx.fillText(`Length: ${snake.body.length}`, scale/2, scale/gridCount/2);
         ctx.closePath();
     }
-
-    // testing
-    // ctx.beginPath();
-    // ctx.save();
-    // ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
-    // ctx.moveTo(scale/2, scale/2);
-    // ctx.lineTo(0, 0);
-    // ctx.moveTo(scale/2, scale/2);
-    // ctx.lineTo(scale, 0);
-    // ctx.moveTo(scale/2, scale/2);
-    // ctx.lineTo(0, scale);
-    // ctx.moveTo(scale/2, scale/2);
-    // ctx.lineTo(scale, scale);
-    // ctx.stroke();
-    // ctx.restore();
-    // ctx.closePath();
 }
 
 </script>
