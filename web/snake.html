@@ -44,6 +44,7 @@ end = [];
 function touchStart(data) {
     placeHolder = [data.touches[0].clientX-rect.left, data.touches[0].clientY-rect.top];
 
+    /*
     if(!swiping) {
         if(placeHolder[0] >= scale/3 && placeHolder[0] <= 2*scale/3) {
             if(placeHolder[1] >= 0 && placeHolder[1] <= scale/2) {
@@ -57,6 +58,25 @@ function touchStart(data) {
             snake.setDir('left');
         }
         else if(placeHolder[0] <= scale && placeHolder[0] >= scale - scale/3) {
+            snake.setDir('right');
+        }
+    }
+    */
+
+    if(!swiping) {
+        const x = placeHolder[0];
+        const y = placeHolder[1];
+
+        if(x >= y && x <= scale - y) {
+            snake.setDir('up');
+        }
+        else if(x >= (scale - y) && x <= scale - (scale - y)) {
+            snake.setDir('down');
+        }
+        else if(y >= x && y <= scale - x) {
+            snake.setDir('left');
+        }
+        else if(y >= (scale - x) && y <= scale - (scale - x)) {
             snake.setDir('right');
         }
     }
@@ -117,6 +137,9 @@ function resize(data) {
     
     ctx.strokeStyle = 'black';
     ctx.lineWidth = `${Math.round(scale/319)}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `bold ${scale/40}px arial`;
 
     canvas.style.border = `${Math.round(ctx.lineWidth)}px solid black`;
     canvas.style.borderRadius = `${Math.round(ctx.lineWidth) * 5}px`;
@@ -140,6 +163,7 @@ function reset() {
     wrapping = false;
     grid = false;
     swiping = false; // touchscreen
+    text = false;
 
     appleC = 'crimson';
     snakeC = '#69f0ae';
@@ -148,6 +172,7 @@ function reset() {
     bodyC = '#37474f';
     dieC = 'crimson';
     gridC = 'grey';
+    textC = 'white';
 
 
     body.style.background = bodyC;
@@ -260,17 +285,17 @@ function Snake(pos) {
 
 
         if(!this.dead) {
-        // calculate new head position
-        this.x += this.vel[0];
-        this.y += this.vel[1];
+            // calculate new head position
+            this.x += this.vel[0];
+            this.y += this.vel[1];
 
-        // put that head position at front of body
-        this.body.unshift([this.x, this.y]);
+            // put that head position at front of body
+            this.body.unshift([this.x, this.y]);
 
-        if(!this.eaten) {
-            this.body.pop(); // take off end of body
-        }
-        this.eaten = false;
+            if(!this.eaten) {
+                this.body.pop(); // take off end of body
+            }
+            this.eaten = false;
         }
         
 
@@ -320,6 +345,7 @@ function Snake(pos) {
         setTimeout(function() {
             body.style.background = bodyC;
             snake = new Snake();
+            return
         }, 3000);
     }
 
@@ -387,6 +413,29 @@ function main() {
 
     apple.draw();
     snake.update();
+
+    if(text) {
+        ctx.beginPath();
+        ctx.fillStyle = textC;
+        ctx.fillText(`Length: ${snake.body.length}`, scale/2, scale/gridCount/2);
+        ctx.closePath();
+    }
+
+    // testing
+    // ctx.beginPath();
+    // ctx.save();
+    // ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+    // ctx.moveTo(scale/2, scale/2);
+    // ctx.lineTo(0, 0);
+    // ctx.moveTo(scale/2, scale/2);
+    // ctx.lineTo(scale, 0);
+    // ctx.moveTo(scale/2, scale/2);
+    // ctx.lineTo(0, scale);
+    // ctx.moveTo(scale/2, scale/2);
+    // ctx.lineTo(scale, scale);
+    // ctx.stroke();
+    // ctx.restore();
+    // ctx.closePath();
 }
 
 </script>
