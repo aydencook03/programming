@@ -69,6 +69,8 @@ function touchMove(data) {
         const yDif = current[1] - start[1];
         const mag = (xDif**2 + yDif**2)**0.5;
 
+        snake.inputs = [];
+
         if(mag >= sensitivity) {
             let axis;
             start = [current[0], current[1]];
@@ -114,7 +116,7 @@ function resize(data) {
     ctx.textBaseline = 'middle';
     ctx.font = `bold ${scale/40}px arial`;
 
-    sensitivity = scale/18/3;
+    sensitivity = scale/18/4;
 
     canvas.style.border = `${Math.round(ctx.lineWidth)}px solid black`;
     canvas.style.borderRadius = `${Math.round(ctx.lineWidth) * 5}px`;
@@ -129,7 +131,7 @@ function reset() {
     div = document.getElementsByTagName('div')[0];
     ctx = canvas.getContext('2d');
 
-    fps = 12;
+    fps = 11;
 
     resize();
 
