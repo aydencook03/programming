@@ -114,7 +114,7 @@ function resize(data) {
     ctx.textBaseline = 'middle';
     ctx.font = `bold ${scale/40}px arial`;
 
-    sensitivity = scale/18;
+    sensitivity = scale/18/3;
 
     canvas.style.border = `${Math.round(ctx.lineWidth)}px solid black`;
     canvas.style.borderRadius = `${Math.round(ctx.lineWidth) * 5}px`;
