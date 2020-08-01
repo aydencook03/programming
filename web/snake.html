@@ -38,6 +38,8 @@ start = [];
 current = [];
 end = [];
 
+prevInput = null;
+
 function touchStart(data) {
     start = [data.touches[0].clientX-rect.left, data.touches[0].clientY-rect.top];
 
@@ -69,8 +71,6 @@ function touchMove(data) {
         const yDif = current[1] - start[1];
         const mag = (xDif**2 + yDif**2)**0.5;
 
-        snake.inputs = [];
-
         if(mag >= sensitivity) {
             let axis;
             start = [current[0], current[1]];
@@ -82,16 +82,20 @@ function touchMove(data) {
             }
 
             if(axis == 'x') {
-                if(xDif > 0) {
+                if(xDif > 0 && prevInput != 'right') {
                     snake.setDir('right');
-                } else {
+                    prevInput = 'right';
+                } else if(xDif < 0 && prevInput != 'left') {
                     snake.setDir('left');
+                    prevInput = 'left';
                 }
             } else {
-                if(yDif > 0) {
+                if(yDif > 0 && prevInput != 'down') {
                     snake.setDir('down');
-                } else {
+                    prevInput = 'down';
+                } else if(yDif < 0 && prevInput != 'up') {
                     snake.setDir('up');
+                    prevInput = 'up';
                 }
             }
         }
