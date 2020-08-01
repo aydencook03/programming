@@ -67,9 +67,7 @@ function touchMove(data) {
     if(swiping) {
         const xDif = current[0] - start[0];
         const yDif = current[1] - start[1];
-        const mag = (xDif**2 + yDif**2)**0.5;
 
-        if(mag >= sensitivity) {
             let axis;
             start = [current[0], current[1]];
 
@@ -96,7 +94,6 @@ function touchMove(data) {
                     prevInput = 'up';
                 }
             }
-        }
     }
 }
 
