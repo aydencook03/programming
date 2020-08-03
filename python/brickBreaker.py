@@ -73,7 +73,7 @@ class Ball:
             running = False
             if lives > 0:
                 lives -= 1
-                self.reset()
+                self.reset() 
             if lives <= 0: 
                 reset()
             if lives == 3:
