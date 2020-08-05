@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, height=device-height, user-scalable=no, initial-scale=1.0">
+    <title>Space-Defender</title>
+<script>
+
+///////////////////////////////////////////////////////////////
+// Event Handling
+
+window.onload = function() {reset()}
+window.addEventListener('resize', resize);
+
+function resize() {
+    const ratio = window.devicePixelRatio || 1;
+    const scale = Math.min(window.innerWidth, window.innerHeight);
+
+    const canvasWidthToHeight = 0.8;
+    const buttonHeightToCanvasHeight = 0.14;
+
+    cHeight = (window.innerHeight - (window.innerHeight * buttonHeightToCanvasHeight))*0.95;
+    cWidth = cHeight * canvasWidthToHeight;
+
+    if(cWidth >= window.innerWidth*0.95) {
+        cWidth = window.innerWidth * 0.95;
+        cHeight = cWidth / canvasWidthToHeight;
+    }
+
+    rect = canvas.getBoundingClientRect();
+
+    canvas.style.width = `${cWidth}px`;
+    canvas.style.height = `${cHeight}px`;
+
+    for(let i = 0; i < buttons.length; i++) {
+        buttons[i].style.width = `${cWidth/3}px`;
+        buttons[i].style.height = `${cHeight * buttonHeightToCanvasHeight}px`;
+    }
+
+    canvas.width = cWidth * ratio;
+    canvas.height = cHeight * ratio;
+
+    ctx.scale(ratio, ratio);
+    
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = `${Math.round(scale/319)}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `bold ${scale/40}px arial`;
+}
+
+///////////////////////////////////////////////////////////////
+// Initialization
+
+function reset() {
+    canvas = document.getElementById('canvas');
+    body = document.getElementsByTagName('body')[0];
+    buttons = document.getElementsByTagName('button');
+    ctx = canvas.getContext('2d');
+
+    resize();
+
+    // colors
+    canvas.color = 'black';
+    bodyC = '#37474f';
+
+    fps = 60;
+
+    body.style.background = bodyC;
+
+    loop = setInterval(main, 1000/fps);
+}
+
+///////////////////////////////////////////////////////////////
+// Main Loop 
+
+function main() {
+    // clear canvas
+    ctx.fillStyle = canvas.color;
+    ctx.fillRect(0, 0, cWidth, cHeight);
+}
+
+</script>
+<style>
+
+html {
+    width: 100%;
+    height: 100%;
+}
+body {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+canvas {
+    padding: 0;
+    margin: auto;
+    border: 2px solid white;
+    border-radius: 10px;
+}
+div {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: auto;
+}
+button {
+    border-radius: 10px;
+    border: 2px solid black;
+}
+button:active {
+    outline: none;
+}
+button:hover {
+    outline: none;
+}
+
+</style>
+</head>
+<body>
+    <canvas id='canvas' width='30px' height='30px'></canvas>
+    <div>
+        <button></button>
+        <button></button>
+        <button></button>
+    </div>
+</body>
+</html>
