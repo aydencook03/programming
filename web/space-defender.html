@@ -110,9 +110,15 @@ div {
 }
 button {
     border-radius: 10px;
+    border: 2px solid black;
+    background: grey;
 }
 button:active {
     outline: none;
+    background: #014b4b;
+}
+#shoot:active {
+    background: rgb(172, 15, 46);
 }
 button:hover {
     outline: none;
@@ -127,7 +133,7 @@ button:focus {
     <canvas id='canvas' width='30px' height='30px'></canvas>
     <div>
         <button></button>
-        <button></button>
+        <button id='shoot'></button>
         <button></button>
     </div>
 </body>
