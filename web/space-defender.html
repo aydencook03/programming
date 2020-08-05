@@ -180,9 +180,9 @@ button:focus {
 <body>
     <canvas id='canvas' width='30px' height='30px'></canvas>
     <div>
-        <button id='left' ontouchstart='left()' ontouchend='cancel("left")'></button>
-        <button id='shoot' ontouchstart='shoot()' ontouchend='cancel("shoot")'></button>
-        <button id='right' ontouchstart='right()' ontouchend='cancel("right")'></button>
+        <button id='left' ontouchstart='left()' ontouchend='cancel("left")' onmousedown='left()' onmouseup='cancel("left")'></button>
+        <button id='shoot' ontouchstart='shoot()' ontouchend='cancel("shoot")' onmousedown='shoot()' onmouseup='cancel("shoot")'></button>
+        <button id='right' ontouchstart='right()' ontouchend='cancel("right")' onmousedown='right()' onmouseup='cancel("right")'></button>
     </div>
 </body>
 </html>
