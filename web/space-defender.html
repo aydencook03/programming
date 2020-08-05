@@ -11,6 +11,53 @@
 
 window.onload = function() {reset()}
 window.addEventListener('resize', resize);
+window.addEventListener('keydown', keyDown);
+window.addEventListener('keyup', keyUp);
+
+function left() {
+    buttons[0].style.background = '#014b4b';
+}
+function shoot() {
+    buttons[1].style.background = 'rgb(172, 15, 46)';
+}
+function right() {
+    buttons[2].style.background = '#014b4b';
+}
+
+function cancel(button) {
+    if(button == 'left') {
+        buttons[0].style.background = 'grey';
+    }
+    if(button == 'shoot') {
+        buttons[1].style.background = 'grey';
+    }
+    if(button == 'right') {
+        buttons[2].style.background = 'grey';
+    }
+}
+
+function keyDown(data) {
+    if(data.key == 'ArrowLeft' || data.key == 'a') {
+        left();
+    }
+    if(data.key == 'ArrowUp' || data.key == 'w') {
+        shoot();
+    }
+    if(data.key == 'ArrowRight' || data.key == 'd') {
+        right();
+    }
+}
+function keyUp(data) {
+    if(data.key == 'ArrowLeft' || data.key == 'a') {
+        cancel('left');
+    }
+    if(data.key == 'ArrowUp' || data.key == 'w') {
+        cancel('shoot');
+    }
+    if(data.key == 'ArrowRight' || data.key == 'd') {
+        cancel('right');
+    }
+}
 
 function resize() {
     const ratio = window.devicePixelRatio || 1;
@@ -56,6 +103,7 @@ function reset() {
     canvas = document.getElementById('canvas');
     body = document.getElementsByTagName('body')[0];
     buttons = document.getElementsByTagName('button');
+
     ctx = canvas.getContext('2d');
 
     resize();
@@ -132,9 +180,9 @@ button:focus {
 <body>
     <canvas id='canvas' width='30px' height='30px'></canvas>
     <div>
-        <button></button>
-        <button id='shoot'></button>
-        <button></button>
+        <button id='left' ontouchstart='left()' ontouchend='cancel("left")'></button>
+        <button id='shoot' ontouchstart='shoot()' ontouchend='cancel("shoot")'></button>
+        <button id='right' ontouchstart='right()' ontouchend='cancel("right")'></button>
     </div>
 </body>
 </html>
