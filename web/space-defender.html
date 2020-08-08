@@ -116,7 +116,7 @@ function reset() {
     stars = [];
     bullets = [];
 
-    maxStars = 400;
+    maxStars = 300;
 
     fps = 60;
 
@@ -142,9 +142,8 @@ class Shape {
         this.h = params.h || cHeight/20;
         this.color = params.color || null;
         this.vertices = [];
-        this.array = array;
 
-        this.array.push(this);
+        array.push(this);
     }
 
     update() {
@@ -200,8 +199,7 @@ class Star extends Shape {
         }
         this.x = params.x || Math.random()*cWidth;
         this.yV = params.yV || (cHeight/1042.5 + Math.random()*(cHeight/347.5))*fps;
-        this.w = params.w || this.yV*(cHeight/473.9)/fps;
-        this.h = params.h || this.w;
+        this.w = this.h = params.w || params.h || this.yV*(cHeight/473.9)/fps;
         this.y = params.y || -this.h;
         
         this.color = params.color || "white";
@@ -260,6 +258,7 @@ body {
     height: 100%;
     padding: 0;
     margin: 0;
+    overscroll-behavior: contain;
 }
 canvas {
     padding: 0;
