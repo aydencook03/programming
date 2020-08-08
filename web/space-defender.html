@@ -40,7 +40,7 @@ function keyDown(data) {
     if(data.key == 'ArrowLeft' || data.key == 'a') {
         left();
     }
-    if(data.key == 'ArrowUp' || data.key == 'w') {
+    if(data.key == 'ArrowUp' || data.key == 'w' || data.key == ' ') {
         shoot();
     }
     if(data.key == 'ArrowRight' || data.key == 'd') {
@@ -51,7 +51,7 @@ function keyUp(data) {
     if(data.key == 'ArrowLeft' || data.key == 'a') {
         cancel('left');
     }
-    if(data.key == 'ArrowUp' || data.key == 'w') {
+    if(data.key == 'ArrowUp' || data.key == 'w' || data.key == ' ') {
         cancel('shoot');
     }
     if(data.key == 'ArrowRight' || data.key == 'd') {
@@ -112,11 +112,126 @@ function reset() {
     canvas.color = 'black';
     bodyC = '#37474f';
 
+    crafts = [];
+    stars = [];
+    bullets = [];
+
+    maxStars = 400;
+
     fps = 60;
 
     body.style.background = bodyC;
 
     loop = setInterval(main, 1000/fps);
+}
+
+///////////////////////////////////////////////////////////////
+// Object Types
+
+class Shape {
+
+    constructor(params, array) {
+        if(typeof params === 'undefined') {
+            params = {};
+        }
+        this.x = params.x || cWidth/2;
+        this.y = params.y || cHeight/2;
+        this.xV = params.xV || 0;
+        this.yV = params.yV || 0;
+        this.w = params.w || cWidth/20;
+        this.h = params.h || cHeight/20;
+        this.color = params.color || null;
+        this.vertices = [];
+        this.array = array;
+
+        this.array.push(this);
+    }
+
+    update() {
+        this.x += this.xV/fps;
+        this.y += this.yV/fps;
+    }
+
+    draw() {
+        ctx.beginPath();
+        ctx.fillStyle = this.color;
+        ctx.strokeStyle = 'white';
+        ctx.rect(this.x, this.y, this.w, this.h);
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    shoot() {
+
+    }
+
+}
+
+class Player extends Shape {
+
+    constructor(params) {
+        super(params, crafts);
+        if(typeof params === 'undefined') {
+            params = {};
+        }
+        this.color = params.color || 'teal';
+    }
+
+}
+
+class Enemy extends Shape {
+
+    constructor(params) {
+        super(params, crafts);
+        if(typeof params === 'undefined') {
+            params = {};
+        }
+        this.color = params.color || 'crimson';
+    }
+
+}
+
+class Star extends Shape {
+
+    constructor(params) {
+        super(params, stars);
+        if(typeof params === 'undefined') {
+            params = {};
+        }
+        this.x = params.x || Math.random()*cWidth;
+        this.yV = params.yV || (cHeight/1042.5 + Math.random()*(cHeight/347.5))*fps;
+        this.w = params.w || this.yV*(cHeight/473.9)/fps;
+        this.h = params.h || this.w;
+        this.y = params.y || -this.h;
+        
+        this.color = params.color || "white";
+    }
+
+}
+
+///////////////////////////////////////////////////////////////
+// Game Logic
+
+function handleCrafts() {
+    for(let i = 0; i < crafts.length; i++) {
+        crafts[i].update();
+        crafts[i].draw();
+    }
+}
+
+function handleStars() {
+    if(stars.length < maxStars) {
+        stars.push(new Star());
+    }
+    for(let i = 0; i < stars.length; i++) {
+        stars[i].update();
+
+        if(stars[i].y > cHeight) {
+            stars.splice(i, 1);
+        }
+
+        stars[i].draw();
+    }
 }
 
 ///////////////////////////////////////////////////////////////
@@ -126,6 +241,9 @@ function main() {
     // clear canvas
     ctx.fillStyle = canvas.color;
     ctx.fillRect(0, 0, cWidth, cHeight);
+
+    handleCrafts();
+    handleStars();
 }
 
 </script>
@@ -147,7 +265,7 @@ canvas {
     padding: 0;
     margin: auto;
     border: 2px solid white;
-    border-radius: 10px;
+    border-radius: 15px;
 }
 div {
     display: flex;
@@ -157,7 +275,7 @@ div {
     margin-bottom: auto;
 }
 button {
-    border-radius: 10px;
+    border-radius: 15px;
     border: 2px solid black;
     background: grey;
 }
