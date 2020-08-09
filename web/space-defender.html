@@ -116,7 +116,7 @@ function reset() {
     stars = [];
     bullets = [];
 
-    maxStars = 300;
+    maxStars = 400;
 
     fps = 60;
 
@@ -198,8 +198,10 @@ class Star extends Shape {
             params = {};
         }
         this.x = params.x || Math.random()*cWidth;
-        this.yV = params.yV || (cHeight/1042.5 + Math.random()*(cHeight/347.5))*fps;
-        this.w = this.h = params.w || params.h || this.yV*(cHeight/473.9)/fps;
+        // this.yV = params.yV || cHeight/25 + Math.random()*(cHeight/5.7);
+        // this.w = this.h = params.w || params.h || this.yV*(cHeight/45000);
+        this.w = this.h = cHeight/1250 + Math.random()*(cHeight/350);
+        this.yV = this.w*20;
         this.y = params.y || -this.h;
         
         this.color = params.color || "white";
