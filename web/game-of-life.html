@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, height=device-height, user-scalable=no, initial-scale=1.0">
+    <title>Game Of Life</title>
+</head>
+<script>
+
+//////////////////////////////////////////////////////////
+// Event Handling
+
+window.onload = function() {reset()}
+window.addEventListener('resize', resize);
+
+function resize() {
+    scale = Math.min(window.innerWidth, window.innerHeight);
+    scaleO = Math.max(window.innerWidth, window.innerHeight);
+    ratio = window.devicePixelRatio || 1;
+
+    cellSize = scaleO/45;
+
+    cWidth = (Math.floor(window.innerWidth/cellSize) * cellSize) - cellSize;
+    cHeight = (Math.floor(window.innerHeight/cellSize) * cellSize) - cellSize;
+
+    cols = parseInt(cWidth/cellSize);
+    rows = parseInt(cHeight/cellSize);
+    grid = generateGrid();
+
+    canvas.style.width = `${cWidth}px`;
+    canvas.style.height = `${cHeight}px`;
+    canvas.width = cWidth * ratio;
+    canvas.height = cHeight * ratio;
+    ctx.scale(ratio, ratio);
+}
+
+//////////////////////////////////////////////////////////
+// Initialization
+
+function reset() {
+    canvas = document.getElementById('canvas');
+    ctx = canvas.getContext('2d');
+
+    resize();
+
+
+    // colors
+    canvas.color = 'grey';
+    cellC = 'teal';
+
+
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 1;
+
+    fps = 12;
+
+    loop = setInterval(main, 1000/fps);
+}
+
+function generateGrid() {
+    let grid = new Array(cols);
+
+    for(let c = 0; c < cols; c++) {
+        grid[c] = new Array(rows);
+    }
+
+    for(let c = 0; c < cols; c++) {
+        for(let r = 0; r < rows; r++) {
+            grid[c][r] = Math.floor(Math.random()*2);
+        }
+    }
+
+    return grid;
+}
+
+//////////////////////////////////////////////////////////
+// Logic
+
+function drawGrid() {
+    ctx.fillStyle = cellC;
+    const padding = 4;
+    for(let c = 0; c < cols; c ++) {
+        for(let r = 0; r < rows; r++) {
+            if(grid[c][r] == 1) {
+                ctx.beginPath();
+                ctx.rect(c * cellSize + padding/2, r * cellSize + padding/2, cellSize - padding, cellSize - padding);
+                ctx.fill();
+                ctx.stroke();
+                ctx.closePath();
+            }
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////
+// Main Loop
+
+function main() {
+    // clear canvas
+    ctx.fillStyle = canvas.color;
+    ctx.fillRect(0, 0, cWidth, cHeight);
+
+    drawGrid();
+}
+
+</script>
+<style>
+
+html {
+    width: 100%;
+    height: 100%;
+}
+body {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    background: #37474f;
+}
+canvas {
+    margin: 0;
+    padding: 0;
+    border: 2px solid black;
+    border-radius: 10px;
+}
+
+</style>
+<body>
+    <canvas id='canvas' width='300px' height='300px'></canvas>
+</body>
+</html>
