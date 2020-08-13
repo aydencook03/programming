@@ -12,6 +12,59 @@
 
 window.onload = function() {reset()}
 window.addEventListener('resize', resize);
+window.addEventListener('mousedown', mouseDown);
+window.addEventListener('mousemove', mouseMove);
+window.addEventListener('mouseup', mouseUp);
+window.addEventListener('touchstart', touchStart);
+window.addEventListener('touchmove', touchMove);
+window.addEventListener('touchend', touchEnd);
+window.addEventListener('keypress', keyPress);
+
+
+mouseActive = false;
+draw = false;
+mouseC = 0;
+mouseR = 0
+
+function mouseDown(data) {
+    mouseC = Math.floor((data.clientX - rect.left)/cellSize);
+    mouseR = Math.floor((data.clientY - rect.top)/cellSize);
+
+    draw = !grid[mouseC][mouseR];
+
+    mouseActive = true;
+}
+
+function mouseMove(data) {
+    mouseC = Math.floor((data.clientX - rect.left)/cellSize);
+    mouseR = Math.floor((data.clientY - rect.top)/cellSize);
+}
+
+function mouseUp() {
+    mouseActive = false;
+}
+
+function touchStart(data) {
+    mouseC = Math.floor((data.touches[0].clientX - rect.left)/cellSize);
+    mouseR = Math.floor((data.touches[0].clientY - rect.top)/cellSize);
+
+    draw = !grid[mouseC][mouseR];
+
+    mouseActive = true;
+}
+
+function touchMove(data) {
+    mouseC = Math.floor((data.touches[0].clientX - rect.left)/cellSize);
+    mouseR = Math.floor((data.touches[0].clientY - rect.top)/cellSize);
+}
+
+function touchEnd() {
+    mouseActive = false;
+}
+
+function keyPress(data) {
+    running = !running;
+}
 
 function resize() {
     scale = Math.min(window.innerWidth, window.innerHeight);
@@ -32,6 +85,10 @@ function resize() {
     canvas.width = cWidth * ratio;
     canvas.height = cHeight * ratio;
     ctx.scale(ratio, ratio);
+
+    ctx.lineWidth = 1.5;
+
+    rect = canvas.getBoundingClientRect();
 }
 
 //////////////////////////////////////////////////////////
@@ -50,9 +107,9 @@ function reset() {
 
 
     ctx.strokeStyle = 'black';
-    ctx.lineWidth = 1;
 
-    fps = 12;
+    fps = 60;
+    running = true;
 
     loop = setInterval(main, 1000/fps);
 }
@@ -101,6 +158,14 @@ function main() {
     ctx.fillRect(0, 0, cWidth, cHeight);
 
     drawGrid();
+
+    if(mouseActive && mouseC >= 0 && mouseC < cols && mouseR >= 0 && mouseR < rows) {
+        let temp = 0;
+        if(draw) {
+            temp = 1;
+        }
+        grid[mouseC][mouseR] = temp;
+    }
 }
 
 </script>
