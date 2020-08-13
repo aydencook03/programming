@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, height=device-height, user-scalable=no, initial-scale=1.0">
+    <title>Space-Defender</title>
+<script>
+
+///////////////////////////////////////////////////////////////
+// Event Handling
+
+window.onload = function() {reset()}
+
+function resize() {
+	scale = Math.min(window.innerWidth, window.innerHeight);
+	oScale = Math.max(window.innerWidth, window.innerHeight);
+    const ratio = window.devicePixelRatio || 1;
+
+    cHeight = window.innerHeight;
+    cWidth = window.innerWidth;
+
+    canvas.style.width = `${cWidth}px`;
+    canvas.style.height = `${cHeight}px`;
+
+    canvas.width = cWidth * ratio;
+    canvas.height = cHeight * ratio;
+
+    ctx.scale(ratio, ratio);
+}
+
+///////////////////////////////////////////////////////////////
+// Initialization
+
+function reset() {
+    canvas = document.getElementById('canvas');
+
+    ctx = canvas.getContext('2d');
+
+    resize();
+
+    // colors
+    canvas.color = 'black';
+    
+    stars = [];
+    maxStars = scale;
+
+    fps = 60;
+
+    loop = setInterval(main, 1000/fps);
+}
+
+///////////////////////////////////////////////////////////////
+// Object Types
+
+class Shape {
+
+    constructor(params, array) {
+        if(typeof params === 'undefined') {
+            params = {};
+        }
+        this.x = params.x || cWidth/2;
+        this.y = params.y || cHeight/2;
+        this.xV = params.xV || 0;
+        this.yV = params.yV || 0;
+        this.w = params.w || cWidth/20;
+        this.h = params.h || cHeight/20;
+        this.color = params.color || null;
+        this.vertices = [];
+
+        array.push(this);
+    }
+
+    update() {
+        this.x += this.xV/fps;
+        this.y += this.yV/fps;
+    }
+
+    draw() {
+        ctx.beginPath();
+        ctx.fillStyle = this.color;
+        ctx.strokeStyle = 'white';
+        ctx.rect(this.x, this.y, this.w, this.h);
+        ctx.fill();
+        ctx.closePath();
+    }
+
+}
+
+class Star extends Shape {
+
+    constructor(params) {
+        super(params, stars);
+        if(typeof params === 'undefined') {
+            params = {};
+        }
+        this.x = params.x || Math.random()*cWidth;
+        // this.yV = params.yV || oScale/25 + Math.random()*(oScale/5.7);
+        // this.w = this.h = params.w || params.h || this.yV*(oScale/45000);
+        this.w = this.h = oScale/1250 + Math.random()*(oScale/350);
+        this.yV = this.w*20;
+        this.y = params.y || -this.h;
+        
+        this.color = params.color || "white";
+    }
+
+}
+
+///////////////////////////////////////////////////////////////
+// Logic
+
+function handleStars() {
+    if(stars.length < maxStars) {
+        stars.push(new Star());
+    }
+    for(let i = 0; i < stars.length; i++) {
+        stars[i].update();
+
+        if(stars[i].y > cHeight) {
+            stars.splice(i, 1);
+        }
+
+        stars[i].draw();
+    }
+}
+
+///////////////////////////////////////////////////////////////
+// Main Loop 
+
+function main() {
+    // clear canvas
+    ctx.fillStyle = canvas.color;
+    ctx.fillRect(0, 0, cWidth, cHeight);
+
+    handleStars();
+}
+
+</script>
+<style>
+
+html {
+    width: 100%;
+    height: 100%;
+}
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    overscroll-behavior: contain;
+}
+canvas {
+    padding: 0;
+    margin: 0;
+}
+
+</style>
+</head>
+<body>
+    <canvas id='canvas' width='30px' height='30px'></canvas>
+</body>
+</html>
