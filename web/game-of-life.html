@@ -20,8 +20,8 @@ function resize() {
 
     cellSize = scaleO/45;
 
-    cWidth = (Math.floor(window.innerWidth/cellSize) * cellSize) - cellSize;
-    cHeight = (Math.floor(window.innerHeight/cellSize) * cellSize) - cellSize;
+    cWidth = (Math.floor(window.innerWidth/cellSize) * cellSize) - cellSize/1.01;
+    cHeight = (Math.floor(window.innerHeight/cellSize) * cellSize) - cellSize/1.01;
 
     cols = parseInt(cWidth/cellSize);
     rows = parseInt(cHeight/cellSize);
@@ -101,9 +101,6 @@ function main() {
     ctx.fillRect(0, 0, cWidth, cHeight);
 
     drawGrid();
-
-    ctx.fillStyle = 'white';
-    ctx.fillText(window.innerWidth + ' ' + window.innerHeight, 50, 50);
 }
 
 </script>
