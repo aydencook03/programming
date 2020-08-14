@@ -63,7 +63,7 @@ function touchEnd() {
 }
 
 function keyPress(data) {
-    running = !running;
+    toggleRunning();
 }
 
 function resize() {
@@ -91,14 +91,15 @@ function resize() {
 
     rect = canvas.getBoundingClientRect();
     
-    button0.style.left = `${rect.left}px`;
-    button0.style.top = `${rect.top}px`;
-    
-    button1.style.left = `${rect.left}px`;
-    button1.style.top = `${r.top}px`;
-    
-    button2.style.left = `${rect.left}px`;
-    button2.style.top = `${rect.top}px`;
+    buttons[0].style.top = `${rect.top}px`;
+    buttons[1].style.top = `${rect.top}px`;
+    buttons[2].style.top = `${rect.top}px`;
+    buttons[3].style.top = `${rect.top + buttons[0].getBoundingClientRect().height}px`;
+
+    buttons[0].style.left = `${rect.left}px`;
+    buttons[1].style.left = `${buttons[0].getBoundingClientRect().left + buttons[0].getBoundingClientRect().width}px`;
+    buttons[2].style.left = `${buttons[1].getBoundingClientRect().left + buttons[1].getBoundingClientRect().width}px`;
+    buttons[3].style.left = `${rect.left}px`;
 }
 
 //////////////////////////////////////////////////////////
@@ -106,9 +107,7 @@ function resize() {
 
 function reset() {
     canvas = document.getElementById('canvas');
-    button0 = document.getElementsByTagName('button')[0];
-    button1 = document.getElementsByTagName('button')[1];
-    button2 = document.getElementsByTagName('button')[2];
+    buttons = document.getElementsByTagName('button');
     ctx = canvas.getContext('2d');
 
     resize();
@@ -123,8 +122,13 @@ function reset() {
 
     fps = 60;
     cellUpdateRate = 8; // sim updates per second
+    speed = 3; // value for button
     count = 0;
     running = true;
+
+    if(typeof loop !== 'undefined') {
+        clearInterval(loop);
+    }
 
     loop = setInterval(main, 1000/fps);
 }
@@ -228,10 +232,39 @@ function countNeighbors(array, x, y, aliveState) {
 function toggleRunning() {
 	running = !running;
 	if(running) {
-		button.innerHTML = 'Pause';
+		buttons[0].innerHTML = 'Pause';
 	} else {
-		button.innerHTML = 'Play';
+		buttons[0].innerHTML = 'Play';
     }
+
+    buttons[0].style.left = `${rect.left}px`;
+    buttons[1].style.left = `${buttons[0].getBoundingClientRect().left + buttons[0].getBoundingClientRect().width}px`;
+    buttons[2].style.left = `${buttons[1].getBoundingClientRect().left + buttons[1].getBoundingClientRect().width}px`;
+}
+
+function clearGrid() {
+    for(let c = 0; c < cols; c++) {
+        for(let r = 0; r < rows; r++) {
+            grid[c][r] = 0;
+        }
+    }
+}
+
+function random() {
+    grid = generateGrid(cols, rows);
+}
+
+function speedUp() {
+    const speeds = [1, 3, 8, 10, 15, 30];
+    
+    speed += 1;
+
+    if(speed > speeds.length) {
+        speed = 1;
+    }
+
+    buttons[3].innerHTML = `Speed: ${speed}`;
+    cellUpdateRate = speeds[speed-1];
 }
 
 //////////////////////////////////////////////////////////
@@ -285,10 +318,7 @@ canvas {
 }
 button {
     position: absolute;
-    left: 0;
-    top: 0;
     border: 2px solid black;
-    border-radius: 10px;
     font-weight: bold;
 }
 button:active {
@@ -301,11 +331,27 @@ button:focus {
     outline: none;
 }
 
+#playPause {
+    border-top-left-radius: 10px;
+}
+#clear {
+    border-left: none;
+    border-right: none;
+}
+#random {
+    border-bottom-right-radius: 10px;
+}
+#speed {
+    border-top: none;
+    border-bottom-right-radius: 10px;
+}
+
 </style>
 <body>
     <canvas id='canvas' width='300px' height='300px'></canvas>
-    <button onclick="toggleRunning()">Pause</button>
-    <button onclick="clear()">Clear</button>
-    <button onclick="reset()">Reset</button>
+    <button id='playPause' onclick="toggleRunning()">Pause</button>
+    <button id='clear' onclick='clearGrid()'>Clear</button>
+    <button id='random' onclick='random()'>Random</button>
+    <button id='speed' onclick='speedUp()'>Speed: 3</button>
 </body>
 </html>
