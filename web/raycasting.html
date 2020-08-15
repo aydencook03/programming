@@ -73,12 +73,14 @@ function reset() {
     particleColor = 'white';
     particleRadius = 4;
     particleRayCount = 360;
+    
+    wallCount = 10;
 
 
     walls = [];
     rays = [];
 
-    for(let i = 0; i < 10; i++) {
+    for(let i = 0; i < wallCount; i++) {
         walls.push(new Boundary(Math.random()*cWidth, Math.random()*cHeight, Math.random()*cWidth, Math.random()*cHeight));
     }
 
@@ -110,17 +112,20 @@ function Ray(x, y, angle, params) {
 
     this.color = params.color || rayColor;
     this.width = params.width || rayWidth;
+    this.active = true;
 }
 
 Ray.prototype.draw = function() {
-    ctx.beginPath();
-    ctx.strokeStyle = this.color;
-    ctx.lineWidth = this.width;
-    ctx.lineCap = "round";
-    ctx.moveTo(this.x, cHeight - this.y);
-    ctx.lineTo(this.x + this.length*Math.cos(this.angle), cHeight - (this.y + this.length*Math.sin(this.angle)));
-    ctx.stroke();
-    ctx.closePath();
+    if(this.active) {
+        ctx.beginPath();
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = this.width;
+        ctx.lineCap = "round";
+        ctx.moveTo(this.x, cHeight - this.y);
+        ctx.lineTo(this.x + this.length*Math.cos(this.angle), cHeight - (this.y + this.length*Math.sin(this.angle)));
+        ctx.stroke();
+        ctx.closePath();
+    }
 }
 
 Ray.prototype.cast = function(wall) {
@@ -223,9 +228,10 @@ function Particle(params) {
     this.color = params.color || particleColor;
     this.rayCount = params.rays || particleRayCount;
     this.ownedRays = []; // list of indexes of rays owned by the particle
+    this.emitting = true;
 
     for(let i = 0; i < this.rayCount; i++) {
-        const index = rays.push(null) -1;
+        const index = rays.push(new Ray(this.x,this.y,0)) -1;
         this.ownedRays.push(index);
     }
 }
@@ -237,10 +243,17 @@ Particle.prototype.glow = function() {
     ctx.fill();
     ctx.closePath();
 
-    let count = 0;
-    for(let i of this.ownedRays) {
-        rays[i] = new Ray(this.x, this.y, (360/this.ownedRays.length)*count * Math.PI/180);
-        count++;
+    if(this.emitting) {
+        let count = 0;
+        for(let i of this.ownedRays) {
+            rays[i].active = true;
+            rays[i] = new Ray(this.x, this.y, (360/this.ownedRays.length)*count * Math.PI/180);
+            count++;
+        }
+    } else {
+        for(let i of this.ownedRays) {
+            rays[i].active = false;
+        }
     }
 }
 
@@ -267,6 +280,10 @@ function sendRays() {
         ray.draw();
         ray.length = Math.max(cWidth, cHeight)*2;
     }
+}
+
+function toggleEmit() {
+    player.emitting = !player.emitting;
 }
 
 ////////////////////////////////////////////////
@@ -298,7 +315,7 @@ body {
     margin: 0;
     overscroll-behavior: contain;
 }
-div {
+.canvas {
     width: 100%;
     height: 100%;
     display: flex;
@@ -310,17 +327,41 @@ canvas {
     margin: 0;
 }
 
-button {
+.buttons {
     position: absolute;
+    width: 100%;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: left;
+    flex-direction: column;
+}
+#emit,#random {
     margin: 10px;
+    width: fit-content;
+    font-weight: bold;
+    color: white;
+    background: teal;
+    border: 2px solid white;
+    border-radius: 10px;
+    outline: none;
+}
+#emit:active, #random:active {
+    background: #ccc;
+}
+button:focus {
+    outline: none;
 }
 
 </style>
 </head>
 <body>
-    <div>
+    <div class = 'canvas'>
         <canvas id='canvas'></canvas>
     </div>
-    
+    <div class='buttons'>
+        <button id='random' onclick='randomize()'>Randomize</button>
+        <button id='emit' onclick='toggleEmit()'>Emit</button>
+    </div>
 </body>
 </html>
