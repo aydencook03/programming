@@ -72,7 +72,7 @@ function reset() {
 
     particleColor = 'white';
     particleRadius = 4;
-    particleRayCount = 360;
+    particleRayCount = 180;
     
     wallCount = 10;
 
@@ -80,9 +80,7 @@ function reset() {
     walls = [];
     rays = [];
 
-    for(let i = 0; i < wallCount; i++) {
-        walls.push(new Boundary(Math.random()*cWidth, Math.random()*cHeight, Math.random()*cWidth, Math.random()*cHeight));
-    }
+    randomizeWalls();
 
     player = new Particle();
 
@@ -94,6 +92,13 @@ function reset() {
     }
 
     loop = setInterval(main, 1000/fps);
+}
+
+function randomizeWalls() {
+    walls = [];
+    for(let i = 0; i < wallCount; i++) {
+        walls.push(new Boundary(Math.random()*cWidth, Math.random()*cHeight, Math.random()*cWidth, Math.random()*cHeight));
+    }
 }
 
 ////////////////////////////////////////////////
@@ -129,6 +134,11 @@ Ray.prototype.draw = function() {
 }
 
 Ray.prototype.cast = function(wall) {
+
+    if(this.angle == 0 || this.angle == Math.PI/2 || this.angle == Math.PI || this.angle == 3*Math.PI/2 || this.angle == 2*Math.PI) {
+        this.angle += 0.0001;
+    }
+
     let x1w = null;
     let y1w = null;
     let x2w = null;
@@ -345,6 +355,7 @@ canvas {
     border: 2px solid white;
     border-radius: 10px;
     outline: none;
+    margin-bottom: 0px;
 }
 #emit:active, #random:active {
     background: #ccc;
@@ -360,7 +371,7 @@ button:focus {
         <canvas id='canvas'></canvas>
     </div>
     <div class='buttons'>
-        <button id='random' onclick='randomize()'>Randomize</button>
+        <button id='random' onclick='randomizeWalls()'>Randomize</button>
         <button id='emit' onclick='toggleEmit()'>Emit</button>
     </div>
 </body>
