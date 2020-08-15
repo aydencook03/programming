@@ -180,9 +180,9 @@ Ray.prototype.cast = function(wall) {
     const yc = (slopeW*xc) + (y1w - (slopeW*x1w)) || null;
 
     if(xc >= x1r && xc <= x2r &&
-        xc >= x1w && xc <= x2w &&
+        xc >= x1w - wall.width/2 && xc <= x2w + wall.width/2 &&
         yc >= Math.min(y1r, y2r) && yc <= Math.max(y1r, y2r) &&
-        yc >= Math.min(y1w, y2w) && yc <= Math.max(y1w, y2w)) {
+        yc >= Math.min(y1w, y2w) - wall.width/2 && yc <= Math.max(y1w, y2w) + wall.width/2) {
             return {x: xc, y: yc};
         }
 }
