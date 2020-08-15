@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, height=device-height, user-scalable=no initial-scale=1.0">
+    <title>Raycasting</title>
+<script>
+
+////////////////////////////////////////////////
+// Event Handling
+
+window.onload = function() {reset()}
+window.addEventListener('mousemove', mouseMove);
+window.addEventListener('touchmove', touchMove);
+window.addEventListener('resize', resize);
+
+mouse = {
+    x: null,
+    y: null
+}
+
+function mouseMove(data) {
+    mouse.x = data.clientX - rect.left;
+    mouse.y = cHeight - (data.clientY - rect.top);
+
+    player.x = mouse.x;
+    player.y = mouse.y;
+}
+
+function touchMove(data) {
+    mouse.x = data.touches[0].clientX - rect.left;
+    mouse.y = cHeight - (data.touches[0].clientY - rect.top);
+
+    player.x = mouse.x;
+    player.y = mouse.y;
+}
+
+function resize() {
+    scale = Math.min(window.innerWidth, window.innerHeight);
+    ratio = window.devicePixelRatio || 1;
+
+    cWidth = window.innerWidth;
+    cHeight = window.innerHeight;
+
+    canvas.style.width = `${cWidth}px`;
+    canvas.style.height = `${cHeight}px`;
+    canvas.width = cWidth * ratio;
+    canvas.height = cHeight * ratio;
+    ctx.scale(ratio, ratio);
+
+    rect = canvas.getBoundingClientRect();
+}
+
+////////////////////////////////////////////////
+// Initialization
+
+function reset() {
+    canvas = document.getElementById('canvas');
+    ctx = canvas.getContext('2d');
+
+    resize();
+
+
+    // looks
+    canvas.color = 'black';
+    
+    boundaryColor = 'crimson';
+    boundaryWidth = 4;
+
+    rayColor = 'rgba(255, 255, 255, 0.8)';
+    rayWidth = 1;
+
+    particleColor = 'white';
+    particleRadius = 4;
+    particleRayCount = 360;
+
+
+    walls = [];
+    rays = [];
+
+    for(let i = 0; i < 10; i++) {
+        walls.push(new Boundary(Math.random()*cWidth, Math.random()*cHeight, Math.random()*cWidth, Math.random()*cHeight));
+    }
+
+    player = new Particle();
+
+
+    fps = 60;
+
+    if(typeof loop !== 'undefined') {
+        clearInterval(loop);
+    }
+
+    loop = setInterval(main, 1000/fps);
+}
+
+////////////////////////////////////////////////
+// Ray Object Type
+
+function Ray(x, y, angle, params) {
+
+    if(typeof params === 'undefined') {
+        params = {};
+    }
+
+    this.x = x;
+    this.y = y;
+    this.length = Math.max(cWidth, cHeight) * 2;
+    this.angle = angle; //radians
+
+    this.color = params.color || rayColor;
+    this.width = params.width || rayWidth;
+}
+
+Ray.prototype.draw = function() {
+    ctx.beginPath();
+    ctx.strokeStyle = this.color;
+    ctx.lineWidth = this.width;
+    ctx.lineCap = "round";
+    ctx.moveTo(this.x, cHeight - this.y);
+    ctx.lineTo(this.x + this.length*Math.cos(this.angle), cHeight - (this.y + this.length*Math.sin(this.angle)));
+    ctx.stroke();
+    ctx.closePath();
+}
+
+Ray.prototype.cast = function(wall) {
+    let x1w = null;
+    let y1w = null;
+    let x2w = null;
+    let y2w = null;
+
+    if(wall.start.x < wall.end.x) {
+        x1w = wall.start.x;
+        x2w = wall.end.x;
+        y1w = wall.start.y;
+        y2w = wall.end.y;
+    } else {
+        x1w = wall.end.x;
+        x2w = wall.start.x;
+        y1w = wall.end.y;
+        y2w = wall.start.y;
+    }
+
+    let x1r = null;
+    let y1r = null;
+    let x2r = null;
+    let y2r = null;
+
+    if(this.x < (this.x + this.length*Math.cos(this.angle))) {
+        x1r = this.x;
+        y1r = this.y;
+        x2r = this.x + this.length*Math.cos(this.angle);
+        y2r = this.y + this.length*Math.sin(this.angle);
+    } else {
+        x1r = this.x + this.length*Math.cos(this.angle);
+        x2r = this.x;
+        y1r = this.y + this.length*Math.sin(this.angle);
+        y2r = this.y;
+    }
+
+    let slopeW = (y2w - y1w)/(x2w - x1w);
+    let slopeR = (y2r - y1r)/(x2r - x1r);
+
+    const xc = ((y1r-(slopeR*x1r))-(y1w-(slopeW*x1w)))/(slopeW-slopeR) || null;
+    const yc = (slopeW*xc) + (y1w - (slopeW*x1w)) || null;
+
+    if(xc >= x1r && xc <= x2r &&
+        xc >= x1w && xc <= x2w &&
+        yc >= Math.min(y1r, y2r) && yc <= Math.max(y1r, y2r) &&
+        yc >= Math.min(y1w, y2w) && yc <= Math.max(y1w, y2w)) {
+            return {x: xc, y: yc};
+        }
+}
+
+Ray.prototype.setEnd = function(x, y) {
+    this.angle = Math.atan2(y - this.y, x - this.x);
+    this.length = ((x - this.x)**2 + (y - this.y)**2)**0.5;
+}
+
+Ray.prototype.lookAt = function(x, y) {
+    this.angle = Math.atan2(y - this.y, x - this.x);
+}
+
+////////////////////////////////////////////////
+// Boundary Object Type
+
+function Boundary(x1, y1, x2, y2, params) {
+
+    if(typeof params === 'undefined') {
+        params = {};
+    }
+
+    this.start = { x: x1, y: y1 };
+    this.end = { x: x2, y: y2 };
+
+    this.color = params.color || boundaryColor;
+    this.width = params.width || boundaryWidth;
+}
+
+Boundary.prototype.draw = function() {
+    ctx.beginPath();
+    ctx.strokeStyle = this.color;
+    ctx.lineWidth = this.width;
+    ctx.lineCap = "round";
+    ctx.moveTo(this.start.x, cHeight - this.start.y);
+    ctx.lineTo(this.end.x, cHeight - this.end.y);
+    ctx.stroke();
+    ctx.closePath();
+}
+
+////////////////////////////////////////////////
+// Particle Object Type
+
+function Particle(params) {
+
+    if(typeof params === 'undefined') {
+        params = {};
+    }
+
+    this.x = params.x || cWidth/2;
+    this.y = params.y || cHeight/2;
+    this.radius = params.radius || particleRadius;
+    this.color = params.color || particleColor;
+    this.rayCount = params.rays || particleRayCount;
+    this.ownedRays = []; // list of indexes of rays owned by the particle
+
+    for(let i = 0; i < this.rayCount; i++) {
+        const index = rays.push(null) -1;
+        this.ownedRays.push(index);
+    }
+}
+
+Particle.prototype.glow = function() {
+    ctx.beginPath();
+    ctx.fillStyle = this.color;
+    ctx.arc(this.x, cHeight - this.y, this.radius, 0, Math.PI*2, true);
+    ctx.fill();
+    ctx.closePath();
+
+    let count = 0;
+    for(let i of this.ownedRays) {
+        rays[i] = new Ray(this.x, this.y, (360/this.ownedRays.length)*count * Math.PI/180);
+        count++;
+    }
+}
+
+////////////////////////////////////////////////
+// Logic
+
+function drawWalls() {
+    for(let wall of walls) {
+        wall.draw();
+    }
+}
+
+function sendRays() {
+    for(let ray of rays) {
+
+        for(let wall of walls) {
+            const point = ray.cast(wall);
+
+            if(point) {
+                ray.setEnd(point.x, point.y);
+            }
+        }
+
+        ray.draw();
+        ray.length = Math.max(cWidth, cHeight)*2;
+    }
+}
+
+////////////////////////////////////////////////
+// Main Loop
+
+
+
+function main() {
+    // clear canvas
+    ctx.fillStyle = canvas.color;
+    ctx.fillRect(0, 0, cWidth, cHeight);
+
+    player.glow();
+    drawWalls();
+    sendRays();
+}
+
+</script>
+<style>
+
+html {
+    width: 100%;
+    height: 100%;
+}
+body {
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    overscroll-behavior: contain;
+}
+div {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+canvas {
+    padding: 0;
+    margin: 0;
+}
+
+button {
+    position: absolute;
+    margin: 10px;
+}
+
+</style>
+</head>
+<body>
+    <div>
+        <canvas id='canvas'></canvas>
+    </div>
+    
+</body>
+</html>

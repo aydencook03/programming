@@ -117,6 +117,8 @@ function reset() {
     canvas.color = '#666';
     cellC = 'crimson';
 
+    showGrid = false;
+
 
     ctx.strokeStyle = 'black';
 
@@ -159,8 +161,17 @@ function drawGrid() {
         for(let r = 0; r < rows; r++) {
             if(grid[c][r] == 1) {
                 ctx.beginPath();
+                ctx.strokeStyle = 'black';
                 ctx.rect(c * cellSize + padding/2, r * cellSize + padding/2, cellSize - padding, cellSize - padding);
                 ctx.fill();
+                ctx.stroke();
+                ctx.closePath();
+            }
+
+            if(showGrid) {
+                ctx.beginPath();
+                ctx.strokeStyle = 'grey';
+                ctx.rect(c*cellSize, r*cellSize, cellSize, cellSize);
                 ctx.stroke();
                 ctx.closePath();
             }
@@ -320,9 +331,11 @@ button {
     position: absolute;
     border: 2px solid black;
     font-weight: bold;
+    outline: none;
 }
 button:active {
     outline: none;
+    background: #ccc;
 }
 button:hover {
     outline: none;
