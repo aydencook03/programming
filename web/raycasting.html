@@ -67,12 +67,13 @@ function reset() {
     boundaryColor = 'crimson';
     boundaryWidth = 4;
 
-    rayColor = 'rgba(255, 255, 255, 0.8)';
-    rayWidth = 1;
+    rayColor = 'rgba(255, 255, 255, 0.6)';
+    rayWidth = 1.5;
 
     particleColor = 'white';
-    particleRadius = 4;
+    particleRadius = 8;
     particleRayCount = 180;
+    particleViewRange = null;
     
     wallCount = 10;
 
@@ -94,6 +95,7 @@ function reset() {
     loop = setInterval(main, 1000/fps);
 }
 
+
 function randomizeWalls() {
     walls = [];
     for(let i = 0; i < wallCount; i++) {
@@ -112,12 +114,14 @@ function Ray(x, y, angle, params) {
 
     this.x = x;
     this.y = y;
-    this.length = Math.max(cWidth, cHeight) * 2;
     this.angle = angle; //radians
 
+    this.defaultLength = params.defaultLength || Math.max(cWidth, cHeight) * 2;
     this.color = params.color || rayColor;
     this.width = params.width || rayWidth;
-    this.active = true;
+    this.active = params.active || true;
+
+    this.length = this.defaultLength;
 }
 
 Ray.prototype.draw = function() {
@@ -131,6 +135,8 @@ Ray.prototype.draw = function() {
         ctx.stroke();
         ctx.closePath();
     }
+
+    this.length = this.defaultLength;
 }
 
 Ray.prototype.cast = function(wall) {
@@ -183,8 +189,9 @@ Ray.prototype.cast = function(wall) {
         xc >= x1w - wall.width/2 && xc <= x2w + wall.width/2 &&
         yc >= Math.min(y1r, y2r) && yc <= Math.max(y1r, y2r) &&
         yc >= Math.min(y1w, y2w) - wall.width/2 && yc <= Math.max(y1w, y2w) + wall.width/2) {
+            this.setEnd(xc, yc);
             return {x: xc, y: yc};
-        }
+    }
 }
 
 Ray.prototype.setEnd = function(x, y) {
@@ -210,6 +217,8 @@ function Boundary(x1, y1, x2, y2, params) {
 
     this.color = params.color || boundaryColor;
     this.width = params.width || boundaryWidth;
+
+
 }
 
 Boundary.prototype.draw = function() {
@@ -232,13 +241,24 @@ function Particle(params) {
         params = {};
     }
 
+    // particle variables
     this.x = params.x || cWidth/2;
     this.y = params.y || cHeight/2;
     this.radius = params.radius || particleRadius;
     this.color = params.color || particleColor;
-    this.rayCount = params.rays || particleRayCount;
+
+
+    // particle's 'flashlight' variables
+    this.start = params.start || 0;
+    this.end = params.end || 360;
+    this.rayCount = params.rayCount || particleRayCount;
+    this.rayColor = params.rayColor || rayColor;
+    this.rayWidth = params.rayWidth || rayWidth;
+    this.emitting = params.emitting || true;
+    this.viewRange = params.viewRange || particleViewRange;
+
+
     this.ownedRays = []; // list of indexes of rays owned by the particle
-    this.emitting = true;
 
     for(let i = 0; i < this.rayCount; i++) {
         const index = rays.push(new Ray(this.x,this.y,0)) -1;
@@ -256,8 +276,10 @@ Particle.prototype.glow = function() {
     if(this.emitting) {
         let count = 0;
         for(let i of this.ownedRays) {
+            const start = this.start;
+            const end = this.end;
             rays[i].active = true;
-            rays[i] = new Ray(this.x, this.y, (360/this.ownedRays.length)*count * Math.PI/180);
+            rays[i] = new Ray(this.x, this.y, (start + ((end-start)/this.ownedRays.length)*count) * Math.PI/180, {color: this.rayColor, width: this.rayWidth, defaultLength: this.viewRange});
             count++;
         }
     } else {
@@ -280,18 +302,15 @@ function sendRays() {
     for(let ray of rays) {
 
         for(let wall of walls) {
-            const point = ray.cast(wall);
-
-            if(point) {
-                ray.setEnd(point.x, point.y);
-            }
+            ray.cast(wall);
         }
 
         ray.draw();
-        ray.length = Math.max(cWidth, cHeight)*2;
     }
 }
 
+
+// Button Functions
 function toggleEmit() {
     player.emitting = !player.emitting;
 }
@@ -306,8 +325,8 @@ function main() {
     ctx.fillStyle = canvas.color;
     ctx.fillRect(0, 0, cWidth, cHeight);
 
-    player.glow();
     sendRays();
+    player.glow();
     drawWalls();
 }
 
