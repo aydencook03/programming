@@ -72,7 +72,7 @@ function reset() {
 
     particleColor = 'white';
     particleRadius = 8;
-    particleRayCount = 180;
+    particleRayCount = 5;
     particleViewRange = null;
     
     wallCount = 10;
@@ -84,6 +84,8 @@ function reset() {
     randomizeWalls();
 
     player = new Particle();
+
+    test = new Particle();
 
 
     fps = 60;
@@ -141,8 +143,20 @@ Ray.prototype.draw = function() {
 
 Ray.prototype.cast = function(wall) {
 
+    // wall: {
+    //     start: {
+    //         x: number,
+    //         y: number
+    //     },
+    //     end {
+    //         x: number,
+    //         y: number
+    //     },
+    //     width: number
+    // }
+
     if(this.angle == 0 || this.angle == Math.PI/2 || this.angle == Math.PI || this.angle == 3*Math.PI/2 || this.angle == 2*Math.PI) {
-        this.angle += 0.0001;
+        this.angle += 0.00001;
     }
 
     let x1w = null;
@@ -215,13 +229,19 @@ function Boundary(x1, y1, x2, y2, params) {
     this.start = { x: x1, y: y1 };
     this.end = { x: x2, y: y2 };
 
+    this.xV = params.xV || 0;
+    this.yV = params.yV || 0;
+
     this.color = params.color || boundaryColor;
     this.width = params.width || boundaryWidth;
-
-
 }
 
 Boundary.prototype.draw = function() {
+    this.start.x += this.xV/fps;
+    this.end.x += this.xV/fps;
+    this.start.y += this.yV/fps;
+    this.end.y += this.yV/fps;
+
     ctx.beginPath();
     ctx.strokeStyle = this.color;
     ctx.lineWidth = this.width;
@@ -249,8 +269,8 @@ function Particle(params) {
 
 
     // particle's 'flashlight' variables
-    this.start = params.start || 0;
-    this.end = params.end || 360;
+    this.start = params.start || 0; // starting angle of view (degrees)
+    this.stop = params.stop || 360;
     this.rayCount = params.rayCount || particleRayCount;
     this.rayColor = params.rayColor || rayColor;
     this.rayWidth = params.rayWidth || rayWidth;
@@ -258,15 +278,39 @@ function Particle(params) {
     this.viewRange = params.viewRange || particleViewRange;
 
 
+    // implementation details
     this.ownedRays = []; // list of indexes of rays owned by the particle
-
-    for(let i = 0; i < this.rayCount; i++) {
-        const index = rays.push(new Ray(this.x,this.y,0)) -1;
-        this.ownedRays.push(index);
-    }
+    this.prev = null; // used to detect change in rayCount in this.glow()   
 }
 
 Particle.prototype.glow = function() {
+
+    if(this.rayCount != this.prev) {
+        // rays.splice(this.ownedRays[0], this.ownedRays.length);
+
+        // this.ownedRays = []; // reset ownedRays
+
+        // // remake ownedRays with the most recent rayCount
+        // for(let i = 0; i < this.rayCount; i++) {
+        //     const index = rays.push(null) -1;
+        //     this.ownedRays.push(index);
+        // }
+
+        // this.prev = this.rayCount;
+
+        if(this.rayCount > this.prev) {
+            for(let i = 0; i < (this.rayCount - this.prev); i++) {
+                const index = rays.push(null) -1;
+                this.ownedRays.push(index);
+            }
+        } else {
+
+        }
+
+        this.prev = this.rayCount;
+    }
+    
+
     ctx.beginPath();
     ctx.fillStyle = this.color;
     ctx.arc(this.x, cHeight - this.y, this.radius, 0, Math.PI*2, true);
@@ -277,9 +321,11 @@ Particle.prototype.glow = function() {
         let count = 0;
         for(let i of this.ownedRays) {
             const start = this.start;
-            const end = this.end;
-            rays[i].active = true;
-            rays[i] = new Ray(this.x, this.y, (start + ((end-start)/this.ownedRays.length)*count) * Math.PI/180, {color: this.rayColor, width: this.rayWidth, defaultLength: this.viewRange});
+            const end = this.stop;
+            if(this.prev == this.rayCount) {
+                rays[i] = new Ray(this.x, this.y, (start + ((end-start)/this.ownedRays.length)*count) * Math.PI/180, {color: this.rayColor, width: this.rayWidth, defaultLength: this.viewRange});
+                rays[i].active = true;
+            }
             count++;
         }
     } else {
@@ -287,6 +333,8 @@ Particle.prototype.glow = function() {
             rays[i].active = false;
         }
     }
+
+    this.prev = this.rayCount;
 }
 
 ////////////////////////////////////////////////
@@ -318,12 +366,12 @@ function toggleEmit() {
 ////////////////////////////////////////////////
 // Main Loop
 
-
-
 function main() {
     // clear canvas
     ctx.fillStyle = canvas.color;
     ctx.fillRect(0, 0, cWidth, cHeight);
+
+    test.glow();
 
     sendRays();
     player.glow();
