@@ -80,12 +80,13 @@ function reset() {
 
     walls = [];
     rays = [];
+    particles = [
+        new Particle()
+    ];
 
     randomizeWalls();
 
-    player = new Particle();
-
-    test = new Particle();
+    player = particles[0];
 
 
     fps = 60;
@@ -118,15 +119,20 @@ function Ray(x, y, angle, params) {
     this.y = y;
     this.angle = angle; //radians
 
-    this.defaultLength = params.defaultLength || Math.max(cWidth, cHeight) * 2;
+    this.range = params.range || Math.max(cWidth, cHeight) * 2;
     this.color = params.color || rayColor;
     this.width = params.width || rayWidth;
     this.active = params.active || true;
+    this.deletable = params.deletable || false;
 
-    this.length = this.defaultLength;
+    this.length = this.range; // implementation detail
 }
 
 Ray.prototype.draw = function() {
+    if(this.deletable) {
+        this.active = false;
+    }
+
     if(this.active) {
         ctx.beginPath();
         ctx.strokeStyle = this.color;
@@ -138,73 +144,75 @@ Ray.prototype.draw = function() {
         ctx.closePath();
     }
 
-    this.length = this.defaultLength;
+    this.length = this.range;
 }
 
 Ray.prototype.cast = function(wall) {
+    if(this.active) {
 
-    // wall: {
-    //     start: {
-    //         x: number,
-    //         y: number
-    //     },
-    //     end {
-    //         x: number,
-    //         y: number
-    //     },
-    //     width: number
-    // }
+        // wall: {
+        //     start: {
+        //         x: number,
+        //         y: number
+        //     },
+        //     end {
+        //         x: number,
+        //         y: number
+        //     },
+        //     width: number
+        // }
 
-    if(this.angle == 0 || this.angle == Math.PI/2 || this.angle == Math.PI || this.angle == 3*Math.PI/2 || this.angle == 2*Math.PI) {
-        this.angle += 0.00001;
-    }
+        if(this.angle == 0 || this.angle == Math.PI/2 || this.angle == Math.PI || this.angle == 3*Math.PI/2 || this.angle == 2*Math.PI) {
+            this.angle += 0.00001;
+        }
 
-    let x1w = null;
-    let y1w = null;
-    let x2w = null;
-    let y2w = null;
+        let x1w = null;
+        let y1w = null;
+        let x2w = null;
+        let y2w = null;
 
-    if(wall.start.x < wall.end.x) {
-        x1w = wall.start.x;
-        x2w = wall.end.x;
-        y1w = wall.start.y;
-        y2w = wall.end.y;
-    } else {
-        x1w = wall.end.x;
-        x2w = wall.start.x;
-        y1w = wall.end.y;
-        y2w = wall.start.y;
-    }
+        if(wall.start.x < wall.end.x) {
+            x1w = wall.start.x;
+            x2w = wall.end.x;
+            y1w = wall.start.y;
+            y2w = wall.end.y;
+        } else {
+            x1w = wall.end.x;
+            x2w = wall.start.x;
+            y1w = wall.end.y;
+            y2w = wall.start.y;
+        }
 
-    let x1r = null;
-    let y1r = null;
-    let x2r = null;
-    let y2r = null;
+        let x1r = null;
+        let y1r = null;
+        let x2r = null;
+        let y2r = null;
 
-    if(this.x < (this.x + this.length*Math.cos(this.angle))) {
-        x1r = this.x;
-        y1r = this.y;
-        x2r = this.x + this.length*Math.cos(this.angle);
-        y2r = this.y + this.length*Math.sin(this.angle);
-    } else {
-        x1r = this.x + this.length*Math.cos(this.angle);
-        x2r = this.x;
-        y1r = this.y + this.length*Math.sin(this.angle);
-        y2r = this.y;
-    }
+        if(this.x < (this.x + this.length*Math.cos(this.angle))) {
+            x1r = this.x;
+            y1r = this.y;
+            x2r = this.x + this.length*Math.cos(this.angle);
+            y2r = this.y + this.length*Math.sin(this.angle);
+        } else {
+            x1r = this.x + this.length*Math.cos(this.angle);
+            x2r = this.x;
+            y1r = this.y + this.length*Math.sin(this.angle);
+            y2r = this.y;
+        }
 
-    let slopeW = (y2w - y1w)/(x2w - x1w);
-    let slopeR = (y2r - y1r)/(x2r - x1r);
+        let slopeW = (y2w - y1w)/(x2w - x1w);
+        let slopeR = (y2r - y1r)/(x2r - x1r);
 
-    const xc = ((y1r-(slopeR*x1r))-(y1w-(slopeW*x1w)))/(slopeW-slopeR) || null;
-    const yc = (slopeW*xc) + (y1w - (slopeW*x1w)) || null;
+        const xc = ((y1r-(slopeR*x1r))-(y1w-(slopeW*x1w)))/(slopeW-slopeR) || null;
+        const yc = (slopeW*xc) + (y1w - (slopeW*x1w)) || null;
 
-    if(xc >= x1r && xc <= x2r &&
-        xc >= x1w - wall.width/2 && xc <= x2w + wall.width/2 &&
-        yc >= Math.min(y1r, y2r) && yc <= Math.max(y1r, y2r) &&
-        yc >= Math.min(y1w, y2w) - wall.width/2 && yc <= Math.max(y1w, y2w) + wall.width/2) {
-            this.setEnd(xc, yc);
-            return {x: xc, y: yc};
+        if(xc >= x1r && xc <= x2r &&
+            xc >= x1w - wall.width/2 && xc <= x2w + wall.width/2 &&
+            yc >= Math.min(y1r, y2r) && yc <= Math.max(y1r, y2r) &&
+            yc >= Math.min(y1w, y2w) - wall.width/2 && yc <= Math.max(y1w, y2w) + wall.width/2) {
+                this.setEnd(xc, yc);
+                return {x: xc, y: yc};
+        }
     }
 }
 
@@ -286,24 +294,41 @@ function Particle(params) {
 Particle.prototype.glow = function() {
 
     if(this.rayCount != this.prev) {
-        // rays.splice(this.ownedRays[0], this.ownedRays.length);
-
-        // this.ownedRays = []; // reset ownedRays
-
-        // // remake ownedRays with the most recent rayCount
-        // for(let i = 0; i < this.rayCount; i++) {
-        //     const index = rays.push(null) -1;
-        //     this.ownedRays.push(index);
-        // }
-
-        // this.prev = this.rayCount;
 
         if(this.rayCount > this.prev) {
-            for(let i = 0; i < (this.rayCount - this.prev); i++) {
+
+            let leftToAdd = this.rayCount - this.prev;
+
+            for(let i = 0; i < rays.length; i++) {
+                if(rays[i].deletable && leftToAdd > 0) {
+                    this.ownedRays.push(i);
+                    leftToAdd -= 1;
+                }
+            }
+
+            for(let i = 0; i < leftToAdd; i++) {
                 const index = rays.push(null) -1;
                 this.ownedRays.push(index);
             }
-        } else {
+
+        } 
+        
+        else {
+
+            let leftToRemove = this.prev - this.rayCount;
+
+            for(let i = this.ownedRays.length -1; i >= 0; i--) {
+                if(this.ownedRays[i] == rays.length-1 && leftToRemove > 0) {
+                    rays.splice(this.ownedRays[i], 1);
+                    this.ownedRays.splice(i, 1);
+                    leftToRemove -= 1;
+                }
+                else if(this.ownedRays[i] != rays.length-1 && leftToRemove >0) {
+                    rays[this.ownedRays[i]].deletable = true;
+                    this.ownedRays.splice(i, 1);
+                    leftToRemove -= 1;
+                }
+            }
 
         }
 
@@ -323,7 +348,7 @@ Particle.prototype.glow = function() {
             const start = this.start;
             const end = this.stop;
             if(this.prev == this.rayCount) {
-                rays[i] = new Ray(this.x, this.y, (start + ((end-start)/this.ownedRays.length)*count) * Math.PI/180, {color: this.rayColor, width: this.rayWidth, defaultLength: this.viewRange});
+                rays[i] = new Ray(this.x, this.y, (start + ((end-start)/this.ownedRays.length)*count) * Math.PI/180, {color: this.rayColor, width: this.rayWidth, range: this.viewRange});
                 rays[i].active = true;
             }
             count++;
@@ -357,6 +382,12 @@ function sendRays() {
     }
 }
 
+function handleParticles() {
+    for(let part of particles) {
+        part.glow();
+    }
+}
+
 
 // Button Functions
 function toggleEmit() {
@@ -371,10 +402,8 @@ function main() {
     ctx.fillStyle = canvas.color;
     ctx.fillRect(0, 0, cWidth, cHeight);
 
-    test.glow();
-
     sendRays();
-    player.glow();
+    handleParticles();
     drawWalls();
 }
 
