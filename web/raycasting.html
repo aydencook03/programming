@@ -97,8 +97,6 @@ function resize() {
 
 function reset() {
     canvas = document.getElementById('canvas');
-    raySlider = document.getElementById('raySlider');
-    viewSlider = document.getElementById('viewSlider');
     settingsDiv = document.getElementsByClassName('settings')[0];
     ctx = canvas.getContext('2d');
 
@@ -440,11 +438,29 @@ function toggleEmit() {
 }
 
 function raySliderFunc() {
-    player.rayCount = raySlider.value;
+    player.rayCount = parseInt(document.getElementById('raySlider').value);
 }
 
 function viewSliderFunc() {
-    player.viewRange = viewSlider.value;
+    player.viewRange = parseInt(document.getElementById('viewSlider').value);
+}
+
+function viewAngleFunc() {
+    const angle = parseInt(document.getElementById('angleSlider').value);
+    const offset = parseInt(document.getElementById('directionSlider').value);
+
+    if(angle != 180 && angle != 0) {
+        player.start = offset - angle/2;
+        player.stop = offset + angle/2;
+    } 
+    else if(angle == 0) {
+        player.start = offset;
+        player.stop = offset;
+    }
+    else if(angle == 180) {
+        player.start = 0;
+        player.stop = 360;
+    }
 }
 
 function toggleSettings() {
@@ -530,9 +546,6 @@ h6 {
     text-align: center;
     color: white;
 }
-input {
-    
-}
 input:hover {
     outline: none;
 }
@@ -573,11 +586,19 @@ button:focus {
         <div class='settings'>
             <div class='set'>
                 <h6>Ray-Count</h6>
-                <input id='raySlider' oninput='raySliderFunc()' type='range' min='0' max='720' value='180'/>
+                <input id='raySlider' oninput='raySliderFunc()' type='range' step='2' min='0' max='720' value='180'/>
             </div>
             <div class='set' style='margin-top: 5px'>
                 <h6>View-Range</h6>
                 <input id='viewSlider' oninput='viewSliderFunc()' type='range' min='50' max='2000' value='2000'/>
+            </div>
+            <div class='set' style='margin-top: 5px'>
+                <h6>View-Angle</h6>
+                <input id='angleSlider' oninput='viewAngleFunc()' type='range' step='2' min='0' max='180' value='180'/>
+            </div>
+            <div class='set' style='margin-top: 5px'>
+                <h6>Direction</h6>
+                <input id='directionSlider' oninput='viewAngleFunc()' type='range' step='2' min='0' max='360' value='0'/>
             </div>
         </div>
     </div>
