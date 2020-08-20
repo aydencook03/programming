@@ -513,11 +513,17 @@ canvas {
     margin: 0;
 }
 
-.buttons {
+.ui {
     position: absolute;
     width: fit-content;
     top: 0;
     left: 0;
+    display: flex;
+    justify-content: left;
+    flex-direction: column;
+}
+.buttons {
+    width: fit-content;
     display: flex;
     justify-content: left;
     flex-direction: column;
@@ -541,6 +547,7 @@ canvas {
     justify-content: center;
     flex-direction: column;
 }
+
 h6 {
     margin: 0;
     text-align: center;
@@ -557,7 +564,7 @@ input:active {
 }
 #emit,#random,#settings {
     margin: 10px;
-    width: fit-content;
+    width: auto;
     font-weight: bold;
     color: white;
     background: #37474f;
@@ -572,6 +579,9 @@ input:active {
 button:focus {
     outline: none;
 }
+button::-moz-focus-inner {
+    border: 0;
+}
 
 </style>
 </head>
@@ -579,10 +589,14 @@ button:focus {
     <div class = 'canvas'>
         <canvas id='canvas'></canvas>
     </div>
-    <div class='buttons'>
-        <button id='random' onclick='randomizeWalls()'>Randomize</button>
-        <button id='emit' onclick='toggleEmit()'>Emit</button>
-        <button id='settings' onclick='toggleSettings()'>Settings</button>
+
+    <div class='ui'>
+        <div class='buttons'>
+            <button id='random' onclick='randomizeWalls()'>Randomize</button>
+            <button id='emit' onclick='toggleEmit()'>Emit</button>
+            <button id='settings' onclick='toggleSettings()'>Settings</button>
+        </div>
+
         <div class='settings'>
             <div class='set'>
                 <h6>Ray-Count</h6>
