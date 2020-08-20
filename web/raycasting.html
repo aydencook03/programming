@@ -10,29 +10,67 @@
 // Event Handling
 
 window.onload = function() {reset()}
+
+window.addEventListener('mousedown', mouseDown);
 window.addEventListener('mousemove', mouseMove);
+window.addEventListener('mouseup', mouseUp);
+
+window.addEventListener('touchstart', touchStart);
 window.addEventListener('touchmove', touchMove);
+window.addEventListener('touchend', touchEnd);
+
 window.addEventListener('resize', resize);
 
 mouse = {
-    x: null,
-    y: null
+    down: false,
+    start: {
+        x: null,
+        y: null
+    },
+    current: {
+        x: null,
+        y: null
+    },
+    end: {
+        x: null,
+        y: null
+    }
 }
 
+function mouseDown(data) {
+    mouse.down = true;
+    mouse.start.x = data.clientX - rect.left;
+    mouse.start.y = cHeight - (data.clientY - rect.top);
+}
 function mouseMove(data) {
-    mouse.x = data.clientX - rect.left;
-    mouse.y = cHeight - (data.clientY - rect.top);
+    mouse.current.x = data.clientX - rect.left;
+    mouse.current.y = cHeight - (data.clientY - rect.top);
 
-    player.x = mouse.x;
-    player.y = mouse.y;
+    player.x = mouse.current.x;
+    player.y = mouse.current.y;
+}
+function mouseUp(data) {
+    mouse.down = false;
+    mouse.end.x = data.clientX - rect.left;
+    mouse.end.y = cHeight - (data.clientY - rect.top);
 }
 
+function touchStart(data) {
+    mouse.down = true;
+    mouse.start.x = data.touches[0].clientX - rect.left;
+    mouse.start.y = cHeight - (data.touches[0].clientY - rect.top);
+}
 function touchMove(data) {
-    mouse.x = data.touches[0].clientX - rect.left;
-    mouse.y = cHeight - (data.touches[0].clientY - rect.top);
+    mouse.current.x = data.touches[0].clientX - rect.left;
+    mouse.current.y = cHeight - (data.touches[0].clientY - rect.top);
 
-    player.x = mouse.x;
-    player.y = mouse.y;
+    player.x = mouse.current.x;
+    player.y = mouse.current.y;
+}
+function touchEnd() {
+    mouse.down = false;
+    mouse.end.x = mouse.current.x;
+    mouse.end.y = mouse.current.y;
 }
 
 function resize() {
@@ -41,6 +79,9 @@ function resize() {
 
     cWidth = window.innerWidth;
     cHeight = window.innerHeight;
+
+    viewSlider.max = Math.max(cWidth, cHeight)*1.1;
+    viewSlider.value = Math.max(cWidth, cHeight)*1.1;
 
     canvas.style.width = `${cWidth}px`;
     canvas.style.height = `${cHeight}px`;
@@ -56,6 +97,9 @@ function resize() {
 
 function reset() {
     canvas = document.getElementById('canvas');
+    raySlider = document.getElementById('raySlider');
+    viewSlider = document.getElementById('viewSlider');
+    settingsDiv = document.getElementsByClassName('settings')[0];
     ctx = canvas.getContext('2d');
 
     resize();
@@ -63,6 +107,7 @@ function reset() {
 
     // looks
     canvas.color = 'black';
+    showSettings = false;
     
     boundaryColor = 'crimson';
     boundaryWidth = 4;
@@ -71,8 +116,8 @@ function reset() {
     rayWidth = 1.5;
 
     particleColor = 'white';
-    particleRadius = 8;
-    particleRayCount = 5;
+    particleRadius = 6;
+    particleRayCount = 180;
     particleViewRange = null;
     
     wallCount = 10;
@@ -394,6 +439,24 @@ function toggleEmit() {
     player.emitting = !player.emitting;
 }
 
+function raySliderFunc() {
+    player.rayCount = raySlider.value;
+}
+
+function viewSliderFunc() {
+    player.viewRange = viewSlider.value;
+}
+
+function toggleSettings() {
+    showSettings = !showSettings;
+
+    if(showSettings) {
+        settingsDiv.style.display = 'flex';
+    } else {
+        settingsDiv.style.display = 'none';
+    }
+}
+
 ////////////////////////////////////////////////
 // Main Loop
 
@@ -420,6 +483,7 @@ body {
     padding: 0;
     margin: 0;
     overscroll-behavior: contain;
+    font-family:Arial, Helvetica, sans-serif;
 }
 .canvas {
     width: 100%;
@@ -442,19 +506,55 @@ canvas {
     justify-content: left;
     flex-direction: column;
 }
-#emit,#random {
+.settings {
+    display: none;
+    width: fit-content;
+    justify-content: left;
+    align-items: center;
+    margin: 10px;
+    padding: 10px;
+    border: 2px solid white;
+    border-radius: 7px;
+    background: #37474f;
+    flex-direction: column;
+}
+.set {
+    border-radius: 7px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+h6 {
+    margin: 0;
+    text-align: center;
+    color: white;
+}
+input {
+    
+}
+input:hover {
+    outline: none;
+}
+input:focus {
+    outline: none;
+}
+input:active {
+    outline: none;
+}
+#emit,#random,#settings {
     margin: 10px;
     width: fit-content;
     font-weight: bold;
     color: white;
-    background: teal;
+    background: #37474f;
     border: 2px solid white;
-    border-radius: 10px;
+    border-radius: 7px;
     outline: none;
     margin-bottom: 0px;
 }
-#emit:active, #random:active {
-    background: #ccc;
+#emit:active, #random:active, #settings:active {
+    background: #888;
 }
 button:focus {
     outline: none;
@@ -469,6 +569,17 @@ button:focus {
     <div class='buttons'>
         <button id='random' onclick='randomizeWalls()'>Randomize</button>
         <button id='emit' onclick='toggleEmit()'>Emit</button>
+        <button id='settings' onclick='toggleSettings()'>Settings</button>
+        <div class='settings'>
+            <div class='set'>
+                <h6>Ray-Count</h6>
+                <input id='raySlider' oninput='raySliderFunc()' type='range' min='0' max='720' value='180'/>
+            </div>
+            <div class='set' style='margin-top: 5px'>
+                <h6>View-Range</h6>
+                <input id='viewSlider' oninput='viewSliderFunc()' type='range' min='50' max='2000' value='2000'/>
+            </div>
+        </div>
     </div>
 </body>
 </html>
