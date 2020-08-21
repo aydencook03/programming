@@ -56,8 +56,11 @@ function mouseUp(data) {
     mouse.end.y = cHeight - (data.clientY - rect.top);
 
     if(player.mode == 'draw') {
-        if( ((mouse.start.x-mouse.end.x)**2 + (mouse.start.y-mouse.end.y)**2)**0.5 > 1 ) {
-            walls.push(new Boundary(mouse.start.x, mouse.start.y, mouse.end.x-0.00001, mouse.end.y));
+        const mag = ((mouse.end.x-mouse.start.x)**2 + (mouse.end.y-mouse.start.y)**2)**0.5;
+        if( mag > boundaryWidth/1 ) {
+            let dirx = (boundaryWidth/1)*((mouse.start.x-mouse.end.x)/mag);
+            let diry = (boundaryWidth/1)*((mouse.start.y-mouse.end.y)/mag);
+            walls.push(new Boundary(mouse.start.x, mouse.start.y, mouse.end.x+dirx, mouse.end.y+diry));
         }
     }
     else if(player.mode == 'delete') {
@@ -476,7 +479,14 @@ function handleParticles() {
 
 function checkUserInput() {
     if(player.mode == 'draw' && mouse.down) {
-        new Boundary(mouse.start.x, mouse.start.y, mouse.current.x, mouse.current.y).draw();
+        let mag = ((mouse.current.x-mouse.start.x)**2 + (mouse.current.y-mouse.start.y)**2)**0.5;
+        let dirx = (boundaryWidth/1)*((mouse.start.x-mouse.current.x)/mag);
+        let diry = (boundaryWidth/1)*((mouse.start.y-mouse.current.y)/mag);
+        if(mag > boundaryWidth/1) {
+            new Boundary(mouse.start.x, mouse.start.y, mouse.current.x+dirx, mouse.current.y+diry).draw();
+        } else {
+            new Boundary(mouse.start.x, mouse.start.y, mouse.start.x, mouse.start.y).draw();
+        }
     }
     else if(player.mode == 'delete' && mouse.down) {
         new Ray(mouse.start.x, mouse.start.y, 0, {color: 'green', width: 2, type: 'deleter'}).setEnd(mouse.current.x, mouse.current.y).draw();
