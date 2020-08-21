@@ -131,6 +131,9 @@ function reset() {
 
     player = particles[0];
 
+    document.getElementById('colorPicker').value = '#ffffff';
+    document.getElementById('wallColorPicker').value = '#DC143C';
+
 
     fps = 60;
 
@@ -285,6 +288,7 @@ function Boundary(x1, y1, x2, y2, params) {
 
     this.color = params.color || boundaryColor;
     this.width = params.width || boundaryWidth;
+    this.visible = params.visible || true;
 }
 
 Boundary.prototype.draw = function() {
@@ -293,14 +297,16 @@ Boundary.prototype.draw = function() {
     this.start.y += this.yV/fps;
     this.end.y += this.yV/fps;
 
-    ctx.beginPath();
-    ctx.strokeStyle = this.color;
-    ctx.lineWidth = this.width;
-    ctx.lineCap = "round";
-    ctx.moveTo(this.start.x, cHeight - this.start.y);
-    ctx.lineTo(this.end.x, cHeight - this.end.y);
-    ctx.stroke();
-    ctx.closePath();
+    if(this.visible) {
+        ctx.beginPath();
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = this.width;
+        ctx.lineCap = "round";
+        ctx.moveTo(this.start.x, cHeight - this.start.y);
+        ctx.lineTo(this.end.x, cHeight - this.end.y);
+        ctx.stroke();
+        ctx.closePath();
+    }
 }
 
 ////////////////////////////////////////////////
@@ -473,6 +479,42 @@ function toggleSettings() {
     }
 }
 
+function chooseColor() {
+    const value = document.getElementById('colorPicker').value;
+
+    player.rayColor = value;
+}
+
+function changeRayWidth() {
+    player.rayWidth = parseFloat(document.getElementById('rayWidthSlider').value);
+}
+
+function chooseWallColor() {
+    const value = document.getElementById('wallColorPicker').value;
+
+    boundaryColor = value;
+
+    for(wall of walls) {
+        wall.color = value;
+    }
+}
+
+function changeWallWidth() {
+    const value = parseFloat(document.getElementById('wallWidthSlider').value);
+
+    boundaryWidth = value;
+
+    for(wall of walls) {
+        if(value > 0) {
+            wall.width = value;
+            wall.visible = true;
+        } else {
+            wall.width = value;
+            wall.visible = false;
+        }
+    }
+}
+
 ////////////////////////////////////////////////
 // Main Loop
 
@@ -615,6 +657,22 @@ button::-moz-focus-inner {
             <div class='set' style='margin-top: 5px'>
                 <h6>Direction</h6>
                 <input id='directionSlider' oninput='viewAngleFunc()' type='range' step='2' min='0' max='360' value='0'/>
+            </div>
+            <div class='set' style='margin-top: 5px'>
+                <h6>Ray Color</h6>
+                <input style='width: auto; margin-top: 5px' id='colorPicker' oninput='chooseColor()' type='color'/>
+            </div>
+            <div class='set' style='margin-top: 5px'>
+                <h6>Ray Width</h6>
+                <input id='rayWidthSlider' oninput='changeRayWidth()' type='range' step='0.1' min='0.1' max='6' value='1.5'/>
+            </div>
+            <div class='set' style='margin-top: 5px'>
+                <h6>Wall Color</h6>
+                <input style='width: auto; margin-top: 5px' id='wallColorPicker' oninput='chooseWallColor()' type='color'/>
+            </div>
+            <div class='set' style='margin-top: 5px'>
+                <h6>Wall Width</h6>
+                <input id='wallWidthSlider' oninput='changeWallWidth()' type='range' step='0.2' min='0' max='8' value='4'/>
             </div>
         </div>
     </div>
