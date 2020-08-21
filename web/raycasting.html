@@ -111,11 +111,11 @@ function reset() {
     boundaryWidth = 3;
 
     rayColor = 'rgba(255, 255, 255, 0.6)';
-    rayWidth = 0.21;
+    rayWidth = 0.2;
 
     particleColor = 'white';
-    particleRadius = 6;
-    particleRayCount = 720;
+    particleRadius = 5;
+    particleRayCount = 1080;
     particleViewRange = null;
     
     wallCount = 10;
@@ -644,7 +644,7 @@ button::-moz-focus-inner {
         <div class='settings'>
             <div class='set'>
                 <h6>Ray-Count</h6>
-                <input id='raySlider' oninput='raySliderFunc()' type='range' step='2' min='0' max='720' value='720'/>
+                <input id='raySlider' oninput='raySliderFunc()' type='range' step='2' min='0' max='1080' value='180'/>
             </div>
             <div class='set' style='margin-top: 5px'>
                 <h6>View-Range</h6>
@@ -664,7 +664,7 @@ button::-moz-focus-inner {
             </div>
             <div class='set' style='margin-top: 5px'>
                 <h6>Ray Width</h6>
-                <input id='rayWidthSlider' oninput='changeRayWidth()' type='range' step='0.1' min='0.1' max='6' value='0.2'/>
+                <input id='rayWidthSlider' oninput='changeRayWidth()' type='range' step='0.1' min='0.1' max='4' value='0.2'/>
             </div>
             <div class='set' style='margin-top: 5px'>
                 <h6>Wall Color</h6>
@@ -672,7 +672,7 @@ button::-moz-focus-inner {
             </div>
             <div class='set' style='margin-top: 5px'>
                 <h6>Wall Width</h6>
-                <input id='wallWidthSlider' oninput='changeWallWidth()' type='range' step='0.2' min='0' max='8' value='4'/>
+                <input id='wallWidthSlider' oninput='changeWallWidth()' type='range' step='0.2' min='0' max='8' value='3'/>
             </div>
         </div>
     </div>
