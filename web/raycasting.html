@@ -37,6 +37,7 @@ mouse = {
     }
 }
 
+
 function mouseDown(data) {
     mouse.down = true;
     mouse.start.x = data.clientX - rect.left;
@@ -53,7 +54,26 @@ function mouseUp(data) {
     mouse.down = false;
     mouse.end.x = data.clientX - rect.left;
     mouse.end.y = cHeight - (data.clientY - rect.top);
+
+    if(player.mode == 'draw') {
+        if( ((mouse.start.x-mouse.end.x)**2 + (mouse.start.y-mouse.end.y)**2)**0.5 > 1 ) {
+            walls.push(new Boundary(mouse.start.x, mouse.start.y, mouse.end.x, mouse.end.y));
+        }
+    }
+    else if(player.mode == 'delete') {
+        let toSplice = [];
+        for(let i = 0; i < walls.length; i++) {
+            if(new Ray(mouse.start.x, mouse.start.y, 0, {color: 'green', width: 2, type: 'deleter'}).setEnd(mouse.current.x, mouse.current.y).cast(walls[i])) {
+                toSplice.push(i);
+            }
+        }
+        for(let i = toSplice.length -1; i >= 0; i--) {
+            const index = toSplice[i];
+            walls.splice(index, 1);
+        }
+    }
 }
+
 
 function touchStart(data) {
     mouse.down = true;
@@ -72,6 +92,7 @@ function touchEnd() {
     mouse.end.x = mouse.current.x;
     mouse.end.y = mouse.current.y;
 }
+
 
 function resize() {
     scale = Math.min(window.innerWidth, window.innerHeight);
@@ -127,9 +148,9 @@ function reset() {
         new Particle()
     ];
 
-    randomizeWalls();
-
     player = particles[0];
+
+    randomizeWalls();
 
     document.getElementById('colorPicker').value = '#ffffff';
     document.getElementById('wallColorPicker').value = '#DC143C';
@@ -172,6 +193,7 @@ function Ray(x, y, angle, params) {
     this.deletable = params.deletable || false;
 
     this.length = this.range; // implementation detail
+    this.type = params.type || 'normal'; // used for delete mode
 }
 
 Ray.prototype.draw = function() {
@@ -256,8 +278,13 @@ Ray.prototype.cast = function(wall) {
             xc >= x1w - wall.width/2 && xc <= x2w + wall.width/2 &&
             yc >= Math.min(y1r, y2r) && yc <= Math.max(y1r, y2r) &&
             yc >= Math.min(y1w, y2w) - wall.width/2 && yc <= Math.max(y1w, y2w) + wall.width/2) {
-                this.setEnd(xc, yc);
-                return {x: xc, y: yc};
+                if(this.type == 'normal') {
+                    this.setEnd(xc, yc);
+                    return {x: xc, y: yc};
+                }
+                else if(this.type == 'deleter') {
+                    return true;
+                }
         }
     }
 }
@@ -265,6 +292,7 @@ Ray.prototype.cast = function(wall) {
 Ray.prototype.setEnd = function(x, y) {
     this.angle = Math.atan2(y - this.y, x - this.x);
     this.length = ((x - this.x)**2 + (y - this.y)**2)**0.5;
+    return this;
 }
 
 Ray.prototype.lookAt = function(x, y) {
@@ -324,6 +352,8 @@ function Particle(params) {
     this.radius = params.radius || particleRadius;
     this.color = params.color || particleColor;
 
+    // has a 'move' around, a 'draw' wall, and a 'delete' wall mode
+    this.mode = params.mode || 'move';
 
     // particle's 'flashlight' variables
     this.start = params.start || 0; // starting angle of view (degrees)
@@ -437,10 +467,31 @@ function handleParticles() {
     }
 }
 
+function checkUserInput() {
+    if(player.mode == 'draw' && mouse.down) {
+        new Boundary(mouse.start.x, mouse.start.y, mouse.current.x, mouse.current.y).draw();
+    }
+    else if(player.mode == 'delete' && mouse.down) {
+        new Ray(mouse.start.x, mouse.start.y, 0, {color: 'green', width: 2, type: 'deleter'}).setEnd(mouse.current.x, mouse.current.y).draw();
+    }
+}
 
-// Button Functions
-function toggleEmit() {
-    player.emitting = !player.emitting;
+////////////////////////////////////////////////
+// UI Logic
+
+function toggleMode() {
+    if(player.mode == 'move') {
+        player.mode = 'draw';
+        document.getElementById('mode').innerHTML = 'Draw';
+    }
+    else if(player.mode == 'draw') {
+        player.mode = 'delete';
+        document.getElementById('mode').innerHTML = 'Delete';
+    }
+    else if(player.mode == 'delete') {
+        player.mode = 'move';
+        document.getElementById('mode').innerHTML = 'Move';
+    }
 }
 
 function raySliderFunc() {
@@ -526,6 +577,7 @@ function main() {
     sendRays();
     handleParticles();
     drawWalls();
+    checkUserInput();
 }
 
 </script>
@@ -604,7 +656,7 @@ input:focus {
 input:active {
     outline: none;
 }
-#emit,#random,#settings {
+#mode,#random,#settings {
     margin: 10px;
     width: auto;
     font-weight: bold;
@@ -617,7 +669,7 @@ input:active {
     padding-top: 2.5px;
     padding-bottom: 2.5px;
 }
-#emit:active, #random:active, #settings:active {
+#mode:active, #random:active, #settings:active {
     background: #888;
 }
 button:focus {
@@ -637,7 +689,7 @@ button::-moz-focus-inner {
     <div class='ui'>
         <div class='buttons'>
             <button id='random' onclick='randomizeWalls()'>Randomize</button>
-            <button id='emit' onclick='toggleEmit()'>Emit</button>
+            <button id='mode' onclick='toggleMode()'>Move</button>
             <button id='settings' onclick='toggleSettings()'>Settings</button>
         </div>
 
