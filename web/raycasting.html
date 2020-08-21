@@ -57,7 +57,7 @@ function mouseUp(data) {
 
     if(player.mode == 'draw') {
         if( ((mouse.start.x-mouse.end.x)**2 + (mouse.start.y-mouse.end.y)**2)**0.5 > 1 ) {
-            walls.push(new Boundary(mouse.start.x, mouse.start.y, mouse.end.x, mouse.end.y));
+            walls.push(new Boundary(mouse.start.x, mouse.start.y, mouse.end.x-0.00001, mouse.end.y));
         }
     }
     else if(player.mode == 'delete') {
@@ -230,8 +230,15 @@ Ray.prototype.cast = function(wall) {
         //     width: number
         // }
 
+        // prevent slopes of infinity and of zero
         if(this.angle == 0 || this.angle == Math.PI/2 || this.angle == Math.PI || this.angle == 3*Math.PI/2 || this.angle == 2*Math.PI) {
             this.angle += 0.00001;
+        }
+        if(wall.start.x == wall.end.x) {
+            wall.end.x += 0.00001;
+        }
+        if(wall.start.y == wall.end.y) {
+            wall.end.y += 0.00001;
         }
 
         let x1w = null;
