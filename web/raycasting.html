@@ -306,6 +306,12 @@ function reset() {
     document.getElementById('viewSlider').max = Math.max(cWidth, cHeight)*1.1;
     document.getElementById('viewSlider').value = particleViewRange || Math.max(cWidth, cHeight)*1.1;
 
+    viewAngleFunc();
+    viewSliderFunc();
+    raySliderFunc();
+    changeRayWidth();
+    changeWallWidth();
+
     if(settingsDiv.style.display == 'flex') {
         showSettings = true;
     }
@@ -669,6 +675,7 @@ function raySliderFunc() {
 
 function viewSliderFunc() {
     player.viewRange = parseInt(document.getElementById('viewSlider').value);
+    document.getElementById('viewRange').innerHTML = `View Range: ${player.viewRange}`;
 }
 
 function viewAngleFunc() {
@@ -678,15 +685,20 @@ function viewAngleFunc() {
     if(angle != 180 && angle != 0) {
         player.start = offset - angle/2;
         player.stop = offset + angle/2;
+        document.getElementById('viewAngle').innerHTML = `View Angle: ${angle}`;
     } 
     else if(angle == 0) {
         player.start = offset;
         player.stop = offset;
+        document.getElementById('viewAngle').innerHTML = `View Angle: ${0}`;
     }
     else if(angle == 180) {
         player.start = 0;
         player.stop = 360;
+        document.getElementById('viewAngle').innerHTML = `View Angle: ${360}`;
     }
+
+    document.getElementById('viewDirection').innerHTML = `View Direction: ${offset}`;
 }
 
 function toggleSettings() {
@@ -707,6 +719,7 @@ function chooseColor() {
 
 function changeRayWidth() {
     player.rayWidth = parseFloat(document.getElementById('rayWidthSlider').value);
+    document.getElementById('rayWidthH6').innerHTML = `Ray Width: ${player.rayWidth}`;
 }
 
 function chooseWallColor() {
@@ -723,6 +736,8 @@ function changeWallWidth() {
     const value = parseFloat(document.getElementById('wallWidthSlider').value);
 
     boundaryWidth = value;
+
+    document.getElementById('wallWidth').innerHTML = `Wall Width: ${value}`;
 
     for(wall of walls) {
         if(value > 0) {
@@ -921,15 +936,15 @@ button::-moz-focus-inner {
                 <input id='raySlider' oninput='raySliderFunc()' type='text'  value='1080'/>
             </div>
             <div class='set' style='margin-top: 5px'>
-                <h6>View Range</h6>
+                <h6 id='viewRange'>View Range</h6>
                 <input id='viewSlider' oninput='viewSliderFunc()' type='range' min='50' max='2000' value='2000'/>
             </div>
             <div class='set' style='margin-top: 5px'>
-                <h6>View Angle</h6>
+                <h6 id='viewAngle'>View Angle</h6>
                 <input id='angleSlider' oninput='viewAngleFunc()' type='range' step='2' min='0' max='180' value='180'/>
             </div>
             <div class='set' style='margin-top: 5px'>
-                <h6>View Direction</h6>
+                <h6 id='viewDirection'>View Direction</h6>
                 <input id='directionSlider' oninput='viewAngleFunc()' type='range' step='2' min='0' max='360' value='0'/>
             </div>
             <div class='set' style='margin-top: 5px'>
@@ -937,7 +952,7 @@ button::-moz-focus-inner {
                 <input style='width: auto; margin-top: 5px; margin-bottom: 5px; border: none; border-radius: 5px' id='colorPicker' oninput='chooseColor()' type='color'/>
             </div>
             <div class='set' style='margin-top: 5px'>
-                <h6>Ray Width</h6>
+                <h6 id='rayWidthH6'>Ray Width</h6>
                 <input id='rayWidthSlider' oninput='changeRayWidth()' type='range' step='0.1' min='0.1' max='4' value='0.2'/>
             </div>
             <div class='set' style='margin-top: 5px; border-radius: 5px'>
@@ -945,7 +960,7 @@ button::-moz-focus-inner {
                 <input style='width: auto; margin-top: 5px; margin-bottom: 5px; border: none; border-radius: 5px' id='wallColorPicker' oninput='chooseWallColor()' type='color'/>
             </div>
             <div class='set' style='margin-top: 5px'>
-                <h6>Wall Width</h6>
+                <h6 id='wallWidth'>Wall Width</h6>
                 <input id='wallWidthSlider' oninput='changeWallWidth()' type='range' step='0.2' min='0' max='8' value='3'/>
             </div>
             <div class='set' style='margin-top: 5px'>
