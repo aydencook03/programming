@@ -153,8 +153,8 @@ function resize() {
     cWidth = window.innerWidth;
     cHeight = window.innerHeight;
 
-    viewSlider.max = Math.max(cWidth, cHeight)*1.1;
-    viewSlider.value = Math.max(cWidth, cHeight)*1.1;
+    document.getElementById('viewSlider').max = Math.max(cWidth, cHeight)*1.1;
+    document.getElementById('viewSlider').value = Math.max(cWidth, cHeight)*1.1;
 
     canvas.style.width = `${cWidth}px`;
     canvas.style.height = `${cHeight}px`;
@@ -278,6 +278,15 @@ function reset() {
 
     document.getElementById('colorPicker').value = '#ffffff';
     document.getElementById('wallColorPicker').value = '#DC143C';
+
+    document.getElementById('raySlider').value = particleRayCount;
+    document.getElementById('angleSlider').value = 180;
+    document.getElementById('directionSlider').value = 0;
+    document.getElementById('rayWidthSlider').value = 0.2;
+    document.getElementById('wallWidthSlider').value = 3;
+
+    document.getElementById('viewSlider').max = Math.max(cWidth, cHeight)*1.1;
+    document.getElementById('viewSlider').value = Math.max(cWidth, cHeight)*1.1;
 
 
     fps = 60;
