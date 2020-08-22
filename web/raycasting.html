@@ -23,6 +23,7 @@ window.addEventListener('resize', resize);
 
 mouse = {
     down: false,
+    usingTouch: false,
     start: {
         x: null,
         y: null
@@ -39,46 +40,53 @@ mouse = {
 
 
 function mouseDown(data) {
-    mouse.down = true;
-    mouse.start.x = data.clientX - rect.left;
-    mouse.start.y = cHeight - (data.clientY - rect.top);
+    if(!mouse.usingTouch) {
+        mouse.down = true;
+        mouse.start.x = data.clientX - rect.left;
+        mouse.start.y = cHeight - (data.clientY - rect.top);
+    }
 }
 function mouseMove(data) {
-    mouse.current.x = data.clientX - rect.left;
-    mouse.current.y = cHeight - (data.clientY - rect.top);
+    if(!mouse.usingTouch) {
+        mouse.current.x = data.clientX - rect.left;
+        mouse.current.y = cHeight - (data.clientY - rect.top);
 
-    player.x = mouse.current.x;
-    player.y = mouse.current.y;
+        player.x = mouse.current.x;
+        player.y = mouse.current.y;
+    }
 }
 function mouseUp(data) {
-    mouse.down = false;
-    mouse.end.x = data.clientX - rect.left;
-    mouse.end.y = cHeight - (data.clientY - rect.top);
+    if(!mouse.usingTouch) {
+        mouse.down = false;
+        mouse.end.x = data.clientX - rect.left;
+        mouse.end.y = cHeight - (data.clientY - rect.top);
 
-    if(player.mode == 'draw') {
-        const mag = ((mouse.end.x-mouse.start.x)**2 + (mouse.end.y-mouse.start.y)**2)**0.5;
-        if( mag > boundaryWidth/1 ) {
-            let dirx = (boundaryWidth/1)*((mouse.start.x-mouse.end.x)/mag);
-            let diry = (boundaryWidth/1)*((mouse.start.y-mouse.end.y)/mag);
-            walls.push(new Boundary(mouse.start.x, mouse.start.y, mouse.end.x+dirx, mouse.end.y+diry));
-        }
-    }
-    else if(player.mode == 'delete') {
-        let toSplice = [];
-        for(let i = 0; i < walls.length; i++) {
-            if(new Ray(mouse.start.x, mouse.start.y, 0, {color: 'green', width: 2, type: 'deleter'}).setEnd(mouse.current.x, mouse.current.y).cast(walls[i])) {
-                toSplice.push(i);
+        if(player.mode == 'draw') {
+            const mag = ((mouse.end.x-mouse.start.x)**2 + (mouse.end.y-mouse.start.y)**2)**0.5;
+            if( mag > boundaryWidth/1 ) {
+                let dirx = (boundaryWidth/1)*((mouse.start.x-mouse.end.x)/mag);
+                let diry = (boundaryWidth/1)*((mouse.start.y-mouse.end.y)/mag);
+                walls.push(new Boundary(mouse.start.x, mouse.start.y, mouse.end.x+dirx, mouse.end.y+diry));
             }
         }
-        for(let i = toSplice.length -1; i >= 0; i--) {
-            const index = toSplice[i];
-            walls.splice(index, 1);
+        else if(player.mode == 'delete') {
+            let toSplice = [];
+            for(let i = 0; i < walls.length; i++) {
+                if(new Ray(mouse.start.x, mouse.start.y, 0, {color: 'green', width: 2, type: 'deleter'}).setEnd(mouse.current.x, mouse.current.y).cast(walls[i])) {
+                    toSplice.push(i);
+                }
+            }
+            for(let i = toSplice.length -1; i >= 0; i--) {
+                const index = toSplice[i];
+                walls.splice(index, 1);
+            }
         }
     }
 }
 
 
 function touchStart(data) {
+    mouse.usingTouch = true;
     mouse.down = true;
     mouse.start.x = data.touches[0].clientX - rect.left;
     mouse.start.y = cHeight - (data.touches[0].clientY - rect.top);
@@ -86,11 +94,29 @@ function touchStart(data) {
     mouse.current.y = mouse.start.y;
 }
 function touchMove(data) {
-    mouse.current.x = data.touches[0].clientX - rect.left;
-    mouse.current.y = cHeight - (data.touches[0].clientY - rect.top);
+    const newX = data.touches[0].clientX - rect.left;
+    const newY = cHeight - (data.touches[0].clientY - rect.top);
 
-    player.x = mouse.current.x;
-    player.y = mouse.current.y;
+    if(player.mode == 'move') {
+        player.x += newX - mouse.current.x;
+        player.y += newY - mouse.current.y;
+
+        if(player.x + player.radius > cWidth) {
+            player.x = cWidth - player.radius;
+        }
+        else if(player.x - player.radius < 0) {
+            player.x = player.radius;
+        }
+        if(player.y + player.radius > cHeight) {
+            player.y = cHeight - player.radius;
+        }
+        else if(player.y - player.radius < 0) {
+            player.y = player.radius;
+        }
+    }
+
+    mouse.current.x = newX;
+    mouse.current.y = newY;
 }
 function touchEnd() {
     mouse.down = false;
@@ -148,6 +174,7 @@ function reset() {
     ctx = canvas.getContext('2d');
 
     resize();
+    mouse.usingTouch = false;
 
 
     // looks
