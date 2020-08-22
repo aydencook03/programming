@@ -741,16 +741,40 @@ function generateLayout() {
     let str = '[\n';
     const val = 1000;
     for(let wall of walls) {
-        str += `        new Boundary(cWidth * ${Math.round((wall.start.x/cWidth)*val)/val}, cHeight * ${Math.round((wall.start.y/cHeight)*val)/val}, cWidth * ${Math.round((wall.end.x/cWidth)*val)/val}, cHeight * ${Math.round((wall.end.y/cHeight)*val)/val}),\n`;
+        str += `new Boundary(cWidth * ${Math.round((wall.start.x/cWidth)*val)/val}, cHeight * ${Math.round((wall.start.y/cHeight)*val)/val}, cWidth * ${Math.round((wall.end.x/cWidth)*val)/val}, cHeight * ${Math.round((wall.end.y/cHeight)*val)/val}) , \n`;
     }
-    str += '    ]';
+    str = str.slice(0, -4);
+    str += '\n]';
 
     try {
-        copy(str);
+        const copyText = document.getElementById("copyField");
+
+        copyText.style.display = 'flex';
+        copyText.value = str;
+
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+
+        document.execCommand("copy");
+
+        copyText.style.display = 'none';
+        alert("Copied the text: " + copyText.value);
     } catch {
-        pass;
+        alert("Your Browser Doesn't Support Copying Text");
+        console.log(str);
     }
-    console.log(str);
+}
+
+function restoreLayout() {
+    let str = prompt("Paste the Layout: ");
+    if(str) {
+        walls = [];
+        str = str.substring(1, str.length-1);
+        str = str.split(' , ');
+        for(let com of str) {
+            walls.push(eval(com));
+        }
+    }
 }
 
 
@@ -844,7 +868,7 @@ input:focus {
 input:active {
     outline: none;
 }
-#mode,#random,#reset,#settings {
+#mode,#random,#reset,#settings,#save,#restore {
     margin: 10px;
     width: auto;
     font-weight: bold;
@@ -857,7 +881,7 @@ input:active {
     padding-top: 2.5px;
     padding-bottom: 2.5px;
 }
-#mode:active, #random:active, #reset:active, #settings:active {
+#mode:active, #random:active, #reset:active, #settings:active, #save:active, #restore:active {
     background: #888;
 }
 button:focus {
@@ -924,7 +948,12 @@ button::-moz-focus-inner {
                 <h6>Wall Width</h6>
                 <input id='wallWidthSlider' oninput='changeWallWidth()' type='range' step='0.2' min='0' max='8' value='3'/>
             </div>
+            <div class='set' style='margin-top: 5px'>
+                <button id='save' onclick='generateLayout()'>Save Layout</button>
+                <button id='restore' onclick='restoreLayout()'>Restore Layout</button>
+            </div>
         </div>
     </div>
+        <input style='display: none' type="text" value="null" id="copyField"/>
 </body>
 </html>
