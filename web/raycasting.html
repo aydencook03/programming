@@ -269,7 +269,7 @@ function reset() {
             new Boundary(cWidth * 0.54, cHeight * 0.997, cWidth * 0.781, cHeight * 0.851),
         ];
     } else {
-        particleViewRange = 317;
+        particleViewRange = 340;
         walls = [
         new Boundary(cWidth * 0.684, cHeight * 0.753, cWidth * 0.824, cHeight * 0.705),
         new Boundary(cWidth * 0.691, cHeight * 0.615, cWidth * 0.683, cHeight * 0.628),
@@ -301,8 +301,8 @@ function reset() {
     document.getElementById('raySlider').value = particleRayCount;
     document.getElementById('angleSlider').value = 180;
     document.getElementById('directionSlider').value = 0;
-    document.getElementById('rayWidthSlider').value = 0.2;
-    document.getElementById('wallWidthSlider').value = 3;
+    document.getElementById('rayWidthSlider').value = rayWidth;
+    document.getElementById('wallWidthSlider').value = boundaryWidth;
 
     document.getElementById('viewSlider').max = Math.max(cWidth, cHeight)*1.1;
     document.getElementById('viewSlider').value = particleViewRange || Math.max(cWidth, cHeight)*1.1;
