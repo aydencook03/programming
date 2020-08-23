@@ -605,11 +605,17 @@ Particle.prototype.glow = function() {
         for(let i of this.ownedRays) {
             const start = this.start;
             const end = this.stop;
-            let color = this.rayColor;
             if(this.prev == this.rayCount) {
+
+                let grd = ctx.createRadialGradient(this.x, cHeight - this.y, this.radius, this.x, cHeight - this.y, this.viewRange);
+                grd.addColorStop(0, this.rayColor);
+                grd.addColorStop(1, canvas.color);
+                let color = grd;
+
                 if(this.viewStyle == 'shaded') {
                     color = 'rgba(0,0,0,0)';
                 }
+
                 rays[i] = new Ray(this.x, this.y, (start + ((end-start)/this.ownedRays.length)*count) * Math.PI/180, {color: color, width: this.rayWidth, range: this.viewRange});
                 rays[i].active = true;
             }
