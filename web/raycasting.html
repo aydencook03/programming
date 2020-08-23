@@ -190,7 +190,7 @@ function reset() {
     particleColor = 'white';
     particleRadius = 5;
     particleRayCount = 1080;
-    particleViewStyle = 'default'; // 'shaded' or 'default'
+    particleViewStyle = 'mixed'; // 'pure', 'mixed', 'shaded'
     particleViewRange = null;
     
     wallCount = 10;
@@ -605,14 +605,16 @@ Particle.prototype.glow = function() {
         for(let i of this.ownedRays) {
             const start = this.start;
             const end = this.stop;
+            let color = this.rayColor;
             if(this.prev == this.rayCount) {
 
-                let grd = ctx.createRadialGradient(this.x, cHeight - this.y, this.radius, this.x, cHeight - this.y, this.viewRange);
-                grd.addColorStop(0, this.rayColor);
-                grd.addColorStop(1, canvas.color);
-                let color = grd;
-
-                if(this.viewStyle == 'shaded') {
+                if(this.viewStyle == 'mixed') {
+                    let grd = ctx.createRadialGradient(this.x, cHeight - this.y, this.radius, this.x, cHeight - this.y, this.viewRange);
+                    grd.addColorStop(0, this.rayColor);
+                    grd.addColorStop(1, canvas.color);
+                    color = grd;
+                }
+                else if(this.viewStyle == 'shaded') {
                     color = 'rgba(0,0,0,0)';
                 }
 
@@ -698,13 +700,17 @@ function raySliderFunc() {
 function changeViewStyle() {
     const value = document.getElementById('viewStyle').innerHTML;
 
-    if(value == 'Default') {
+    if(value == 'Pure') {
+        document.getElementById('viewStyle').innerHTML = 'Mixed';
+        player.viewStyle = 'mixed';
+    }
+    else if(value == 'Mixed') {
         document.getElementById('viewStyle').innerHTML = 'Shaded';
         player.viewStyle = 'shaded';
     }
     else if(value == 'Shaded') {
-        document.getElementById('viewStyle').innerHTML = 'Default';
-        player.viewStyle = 'default';
+        document.getElementById('viewStyle').innerHTML = 'Pure';
+        player.viewStyle = 'pure';
     }
 }
 
@@ -985,7 +991,7 @@ button::-moz-focus-inner {
             </div>
             <div class = 'set' style='margin-top: 5px'>
                 <h6>View-Style</h6>
-                <button id='viewStyle' onclick='changeViewStyle()'>Default</button>
+                <button id='viewStyle' onclick='changeViewStyle()'>Mixed</button>
             </div>
             <div class='set' style='margin-top: 5px'>
                 <h6 id='viewRange'>View Range</h6>
