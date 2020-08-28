@@ -317,7 +317,11 @@ function Snake(pos) {
         this.vel = [0, 0];
         this.inputs = [];
         body.style.background = dieC;
-        window.navigator.vibrate(1000);
+        try {
+            window.navigator.vibrate(1000);
+        } catch {
+
+        }
         setTimeout(function() {
             body.style.background = bodyC;
             snake = new Snake();
@@ -327,7 +331,11 @@ function Snake(pos) {
 
     this.grow = function() {
         this.eaten = true;
-        window.navigator.vibrate(4);
+        try {
+            window.navigator.vibrate(4);
+        } catch {
+            
+        }
     }
 }
 

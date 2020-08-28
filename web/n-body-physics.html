@@ -19,10 +19,21 @@ document.addEventListener('touchmove', touchMove);
 document.addEventListener('touchend', touchEnd);
 window.addEventListener('resize', resize);
 
-mouseDown = false;
 nothingGrabbed = true;
-mouseX = 0;
-mouseY = 0;
+
+mouse = {
+    down: false,
+    start: {
+        x: null,
+        y: null,
+    },
+    x: 0,
+    y: 0,
+    end: {
+        x: null,
+        y: null
+    }
+}
 
 function keyDown(data) {
     if(data.key == "r") {
@@ -34,7 +45,7 @@ function keyDown(data) {
     }
     else if(data.key == 'Delete') {
         for(i = 0; i < bodies.length ; i++) {
-            if(((mouseX - bodies[i].x)**2 + (mouseY - bodies[i].y)**2) <= bodies[i].radius**2) {
+            if(((mouse.x - bodies[i].x)**2 + (mouse.y - bodies[i].y)**2) <= bodies[i].radius**2) {
                 bodies.splice(i, 1);
             }
         }
@@ -56,34 +67,34 @@ function keyDown(data) {
     }
 }
 function mouseDown(data) {
-    mouseDown = true;
+    mouse.down = true;
     nothingGrabbed = true;
-    mouseX = data.clientX;
-    mouseY = window.innerHeight - data.clientY;
+    mouse.x = data.clientX;
+    mouse.y = window.innerHeight - data.clientY;
 }
 function mouseUp(data) {
-    mouseDown = false;
+    mouse.down = false;
     nothingGrabbed = true;
     for(let i = 0; i < bodies.length; i++) {
         bodies[i].grabbed = false
     }
 }
 function mouseMove(data) {
-    mouseX = data.clientX;
-    mouseY = window.innerHeight - data.clientY;
+    mouse.x = data.clientX;
+    mouse.y = window.innerHeight - data.clientY;
 }
 function touchStart(data) {
-    mouseDown = true;
+    mouse.down = true;
     nothingGrabbed = true;
-    mouseX = data.touches[0].clientX;
-    mouseY = window.innerHeight - data.touches[0].clientY;
+    mouse.x = data.touches[0].clientX;
+    mouse.y = window.innerHeight - data.touches[0].clientY;
 }
 function touchMove(data) {
-    mouseX = data.touches[0].clientX;
-    mouseY = window.innerHeight - data.touches[0].clientY;
+    mouse.x = data.touches[0].clientX;
+    mouse.y = window.innerHeight - data.touches[0].clientY;
 }
 function touchEnd(data) {
-    mouseDown = false;
+    mouse.down = false;
     nothingGrabbed = true;
     for(let i=0;i<bodies.length;i++) {
         bodies[i].grabbed = false;
@@ -105,7 +116,7 @@ function resize(data) {
 
 function reset() {
     canvas = document.getElementById("canvas");
-    canvas.color = 'rgb(70, 70, 70)';
+    canvas.style.background = 'rgb(70, 70, 70)';
     ctx = canvas.getContext('2d');
     
     resize();
@@ -270,8 +281,8 @@ Body.prototype.move = function() { // available to all instances, but not a part
         this.yA = 0;
         this.xV = 0;
         this.yV = 0;
-        this.x = mouseX;
-        this.y = mouseY;
+        this.x = mouse.x;
+        this.y = mouse.y;
     }
 }
 
@@ -319,13 +330,13 @@ Body.prototype.gravityCalc = function(otherObject) { // available to all instanc
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Physics Code
+// Logic Code
 
 const bodyHandle = function() {
     for(let i = 0; i < bodies.length; i++) {
         
-        if(mouseDown && nothingGrabbed) {
-            if(Math.abs((mouseX - bodies[i].x)**2 + (mouseY - bodies[i].y)**2) <= bodies[i].radius**2) {
+        if(mouse.down && nothingGrabbed) {
+            if(Math.abs((mouse.x - bodies[i].x)**2 + (mouse.y - bodies[i].y)**2) <= bodies[i].radius**2) {
                 bodies[i].grabbed = true;
                 nothingGrabbed = false;
             }
@@ -487,29 +498,28 @@ const bodyHandle = function() {
     }
 }
 
+function inputHandle() {
+    if(nothingGrabbed && mouse.down) {
+        Body.create({
+            x: mouse.x, 
+            y: mouse.y, 
+            mass: 90});
+        bodies[bodies.length-1].move();
+        bodies[bodies.length-1].draw();
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Main Loop
 
 const main = function() {
     // blank out canvas
-    ctx.fillStyle = canvas.color;
-    ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+    ctx.beginPath();
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    ctx.closePath();
     
     bodyHandle();
-    if(nothingGrabbed && mouseDown) {
-        Body.create({
-            x: mouseX, 
-            y: mouseY, 
-            mass: 90});
-        bodies[bodies.length-1].move();
-        bodies[bodies.length-1].draw();
-    }
-    
-    if((bodies[0].xA**2 + bodies[0].yA**2)**0.5 > (bodies[1].xA**2 + bodies[1].yA**2)**0.5) {
-        console.log(Math.abs((bodies[0].xA**2 + bodies[0].yA**2)**0.5 - (bodies[1].xA**2 + bodies[1].yA**2)**0.5), 'first is larger')
-    } else {
-        console.log(Math.abs((bodies[0].xA**2 + bodies[0].yA**2)**0.5 - (bodies[1].xA**2 + bodies[1].yA**2)**0.5), 'second is larger')
-    }
+    inputHandle();
 }
 
 
@@ -526,6 +536,8 @@ const main = function() {
         padding: 0;
         margin: 0;
         overscroll-behavior: contain;
+        position: fixed;
+        overflow: hidden;
     }
     canvas {
         padding: 0;
