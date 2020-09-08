@@ -16,7 +16,7 @@ window.addEventListener('mousemove', mouseMove);
 window.addEventListener('mouseup', mouseUp);
 
 window.addEventListener('touchstart', touchStart);
-window.addEventListener('touchmove', touchMove);
+window.addEventListener('touchmove', touchMove, {passive: false});
 window.addEventListener('touchend', touchEnd);
 
 window.addEventListener('resize', resize);
@@ -117,6 +117,7 @@ function touchMove(data) {
 
     mouse.current.x = newX;
     mouse.current.y = newY;
+    data.preventDefault();
 }
 function touchEnd() {
     mouse.down = false;

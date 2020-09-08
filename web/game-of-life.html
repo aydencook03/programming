@@ -16,7 +16,7 @@ window.addEventListener('mousedown', mouseDown);
 window.addEventListener('mousemove', mouseMove);
 window.addEventListener('mouseup', mouseUp);
 window.addEventListener('touchstart', touchStart);
-window.addEventListener('touchmove', touchMove);
+window.addEventListener('touchmove', touchMove, {passive: false});
 window.addEventListener('touchend', touchEnd);
 window.addEventListener('keypress', keyPress);
 
@@ -56,6 +56,7 @@ function touchStart(data) {
 function touchMove(data) {
     mouseC = Math.floor((data.touches[0].clientX - rect.left)/cellSize);
     mouseR = Math.floor((data.touches[0].clientY - rect.top)/cellSize);
+    data.preventDefault();
 }
 
 function touchEnd() {

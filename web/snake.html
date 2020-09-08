@@ -13,7 +13,7 @@ window.onload = function() {reset()}
 document.addEventListener('keydown', keyDown);
 window.addEventListener('resize', resize);
 document.addEventListener('touchstart', touchStart);
-document.addEventListener('touchmove', touchMove);
+document.addEventListener('touchmove', touchMove, {passive: false});
 
 function keyDown(data) {
     if(data.key == 'ArrowLeft' || data.key == 'a') {
@@ -95,6 +95,7 @@ function touchMove(data) {
             }
         }
     }
+    data.preventDefault();
 }
 
 function resize(data) {
