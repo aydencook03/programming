@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, height=device-height, user-scalable=no initial-scale=1.0">
+    <title>Epicycles</title>
+<script>
+
+////////////////////////////////////////////////
+// Event Handling
+
+window.onload = function() {reset()}
+
+document.addEventListener('mousedown', mouseDown);
+document.addEventListener('mousemove', mouseMove);
+document.addEventListener('mouseup', mouseUp);
+
+window.addEventListener('resize', resize);
+
+mouse = {
+    down: false,
+    x: 0,
+    y: 0
+}
+
+function mouseDown(data) {
+    mouse.down = true;
+
+    mouse.x = data.clientX - rect.left;
+    mouse.y = cHeight - (data.clientY - rect.top);
+
+    drawing = [];
+    running = false;
+    drawing.push([mouse.x - cWidth/2, mouse.y - cHeight/2])
+}
+
+function mouseMove(data) {
+    mouse.x = data.clientX - rect.left;
+    mouse.y = cHeight - (data.clientY - rect.top);
+
+    if(mouse.down) {
+        drawing.push([mouse.x - cWidth/2, mouse.y - cHeight/2]);
+    }
+    /*
+    drawing = [
+        [50, 50],
+        [100,50],
+        [100,100],
+        [150, 100],
+        [150,50],
+        [200,50],
+        [200, 0],
+        [50, 0],
+        [50,50]
+    ] */
+}
+
+function mouseUp(data) {
+    mouse.down = false;
+    curve = [];
+    coefficients = [];
+    periodOfDrawing = drawing.length;
+    time = 0;
+    running = true;
+    
+    coefficients = calculateCoefficients(drawing, coefficientCount);
+}
+
+
+function resize() {
+    scale = Math.min(window.innerWidth, window.innerHeight);
+    ratio = window.devicePixelRatio || 1;
+
+    cWidth = window.innerWidth;
+    cHeight = window.innerHeight;
+
+    pixelsPerUnit = 100;
+    sensitivity = 20;
+
+    canvas.style.width = `${cWidth}px`;
+    canvas.style.height = `${cHeight}px`;
+    canvas.width = cWidth * ratio;
+    canvas.height = cHeight * ratio;
+    ctx.scale(ratio, ratio);
+
+    rect = canvas.getBoundingClientRect();
+}
+
+////////////////////////////////////////////////
+// Initialization
+
+function reset() {
+    canvas = document.getElementById('canvas');
+    ctx = canvas.getContext('2d');
+
+    resize();
+
+
+    // colors
+    canvas.style.background = 'grey';
+    circleColor = 'black';
+    vectorColor = 'black';
+    drawingColor = 'black';
+    curveColor = 'black';
+
+    // style
+    circleLineWidth = 0.5;
+    vectorLineWidth = 1;
+    drawingLineWidth = 2;
+    curveLineWidth = 2;
+
+    coefficientCount = 500;
+
+
+    periodOfDrawing = 0;
+    coefficients = [];
+    drawing = []; // user drawing points
+    curve = []; // path drawn by epicycles
+
+
+    fps = 60;
+    rate = 0.5;
+
+
+    running = false;
+    time = 0;
+
+    if(typeof loop !== 'undefined') {
+        clearInterval(loop);
+    }
+
+    loop = setInterval(main, 1000/fps);
+}
+
+////////////////////////////////////////////////
+// Math
+
+function Complex(a, b) {
+    this.re = a;
+    this.im = b;
+}
+
+Complex.prototype.add = function(complex) {
+    return new Complex(this.re + complex.re, this.im + complex.im);
+}
+
+Complex.prototype.mag = function() {
+    return (this.re**2 + this.im**2)**0.5;
+}
+
+Complex.prototype.mult = function(complex) {
+    const placeValues = 10;
+    return new Complex(Math.round((this.re*complex.re - this.im*complex.im)*(10**placeValues))/(10**placeValues), Math.round((this.im*complex.re + this.re*complex.im)*(10**placeValues))/(10**placeValues));
+}
+
+
+function eToix(x) {
+    const placeValues = 10;
+    const real = Math.round(Math.cos(x)*(10**placeValues))/(10**placeValues);
+    const imag = Math.round(Math.sin(x)*(10**placeValues))/(10**placeValues);
+
+    return new Complex(real, imag);
+}
+
+function calculateCoefficients(pointArray, numberOfCoefficients) {
+    const coeff = [];
+    const points = [];
+
+    
+    // convert pointArray to array of complex coordinates
+    for(let i = 0; i < pointArray.length; i++) {
+        points.push(new Complex(pointArray[i][0], pointArray[i][1]));
+    }
+    
+
+    const N = points.length;
+
+    for(let k = 0; k < N; k++) {
+        let sum = new Complex(0, 0);
+
+        for(let n = 0; n < N; n++) {
+            const exponent = -(2*Math.PI/N) * k * n;
+            const toAdd = points[n].mult(eToix(exponent));
+
+            sum = sum.add(toAdd);
+        }
+
+        sum = sum.mult(new Complex(1/N, 0));
+        coeff.push(sum);
+    }
+
+    return coeff;
+}
+
+////////////////////////////////////////////////
+// Drawing
+
+function drawEpicycles() {
+    let sum = new Complex(0, 0);
+
+    for(let k = 0; k < coefficients.length; k++) {
+        const exponent = (2*Math.PI*k*time)/periodOfDrawing;
+        const complex = eToix(exponent);
+        const val = coefficients[k].mult(complex);
+        const mag = val.mag();
+        
+        ctx.beginPath();
+        ctx.strokeStyle = circleColor;
+        ctx.lineWidth = circleLineWidth;
+        ctx.arc(cWidth/2 + sum.re, cHeight/2 - sum.im, mag, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.closePath();
+
+        ctx.beginPath();
+        ctx.strokeStyle = vectorColor;
+        ctx.lineWidth = vectorLineWidth;
+        ctx.moveTo(cWidth/2 + sum.re, cHeight/2 - sum.im);
+        ctx.lineTo(cWidth/2 + sum.re + val.re, cHeight/2 - (sum.im + val.im));
+        ctx.stroke();
+        ctx.closePath();
+
+        sum = sum.add(val);
+    }
+
+    if(running) {
+        curve.push([sum.re, sum.im]);
+    }
+}
+
+function drawDrawing() {
+    ctx.beginPath();
+    ctx.strokeStyle = drawingColor;
+    ctx.lineWidth = drawingLineWidth;
+    for(let i = 0; i < drawing.length-1; i++) {
+        ctx.moveTo(cWidth/2 + drawing[i][0], cHeight - (cHeight/2 + drawing[i][1]));
+        ctx.lineTo(cWidth/2 + drawing[i+1][0], cHeight - (cHeight/2 + drawing[i+1][1]));
+    }
+    ctx.lineTo(mouse.x, cHeight - mouse.y);
+    ctx.stroke();
+    ctx.closePath();
+}
+
+function drawCurve() {
+    ctx.beginPath();
+    ctx.strokeStyle = curveColor;
+    ctx.lineWidth = curveLineWidth;
+    for(let i = 0; i < curve.length-1; i++) {
+        ctx.moveTo(cWidth/2 + curve[i][0], cHeight - (cHeight/2 + curve[i][1]));
+        ctx.lineTo(cWidth/2 + curve[i+1][0], cHeight - (cHeight/2 + curve[i+1][1]));
+    }
+    ctx.stroke();
+    ctx.closePath();
+}
+
+////////////////////////////////////////////////
+// Main Loop
+
+function main() {
+    // clear canvas
+    ctx.clearRect(0, 0, cWidth, cHeight);
+
+    if(running) {
+        time += 1;
+    }
+    if(time >= periodOfDrawing) {
+        time = 0;
+        curve.shift();
+    }
+
+    drawEpicycles();
+
+    if(mouse.down) {
+        drawDrawing();
+    } else {
+        drawCurve();
+    }
+}
+
+</script>
+<style>
+
+html {
+    width: 100%;
+    height: 100%;
+}
+body {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    overscroll-behavior: contain;
+    position: fixed;
+    overflow: hidden;
+}
+canvas {
+    padding: 0;
+    margin: 0;
+}
+
+</style>
+</head>
+<body>
+    <canvas id='canvas'></canvas>
+</body>
+</html>

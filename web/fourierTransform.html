@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, height=device-height, user-scalable=no initial-scale=1.0">
+    <title>Fourier Transform</title>
+<script>
+
+////////////////////////////////////////////////
+// Event Handling
+
+window.onload = function() {reset()}
+window.addEventListener('resize', resize);
+
+function resize() {
+    scale = Math.min(window.innerWidth, window.innerHeight);
+    ratio = window.devicePixelRatio || 1;
+
+    cWidth = window.innerWidth;
+    cHeight = window.innerHeight;
+
+    canvas.style.width = `${cWidth}px`;
+    canvas.style.height = `${cHeight}px`;
+    canvas.width = cWidth * ratio;
+    canvas.height = cHeight * ratio;
+    ctx.scale(ratio, ratio);
+
+    rect = canvas.getBoundingClientRect();
+}
+
+////////////////////////////////////////////////
+// Initialization
+
+function reset() {
+    canvas = document.getElementById('canvas');
+    ctx = canvas.getContext('2d');
+
+    resize();
+
+
+    // colors
+    canvas.style.background = 'grey';
+
+
+    fps = 60;
+
+    if(typeof loop !== 'undefined') {
+        clearInterval(loop);
+    }
+
+    loop = setInterval(main, 1000/fps);
+}
+
+////////////////////////////////////////////////
+// Math
+
+function plotFunction(expression, start, end) {
+    const vals = [[]];
+    const deltaX = 0.01;
+
+    const iter = (end-start)/deltaX;
+
+    for(let i = 0; i <= iter; i++) {
+        vals.push([i*deltaX, expression(i*deltaX)]);
+    }
+
+    plotValues(vals);
+}
+
+function plotFourier(expression, start, end) { //start: startFrequency, end: end frequency
+    const vals = [[]];
+    const deltaX = 0.05;
+
+    const iter = (end-start)/deltaX;
+
+    for(let i = 0; i <= iter; i++) {
+        const freq = i*deltaX; // frequency value
+
+        const acc = 80;
+
+        const real = integrate(function(x) {
+            return (Math.cos(3*x) + Math.cos(5*x)) * Math.cos(freq * x);
+        }, -acc, acc, {step: 0.01});
+
+        const imaginary = integrate(function(x) {
+            return (Math.cos(3*x) + Math.cos(5*x)) * Math.sin(freq * x);
+        }, -acc, acc, {step: 0.01});
+        
+        const mag = ((real)**2 + (imaginary)**2)**0.5; // height at frequency value
+        
+        vals.push([freq, mag/4]);
+    }
+
+    plotValues(vals);
+}
+
+function plotValues(vals) {
+    for(let i = 0; i < vals.length-1; i++) {
+        ctx.beginPath();
+        ctx.moveTo(startX + vals[i][0]*pixelsPerUnitX, cHeight/2 - vals[i][1]*pixelsPerUnitY);
+        ctx.lineTo(startX + vals[i+1][0]*pixelsPerUnitX, cHeight/2 - vals[i+1][1]*pixelsPerUnitY);
+        ctx.stroke();
+        ctx.closePath();
+    }
+}
+
+function integrate(expression, start, end, params) {
+    if(typeof params === 'undefined') {
+        params = {}
+    }
+    
+    const step = params.step || 0.000001;
+    const places = params.places || 1000;
+
+    const n = (end-start)/step;
+    let sum = 0;
+
+    for(let i = 0; i <= (n-1); i++) {
+        const val = expression(start + (step*i)) * (step);
+
+        sum += val;
+    }
+
+    let toReturn = Math.round(sum*places)/places;
+    if(toReturn == -0) {
+        toReturn = 0;
+    }
+    return toReturn;
+}
+
+function drawAxes() {
+    pixelsPerUnitX = 50;
+    pixelsPerUnitY = 25;
+
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+
+    startX = 50;
+    startY = 50;
+    ctx.beginPath();
+    ctx.moveTo(startX, cHeight/2);
+    ctx.lineTo(cWidth -startY, cHeight/2);
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(startX, cHeight-startY);
+    ctx.stroke();
+    ctx.closePath();
+
+    const iterX = Math.floor((cWidth - startX*2)/pixelsPerUnitX);
+    let iterY = Math.floor((cHeight - startY*2)/pixelsPerUnitY);
+    if(iterY % 2 != 0) {
+        iterY -= 1;
+    }
+    const lineSize = 10;
+
+    for(let i = 0; i <= iterX; i++) {
+        ctx.beginPath();
+        ctx.moveTo(startX + pixelsPerUnitX*i, cHeight/2 - lineSize/2);
+        ctx.lineTo(startX + pixelsPerUnitX*i, cHeight/2 + lineSize/2);
+        ctx.stroke();
+        ctx.closePath();
+    }
+
+    for(let i = 0; i <= iterY; i++) {
+        ctx.beginPath();
+        ctx.moveTo(startX - lineSize/2, (cHeight-startY*2 - iterY*pixelsPerUnitY)/2 + startY + pixelsPerUnitY*i);
+        ctx.lineTo(startX + lineSize/2, (cHeight-startY*2 - iterY*pixelsPerUnitY)/2 + startY + pixelsPerUnitY*i);
+        ctx.stroke();
+        ctx.closePath();
+    }
+}
+
+////////////////////////////////////////////////
+// Main Loop
+
+function main() {
+    // clear canvas
+    ctx.clearRect(0, 0, cWidth, cHeight);
+
+    drawAxes();
+    plotFunction(function(x) {
+        return Math.cos(3*x) + Math.cos(5*x);
+    }, 0, 7);
+
+    plotFourier(null, 0, 7);
+}
+
+</script>
+<style>
+
+html {
+    width: 100%;
+    height: 100%;
+}
+body {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    overscroll-behavior: contain;
+    position: fixed;
+    overflow: hidden;
+}
+canvas {
+    padding: 0;
+    margin: 0;
+}
+
+</style>
+</head>
+<body>
+    <canvas id='canvas'></canvas>
+</body>
+</html>

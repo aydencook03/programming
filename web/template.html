@@ -39,7 +39,7 @@ function reset() {
 
 
     // colors
-    canvas.color = 'black';
+    canvas.style.background = 'black';
 
 
     fps = 60;
@@ -56,8 +56,7 @@ function reset() {
 
 function main() {
     // clear canvas
-    ctx.fillStyle = canvas.color;
-    ctx.fillRect(0, 0, cWidth, cHeight);
+    ctx.clearRect(0, 0, cWidth, cHeight);
 }
 
 </script>
