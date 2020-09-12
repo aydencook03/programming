@@ -15,6 +15,10 @@ document.addEventListener('mousedown', mouseDown);
 document.addEventListener('mousemove', mouseMove);
 document.addEventListener('mouseup', mouseUp);
 
+document.addEventListener('touchstart', touchStart);
+document.addEventListener('touchmove', touchMove);
+document.addEventListener('touchend', touchEnd);
+
 window.addEventListener('resize', resize);
 
 mouse = {
@@ -56,6 +60,35 @@ function mouseMove(data) {
 }
 
 function mouseUp(data) {
+    mouse.down = false;
+    curve = [];
+    coefficients = [];
+    periodOfDrawing = drawing.length;
+    time = 0;
+    running = true;
+    
+    coefficients = calculateCoefficients(drawing, coefficientCount);
+}
+
+function touchStart(data) {
+    mouse.down = true;
+
+    mouse.x = data.touches[0].clientX - rect.left;
+    mouse.y = cHeight - (data.touches[0].clientY - rect.top);
+
+    drawing = [];
+    running = false;
+    drawing.push([mouse.x - cWidth/2, mouse.y - cHeight/2])
+}
+function touchMove(data) {
+    mouse.x = data.touches[0].clientX - rect.left;
+    mouse.y = cHeight - (data.touches[0].clientY - rect.top);
+
+    if(mouse.down) {
+        drawing.push([mouse.x - cWidth/2, mouse.y - cHeight/2]);
+    }
+}
+function touchEnd(data) {
     mouse.down = false;
     curve = [];
     coefficients = [];
