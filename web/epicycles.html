@@ -24,18 +24,23 @@ window.addEventListener('resize', resize);
 mouse = {
     down: false,
     x: 0,
-    y: 0
+    y: 0,
+    startX: 0,
+    startY: 0
 }
 
 function mouseDown(data) {
-    mouse.down = true;
-
     mouse.x = data.clientX - rect.left;
     mouse.y = cHeight - (data.clientY - rect.top);
+    mouse.startX = data.clientX - rect.left;
+    mouse.startY = cHeight - (data.clientY - rect.top);
 
-    drawing = [];
-    running = false;
-    drawing.push([mouse.x - cWidth/2, mouse.y - cHeight/2])
+    if(mouse.startY < window.innerHeight*0.95) {
+        mouse.down = true;
+        drawing = [];
+        running = false;
+        drawing.push([mouse.x - cWidth/2, mouse.y - cHeight/2]);
+    }
 }
 
 function mouseMove(data) {
@@ -48,26 +53,33 @@ function mouseMove(data) {
 }
 
 function mouseUp(data) {
-    mouse.down = false;
-    curve = [];
-    coefficients = [];
-    periodOfDrawing = drawing.length;
-    time = 0;
-    doneWithFirst = false;
-    running = true;
-    
-    coefficients = Coefficient.generate(drawing, {sort: sortEpicycles, count: numberOfEpicycles});
+    if(mouse.startY < window.innerHeight*0.95) {
+        mouse.down = false;
+        curve = [];
+        coefficients = [];
+        periodOfDrawing = drawing.length;
+        slider.max = drawing.length;
+        slider.value = drawing.length;
+        time = 0;
+        doneWithFirst = false;
+        running = true;
+        
+        coefficients = Coefficient.generate(drawing, {sort: sortEpicycles, count: numberOfEpicycles});
+    }
 }
 
 function touchStart(data) {
-    mouse.down = true;
-
     mouse.x = data.touches[0].clientX - rect.left;
     mouse.y = cHeight - (data.touches[0].clientY - rect.top);
+    mouse.startX = data.touches[0].clientX - rect.left;
+    mouse.startY = cHeight - (data.touches[0].clientY - rect.top);
 
-    drawing = [];
-    running = false;
-    drawing.push([mouse.x - cWidth/2, mouse.y - cHeight/2])
+    if(mouse.startY < window.innerHeight*0.95) {
+        mouse.down = true;
+        drawing = [];
+        running = false;
+        drawing.push([mouse.x - cWidth/2, mouse.y - cHeight/2]);
+    }
 }
 function touchMove(data) {
     mouse.x = data.touches[0].clientX - rect.left;
@@ -79,15 +91,19 @@ function touchMove(data) {
     data.preventDefault();
 }
 function touchEnd(data) {
-    mouse.down = false;
-    curve = [];
-    coefficients = [];
-    periodOfDrawing = drawing.length;
-    time = 0;
-    doneWithFirst = false;
-    running = true;
-    
-    coefficients = Coefficient.generate(drawing, {sort: sortEpicycles, count: numberOfEpicycles});
+    if(mouse.startY < window.innerHeight*0.95) {
+        mouse.down = false;
+        curve = [];
+        coefficients = [];
+        periodOfDrawing = drawing.length;
+        slider.max = drawing.length;
+        slider.value = drawing.length;
+        time = 0;
+        doneWithFirst = false;
+        running = true;
+        
+        coefficients = Coefficient.generate(drawing, {sort: sortEpicycles, count: numberOfEpicycles});
+    }
 }
 
 
@@ -116,6 +132,7 @@ function resize() {
 function reset() {
     canvas = document.getElementById('canvas');
     div = document.getElementsByTagName('div')[0];
+    slider = document.getElementById('slider');
     ctx = canvas.getContext('2d');
 
     resize();
@@ -356,6 +373,12 @@ function drawCurve() {
     ctx.closePath();
 }
 
+function sliderInput() {
+    const val = parseInt(slider.value);
+    numberOfEpicycles = val;
+    coefficients = Coefficient.generate(drawing, {count: val, sort: sortEpicycles});
+}
+
 ////////////////////////////////////////////////
 // Main Loop
 
@@ -427,13 +450,22 @@ div {
 input {
     width: 95%;
 }
+input:hover {
+    outline: none;
+}
+input:focus {
+    outline: none;
+}
+input:active {
+    outline: none;
+}
 
 </style>
 </head>
 <body>
     <canvas id='canvas'></canvas>
     <div>
-        <input id='slider' type='range' min='1' max='100' value='100'/>
+        <input id='slider' oninput = 'sliderInput()' type='range' min='1' max='100' value='100'/>
     </div>
 </body>
 </html>
