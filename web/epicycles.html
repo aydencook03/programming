@@ -60,6 +60,7 @@ function mouseUp(data) {
         periodOfDrawing = drawing.length;
         slider.max = drawing.length;
         slider.value = drawing.length;
+        numberOfEpicycles = Infinity;
         time = 0;
         doneWithFirst = false;
         running = true;
@@ -100,6 +101,7 @@ function touchEnd(data) {
         periodOfDrawing = drawing.length;
         slider.max = drawing.length;
         slider.value = drawing.length;
+        numberOfEpicycles = Infinity;
         time = 0;
         doneWithFirst = false;
         running = true;
@@ -144,7 +146,7 @@ function reset() {
     canvas.style.background = 'grey';
     div.style.background = 'grey';
     circleColor = 'black';
-    vectorColor = 'black';
+    vectorColor = 'crimson';
     drawingColor = 'black';
     curveColor = 'black';
 
