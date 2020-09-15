@@ -117,6 +117,9 @@ function touchMove(data) {
 
     mouse.current.x = newX;
     mouse.current.y = newY;
+    if(!(showSettings)) {
+        data.preventDefault();
+    }
 }
 function touchEnd() {
     mouse.down = false;
