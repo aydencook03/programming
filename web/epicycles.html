@@ -88,7 +88,6 @@ function touchMove(data) {
     if(mouse.down) {
         drawing.push([mouse.x - cWidth/2, mouse.y - cHeight/2]);
     }
-    data.preventDefault();
 }
 function touchEnd(data) {
     if(mouse.startY < window.innerHeight*0.95) {
