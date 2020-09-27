@@ -149,6 +149,8 @@ function reset() {
     vectorColor = 'crimson';
     drawingColor = 'black';
     curveColor = 'black';
+    penHeadColor = 'teal';
+    penColor = 'black';
 
     // style
     circleLineWidth = 0.5;
@@ -279,12 +281,12 @@ Coefficient.generate = function(coordinates, params) {
                 }
             }
             coeff[n] = temp[indexOfLargest];
-            temp[indexOfLargest].value.mag = function() {return -1};
+            temp[indexOfLargest].value.mag = function() {return 0};
         }
     }
     if(numberOfCoefficients < coordinates.length) {
         const amountToSplice = coordinates.length - numberOfCoefficients;
-        coeff.splice(coeff.length - amountToSplice-1, amountToSplice);
+        coeff.splice(coeff.length - amountToSplice, amountToSplice);
     }
 
     return coeff;
@@ -309,13 +311,29 @@ function drawEpicycles() {
         ctx.stroke();
         ctx.closePath();
 
-        ctx.beginPath();
-        ctx.strokeStyle = vectorColor;
-        ctx.lineWidth = vectorLineWidth;
-        ctx.moveTo(cWidth/2 + sum.re, cHeight/2 - sum.im);
-        ctx.lineTo(cWidth/2 + sum.re + val.re, cHeight/2 - (sum.im + val.im));
-        ctx.stroke();
-        ctx.closePath();
+        if(k == coefficients.length -1) {
+            ctx.beginPath();
+            ctx.strokeStyle = penColor;
+            ctx.lineWidth = vectorLineWidth;
+            ctx.moveTo(cWidth/2 + sum.re, cHeight/2 - sum.im);
+            ctx.lineTo(cWidth/2 + sum.re + val.re, cHeight/2 - (sum.im + val.im));
+            ctx.stroke();
+            ctx.closePath();
+
+            ctx.beginPath();
+            ctx.fillStyle = penHeadColor;
+            ctx.arc(cWidth/2 + sum.re + val.re, cHeight/2 - (sum.im + val.im), curveLineWidth/2, 0, Math.PI*2);
+            ctx.fill();
+            ctx.closePath();
+        } else {
+            ctx.beginPath();
+            ctx.strokeStyle = vectorColor;
+            ctx.lineWidth = vectorLineWidth;
+            ctx.moveTo(cWidth/2 + sum.re, cHeight/2 - sum.im);
+            ctx.lineTo(cWidth/2 + sum.re + val.re, cHeight/2 - (sum.im + val.im));
+            ctx.stroke();
+            ctx.closePath();
+        }
 
         sum = sum.add(val);
     }
@@ -401,7 +419,6 @@ function main() {
         }
     }
 
-    drawEpicycles();
 
     if(prevNumberOfCoefficients != coefficients.length && time > 1) {
         instantlyUpdateCurve();
@@ -412,6 +429,9 @@ function main() {
     } else {
         drawCurve();
     }
+
+    drawEpicycles();
+
 
     prevNumberOfCoefficients = coefficients.length;
 }
