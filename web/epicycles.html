@@ -320,11 +320,7 @@ function drawEpicycles() {
             ctx.stroke();
             ctx.closePath();
 
-            ctx.beginPath();
-            ctx.fillStyle = penHeadColor;
-            ctx.arc(cWidth/2 + sum.re + val.re, cHeight/2 - (sum.im + val.im), curveLineWidth/2, 0, Math.PI*2);
-            ctx.fill();
-            ctx.closePath();
+            currentPos = new Complex(cWidth/2 + sum.re + val.re, cHeight/2 - (sum.im + val.im));
         } else {
             ctx.beginPath();
             ctx.strokeStyle = vectorColor;
@@ -419,6 +415,7 @@ function main() {
         }
     }
 
+    drawEpicycles();
 
     if(prevNumberOfCoefficients != coefficients.length && time > 1) {
         instantlyUpdateCurve();
@@ -430,7 +427,11 @@ function main() {
         drawCurve();
     }
 
-    drawEpicycles();
+    ctx.beginPath();
+    ctx.fillStyle = penHeadColor;
+    ctx.arc(currentPos.re, currentPos.im, curveLineWidth/2, 0, Math.PI*2);
+    ctx.fill();
+    ctx.closePath();
 
 
     prevNumberOfCoefficients = coefficients.length;
