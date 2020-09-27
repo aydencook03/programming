@@ -427,6 +427,7 @@ function main() {
         drawCurve();
     }
 
+    // draw tip of 'pen'
     ctx.beginPath();
     ctx.fillStyle = penHeadColor;
     ctx.arc(currentPos.re, currentPos.im, curveLineWidth/2, 0, Math.PI*2);
