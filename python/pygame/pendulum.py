@@ -26,7 +26,7 @@ leftDown = False
 
 # Pendulum variables
 length = 240
-radius = 15
+radius = 2
 pendColor = colors['firebrick3']
 lineWidth = 2
 pinX = width/2
@@ -84,7 +84,7 @@ def drawObjects():
     x = pinX + length*math.sin(a)
     y = pinY - length*math.cos(a)
 
-    pg.draw.line(screen, (0, 0, 0), (pinX - lineWidth/2, height-pinY - lineWidth/2), (x, height-y), lineWidth)
+    pg.draw.line(screen, (0, 0, 0), (pinX - lineWidth/2, height-pinY - lineWidth/2), (x - lineWidth/2, height-y - lineWidth/2), lineWidth)
     pg.draw.circle(screen, (0, 0, 0), (pinX, height-pinY), lineWidth*1.5)
     pg.draw.circle(screen, pendColor, (x, height-y), radius)
     pg.draw.circle(screen, (0, 0, 0), (x, height-y), radius, width=lineWidth)
