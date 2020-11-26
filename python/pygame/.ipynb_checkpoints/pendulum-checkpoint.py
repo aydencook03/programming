@@ -24,54 +24,19 @@ gravity = -1250
 mousePos = (width/2, height/2)
 leftDown = False
 
-plotting = True
-
 # Pendulum variables
 length = 240
 radius = 20
 pendColor = colors['firebrick3']
 lineWidth = 2
-
 pinX = width/2
 pinY = height/2
-initialAngle = 179.8
-friction = -0.06
-
-a = initialAngle * math.pi/180
+a = 179  # angle to vertical
+a *= math.pi/180  # conversion to radians, needed for math
 aV = 0  # angular velocity
-
-if plotting:
-    import matplotlib.pyplot as plt
-    t = 0
-    time = []
-    angle = []
-    vel = []
 
 ###########################################################################################################
 # Logic
-
-def plot():
-    fig = plt.figure()
-    axTime = fig.add_subplot(211)
-    axPhase = fig.add_subplot(212)
-
-    axTime.plot(time, angle, color = 'crimson', label=f'Friction: {friction}')
-    axTime.set_title("Pendulum Motion Over Time")
-    axTime.set_xlabel("Time (s)")
-    axTime.set_ylabel("Angle")
-    axTime.grid(True)
-    axTime.legend()
-
-    axPhase.plot(angle, vel, color = 'crimson', label=f'Friction: {friction}')
-    axPhase.set_title("Pendulum Phase Space")
-    axPhase.set_xlabel("Angle")
-    axPhase.set_ylabel("Angular Velocity")
-    axPhase.grid(True)
-    axPhase.legend()
-
-    fig.tight_layout()
-    plt.show()
-    
 
 def handleEvents():
     global running
@@ -81,14 +46,10 @@ def handleEvents():
     for event in pg.event.get(): # pg.event.get() returns a list of pg.event.EventType objects that represent user events
         if event.type == pg.QUIT:
             running = False
-            if plotting:
-                plot()
         
         elif event.type == pg.KEYDOWN:
             if event.key == pg.K_q:
                 running = False
-                if plotting:
-                    plot()
         
         elif event.type == pg.MOUSEMOTION:
             mousePos = event.pos
@@ -114,7 +75,7 @@ def moveObjects():
         a = math.atan2(mousePos[0] - pinX, mousePos[1] - pinY)
         length = ((pinX - mousePos[0])**2 + ((height-pinY)-(height-mousePos[1]))**2)**0.5
     else:
-        aA = gravity/length * math.sin(a) + friction*aV
+        aA = gravity/length * math.sin(a)
 
     aV += aA/fps
     a += aV/fps
@@ -131,15 +92,7 @@ def drawObjects():
 ###########################################################################################################
 # Main Loop
 
-
 while running:
-    
-    if plotting and not leftDown:
-        time.append(t)
-        angle.append(a*(180/math.pi))
-        vel.append(aV*(180/math.pi))
-        t += 1/fps
-
     handleEvents()
     screen.fill(bgColor) # fill the display surface with bgColor
 
