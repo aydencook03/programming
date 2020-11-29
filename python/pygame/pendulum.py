@@ -105,9 +105,12 @@ def handleEvents():
         #print(event)
         #print(type(event), dir(event))
 
-def moveObjects():
-    global aV, a, length
 
+prevA = a
+prevV = aV
+delta = 1/fps
+def moveObjects():
+    global aV, a, length, prevA, prevV
     if leftDown:
         aA = 0
         aV = 0
@@ -118,6 +121,13 @@ def moveObjects():
 
     aV += aA/fps
     a += aV/fps
+    '''
+    # these are obtained using a taylor expansion of a(t + h) around a(t)... much more accurate
+    a = prevA + delta*prevV + ((delta**2)/2)*(gravity/length)*(math.sin(prevA)) + ((delta**3)/6)*(gravity/length)*prevV*math.cos(prevA)
+    aV = prevV + delta*(gravity/length)*math.sin(prevA) + ((delta**2)/2)*(gravity/length)*prevV*math.cos(prevA) + ((delta**3)/6)*(gravity/length)*(-(prevV**2)*math.sin(prevA) + (gravity/length)*math.sin(prevA)*math.cos(prevA))
+    prevA = a
+    prevV = aV
+    '''
 
 def drawObjects():
     x = pinX + length*math.sin(a)
