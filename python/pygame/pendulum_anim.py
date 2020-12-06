@@ -53,7 +53,6 @@ for frame_number in range(int(fps * length_of_animation)):
     draw_pendulum()
     move_pendulum()
     pg.image.save(image, f'pend_anim_({frame_number}).png')
-    os.rename(f'pend_anim_({frame_number}).png', f'images/pend_anim_({frame_number}).png')
 
 ############################################################################
 # Generating the GIF
@@ -63,10 +62,10 @@ from PIL import Image
 # generate frames
 frames = []
 for i in range(int(fps*length_of_animation)):
-    new_frame = Image.open(f'images/pend_anim_({i}).png')
+    new_frame = Image.open(f'pend_anim_({i}).png')
     #new_frame = new_frame.resize((300, 300), Image.ANTIALIAS)
     frames.append(new_frame)
-    os.remove(f'images/pend_anim_({i}).png')
+    os.remove(f'pend_anim_({i}).png')
 
 # save into GIF
 frames[0].save("Pendulum_Animation.gif", format='GIF', append_images=frames[1:], save_all = True, loop = 0, duration = 1000/fps)
