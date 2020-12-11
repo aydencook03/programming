@@ -1,3 +1,0 @@
-from vpython import *
-
-ball()
