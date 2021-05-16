@@ -5,19 +5,21 @@
     <meta name="viewport" content="width=device-width, height=device-height, user-scalable=no initial-scale=1.0">
     <title>Title</title>
 <script>
+//----------------------------------------------------
 
-////////////////////////////////////////////////
+//----------------------------------------------------
 // Event Handling
+//----------------------------------------------------
 
-window.onload = function() {reset()}
+window.onload = () => reset();
 window.addEventListener('resize', resize);
 
 function resize() {
-    scale = Math.min(window.innerWidth, window.innerHeight);
+    size = Math.min(window.innerWidth, window.innerHeight);
     ratio = window.devicePixelRatio || 1;
 
-    cWidth = 300;
-    cHeight = 300;
+    cWidth = size*0.95;
+    cHeight = size*0.95;
 
     canvas.style.width = `${cWidth}px`;
     canvas.style.height = `${cHeight}px`;
@@ -28,37 +30,54 @@ function resize() {
     rect = canvas.getBoundingClientRect();
 }
 
-////////////////////////////////////////////////
+//----------------------------------------------------
 // Initialization
+//----------------------------------------------------
 
 function reset() {
-    canvas = document.getElementById('canvas');
+    // grab contexts and handles
+    canvas = document.getElementsByTagName('canvas')[0];
     ctx = canvas.getContext('2d');
+    body = document.getElementsByTagName('body')[0];
 
     resize();
 
 
     // colors
-    canvas.style.background = 'black';
+    canvas.style.background = 'rgb(100,100,100)';
+    canvas.style.border = '2px solid black';
+    canvas.style.borderRadius = '5px';
+    body.style.background = '#37474f';
 
 
-    fps = 60;
+    // set up the main loop
+    fps = 0;
+    prevTime = 0;
 
     if(typeof loop !== 'undefined') {
-        clearInterval(loop);
+        window.cancelAnimationFrame(loop);
     }
 
-    loop = setInterval(main, 1000/fps);
+    loop = window.requestAnimationFrame(main);
 }
 
-////////////////////////////////////////////////
+//----------------------------------------------------
 // Main Loop
+//----------------------------------------------------
 
-function main() {
+function main(time) {
+    // calculate framerate
+    fps = 1/( (time - prevTime)/1000 );
+
     // clear canvas
     ctx.clearRect(0, 0, cWidth, cHeight);
+
+    // set up next animation call
+    prevTime = time;
+    drawLoop = window.requestAnimationFrame(main);
 }
 
+//----------------------------------------------------
 </script>
 <style>
 
@@ -86,6 +105,6 @@ canvas {
 </style>
 </head>
 <body>
-    <canvas id='canvas'></canvas>
+    <canvas></canvas>
 </body>
 </html>
