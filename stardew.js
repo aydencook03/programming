@@ -144,9 +144,3 @@ for(const crop of season) {
 		}
 	}
 }
-
-
-/*
-- Qi battery pack
-- honey + fairy roses in greenhouse
-*/
