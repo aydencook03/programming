@@ -44,7 +44,25 @@ function reset() {
     
     
     // variables
-    //
+    centerX = cWidth/2;
+    centerY = cHeight - 10
+    
+    length = cWidth/2.4;
+    radius = cWidth/50;
+    color = "crimson";
+    ropeSize = cWidth/200;
+    
+    springK = 7;
+    gravity = 9.81 * 30;
+    
+    startAngle = 30;
+    startLength = length*1.9;
+    
+    x = centerX + startLength*Math.sin(startAngle*Math.PI/180);
+    y = centerY - startLength*Math.cos(startAngle*Math.PI/180);
+    xV = 0;
+    yV = 0;
+    
 
 
     // colors
@@ -69,7 +87,51 @@ function reset() {
 // Logic + Draw Code
 //----------------------------------------------------
 
+function motion() {
+	const distance = ((x - centerX)**2 + (y - centerY)**2)**0.5;
+	const displacement = distance - length;
+	
+	// unit vectors
+	const xUnit = (x - centerX)/distance;
+	const yUnit = (y - centerY)/distance;
+	
+	const force = -springK*displacement;
+	const xA = force*xUnit;
+	const yA = (force*yUnit) - gravity;
+	
+	xV += xA/fps;
+	yV += yA/fps;
+	x += xV/fps;
+	y += yV/fps;
+}
 
+function draw() {
+	// draw center
+	ctx.beginPath();
+	ctx.fillStyle = "black";
+	ctx.arc(centerX, cHeight-centerY, ropeSize, 0, Math.PI*2);
+	ctx.fill();
+	ctx.closePath();
+	
+	// draw rope
+	ctx.beginPath();
+	ctx.strokeStyle = "black";
+	ctx.lineWidth = ropeSize;
+	ctx.moveTo(centerX, cHeight-centerY);
+	ctx.lineTo(x, cHeight-y);
+	ctx.stroke();
+	ctx.closePath();
+	
+	// draw bob
+	ctx.beginPath();
+	ctx.fillStyle = color;
+	ctx.strokeStyle = "black";
+	ctx.lineWidth = ropeSize;
+	ctx.arc(x, cHeight-y, radius, 0, Math.PI*2);
+	ctx.fill();
+	ctx.stroke();
+	ctx.closePath();
+}
 
 //----------------------------------------------------
 // Main Loop
@@ -84,7 +146,8 @@ function main(time) {
     
     
     // logic + draw code
-    //
+    motion();
+    draw();
     
 
     // set up next animation call
