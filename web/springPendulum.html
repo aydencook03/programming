@@ -110,14 +110,7 @@ function motion() {
 }
 
 function draw() {
-	// draw center
-	ctx.beginPath();
-	ctx.fillStyle = "black";
-	ctx.arc(centerX, cHeight-centerY, ropeSize, 0, Math.PI*2);
-	ctx.fill();
-	ctx.closePath();
-	
-	// draw rope
+    // draw rope
     const stretched = Math.abs(displacement)/Math.abs(initDisplacement);
 	ctx.beginPath();
 	ctx.strokeStyle = `rgb(${200*stretched},${40*stretched},${20*stretched})`;
@@ -125,6 +118,13 @@ function draw() {
 	ctx.moveTo(centerX, cHeight-centerY);
 	ctx.lineTo(x, cHeight-y);
 	ctx.stroke();
+	ctx.closePath();
+    
+	// draw center
+	ctx.beginPath();
+	ctx.fillStyle = "black";
+	ctx.arc(centerX, cHeight-centerY, ropeSize, 0, Math.PI*2);
+	ctx.fill();
 	ctx.closePath();
 	
 	// draw bob
