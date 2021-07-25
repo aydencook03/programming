@@ -14,6 +14,52 @@
 window.onload = () => reset();
 window.addEventListener('resize', resize);
 
+document.addEventListener('mousedown', mouseDown);
+document.addEventListener('mousemove', mouseMove);
+document.addEventListener('mouseup', mouseUp);
+document.addEventListener('touchstart', touchStart);
+document.addEventListener('touchmove', touchMove, {passive: false});
+document.addEventListener('touchend', touchEnd);
+
+down = false;
+mouse = [];
+
+function mouseDown(data) {
+	down = true;
+	xV = yV = 0;
+	x = data.clientX - rect.left;
+	y = window.innerHeight - (data.clientY + rect.top);
+}
+function mouseMove(data) {
+	if(down) {
+		xV = yV = 0;
+		x = data.clientX - rect.left;
+		y = window.innerHeight - (data.clientY + rect.top);
+	}
+}
+function mouseUp() {
+	down = false;
+}
+
+function touchStart(data) {
+	down = true;
+	xV = yV = 0;
+	x = data.touches[0].clientX - rect.left;
+	y = window.innerHeight - (data.touches[0].clientY + rect.top);
+}
+function touchMove(data) {
+	if(down) {
+		xV = yV = 0;
+		x = data.touches[0].clientX - rect.left;
+		y = window.innerHeight - (data.touches[0].clientY + rect.top);
+	}
+	
+	data.preventDefault();
+}
+function touchEnd() {
+	down = false;
+}
+
 function resize() {
     size = Math.min(window.innerWidth, window.innerHeight);
     ratio = window.devicePixelRatio || 1;
@@ -53,8 +99,10 @@ function reset() {
     ropeSize = 2;//cWidth/200;
     
     springK = 5;
-    dampening = 0.15;
+    dampening = 0.2;
+    drag = 0.2;
     gravity = 9.81 * 40;
+    compressionForce = false;
     
     startAngle = 20;
     startLength = length*1.9;
@@ -92,16 +140,36 @@ function reset() {
 //----------------------------------------------------
 
 function motion() {
-	const distance = ((x - centerX)**2 + (y - centerY)**2)**0.5;
+	const xDif = x - centerX;
+	const yDif = y - centerY;
+	
+	const distance = (xDif**2 + yDif**2)**0.5;
+	const speed = (xV**2 + yV**2)**0.5;
+	
 	displacement = distance - length;
 	
-	// unit vectors
-	const xUnit = (x - centerX)/distance;
-	const yUnit = (y - centerY)/distance;
 	
-	const force = -springK*displacement;
-	const xA = force*xUnit - xV*dampening;
-	const yA = ((force*yUnit) - gravity) - yV*dampening;
+	// unit vectors
+	const xUnit = xDif/distance;
+	const yUnit = yDif/distance;
+	const xvUnit = xV/speed || 0;
+	const yvUnit = yV/speed || 0;
+	
+	// dot product (how aligned are vectors)
+	const alignment = xUnit*xvUnit + yUnit*yvUnit;
+	
+	let force = -springK*displacement - speed*alignment*dampening;
+	
+	if(!compressionForce && displacement < 0) {
+		force *= 0;
+	}
+	
+	let xA = force*xUnit - xV*drag;
+	let yA = (force*yUnit - yV*drag) - gravity;
+	
+	if(down) {
+		xV = yV = xA = yA = 0;
+	}
 	
 	xV += xA/fps;
 	yV += yA/fps;
@@ -111,7 +179,10 @@ function motion() {
 
 function draw() {
     // draw rope
-    const stretched = Math.abs(displacement)/Math.abs(initDisplacement);
+ let stretched = Math.abs(displacement)/Math.abs(initDisplacement);
+ if(!compressionForce && displacement < 0) {
+ 		stretched = 0;
+ }
 	ctx.beginPath();
 	ctx.strokeStyle = `rgb(${200*stretched},${40*stretched},${20*stretched})`;
 	ctx.lineWidth = ropeSize;
