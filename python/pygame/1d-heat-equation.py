@@ -1,4 +1,5 @@
 import pygame as pg
+import math
 
 pg.init()
 width,height = 600, 600
@@ -7,7 +8,7 @@ pg.display.set_caption("Head Rods")
 clock = pg.time.Clock()
 
 running = True
-fps = 240
+fps = 60
 
 
 def events():
@@ -19,7 +20,7 @@ def events():
             if event.key == pg.K_q:
                 running = False
 
-elementCount = 1000
+elementCount = width//5
 elementWidth = width/elementCount
 
 timeStep = 1/fps
@@ -27,20 +28,24 @@ timeStep = 1/fps
 leftRodTemp = 200
 rightRodTemp = -200
 
-heatConstant = 40
+heatConstant = 250
 
 elements = []
 
 # initial distrobution of temperature
+for i in range(elementCount):
+    elements.append(height/3 * 2.718**(-(6*(i/elementCount) - 3)**2) * math.cos((6*(i/elementCount) - 3)*3))
+'''
 for i in range(elementCount//2):
     elements.append(leftRodTemp)
 for i in range(elementCount//2, elementCount):
     elements.append(rightRodTemp)
 '''
-import math
+'''
 for i in range(elementCount):
     elements[i] = height/3 * math.sin(2*math.pi/width * i*elementWidth)
 '''
+
 
 def draw():
     for i in range(elementCount-1):
