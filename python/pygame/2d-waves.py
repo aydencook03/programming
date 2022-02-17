@@ -3,7 +3,6 @@
 # SETUP
 
 import pygame as pg
-import numpy as np
 
 
 running = False
@@ -11,7 +10,6 @@ simulating = False
 recording = False
 FPS = 24
 simFPS = 120
-frameCount = 0
 clock = pg.time.Clock()
 
 res = (256, 256)
@@ -19,6 +17,8 @@ res = (256, 256)
 bgColor = (72, 72, 72)
 crimson = (220, 20, 60)
 green = (119, 221, 119)
+peakHeight = 0
+crestHeight = 0
 
 pg.init()
 screen = pg.display.set_mode(res)
@@ -26,7 +26,7 @@ pg.display.set_caption("Simulation")
 
 pixels = pg.PixelArray(screen)
 
-mesh = np.array(pixels)
+mesh = [[(x,y) for y in range(res[1])] for x in range(res[0])]
 
 waveVelocity = (res[0]/3)/simFPS
 
@@ -47,6 +47,7 @@ def resetMesh():
 
 def paintScreen():
     pixels[:][:] = crimson
+
 
 def firstDiff(mesh, x, y, dimension):
     value = 0
@@ -90,7 +91,7 @@ def loop():
 
         pg.display.flip()
         pg.display.set_caption(f'Simulation ------ (fps = {str(round(clock.get_fps()))})')
-        clock.tick_busy_loop(FPS)
+        clock.tick_busy_loop(simFPS)
 
 ######################################################################################
 
