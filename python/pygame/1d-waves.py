@@ -27,10 +27,10 @@ class Point:
 
 # little pieces of string
 points = []
-pointCount = 400
+pointCount = 300#400
 pointWidth = width/pointCount
-stringConstant = 10000
-dampening = 0.1
+stringConstant = (width/(3))**2
+dampening = 0
 
 def reset():
     global points
@@ -38,10 +38,10 @@ def reset():
     # sine wave
     #points = [Point(i, height/4 * math.sin(i*pointWidth * 2*math.pi/width)) for i in range(pointCount)] # y coordinate of each piece
     # bell curve
-    #points = [Point(i, height/6 * math.e**(-((i*pointWidth - width/2)/width/0.1)**2)) for i in range(pointCount)]
+    points = [Point(i, height/5 * math.e**(-((i*pointWidth - width/2)/width/0.1)**2), 0) for i in range(pointCount)]
 
     # mix
-    points = [Point(i, height/4 * math.sin(i*pointWidth * 2*math.pi/width) + height/8 * math.sin(i*pointWidth * 6*math.pi/width) + height/2 * math.e**(-((i*pointWidth - width/2)/width/0.1)**2), 0) for i in range(pointCount)]
+    #points = [Point(i, height/4 * math.sin(i*pointWidth * 2*math.pi/width) + height/8 * math.sin(i*pointWidth * 6*math.pi/width) + height/2 * math.e**(-((i*pointWidth - width/2)/width/0.1)**2), 0) for i in range(pointCount)]
 
     # zero
     #points = [Point(i, 0, 0) for i in range(pointCount)]
