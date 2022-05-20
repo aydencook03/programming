@@ -11,11 +11,13 @@ fn main() {
 
         let mut guess = String::new();
 
-        let _input_size = io::stdin().read_line(&mut guess).expect("Failed to read line.");
+        let _input_size = io::stdin()
+            .read_line(&mut guess)
+            .expect("Failed to read line.");
 
         let guess: u8 = match guess.trim().parse() {
             Ok(num) => num,
-            Err(_) => continue
+            Err(_) => continue,
         };
 
         if guess == secret_number {
