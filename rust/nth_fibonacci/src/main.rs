@@ -1,19 +1,25 @@
+//! Takes in a user provided index and outputs the corresponding value from the Fibonacci Sequence.
+
 use std::io;
 
-const FIB_1: u32 = 0;
-const FIB_2: u32 = 1;
+/// Starting Fibonacci number.
+const FIB_1: u128 = 0;
+/// Second Fibonacci number.
+const FIB_2: u128 = 1;
 
+/// Entrance to the program.
 fn main() {
-    let n = get_n();
+    let n = get_user_n();
 
-    let fib_n = get_fib_n(n);
+    let fib_n = get_fib_at_n(n);
 
-    println!("Fibonacci Number {} is {}", n, fib_n);
+    println!("Fibonacci number at index {} is {}", n, fib_n);
 }
 
-fn get_n() -> u32 {
+/// Gets the user input from stdin.
+fn get_user_n() -> u128 {
     loop {
-        println!("Enter value of n: ");
+        println!("Enter value of index n: ");
 
         let mut input = String::new();
 
@@ -21,17 +27,17 @@ fn get_n() -> u32 {
             .read_line(&mut input)
             .expect("Input is needed...");
 
-        let input: u32 = match input.trim().parse() {
+        let input: u128 = match input.trim().parse() {
             Ok(returned_number) => {
                 if returned_number == 0 {
-                    println!("Input must be > 0...");
+                    println!("Index must be > 0...");
                     continue;
                 } else {
                     returned_number
                 }
             }
             Err(_) => {
-                println!("Input must be a number...");
+                println!("Index must be a number...");
                 continue;
             }
         };
@@ -40,21 +46,19 @@ fn get_n() -> u32 {
     }
 }
 
-fn get_fib_n(n: u32) -> u32 {
+/// Takes in an index and returns the Fibonacci number at that index.
+fn get_fib_at_n(n: u128) -> u128 {
     if n == 1 {
         FIB_1
     } else if n == 2 {
         FIB_2
     } else {
-        let mut sequence: [u32; 3] = [FIB_1, FIB_2, FIB_1 + FIB_2];
-        let mut index = 4;
+        let mut sequence: [u128; 3] = [FIB_1, FIB_2, FIB_1 + FIB_2];
 
-        while index <= n {
+        for _index in 4..=n {
             sequence[0] = sequence[1];
             sequence[1] = sequence[2];
             sequence[2] = sequence[0] + sequence[1];
-
-            index += 1;
         }
 
         sequence[2]
