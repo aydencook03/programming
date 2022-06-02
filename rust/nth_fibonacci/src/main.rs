@@ -71,6 +71,6 @@ fn get_fib_at_n_recursive(n: u128) -> u128 {
     match n {
         1 => FIB_1,
         2 => FIB_2,
-        n => get_fib_at_n_recursive(n-2) + get_fib_at_n_recursive(n-1)
+        _ => get_fib_at_n_recursive(n-2) + get_fib_at_n_recursive(n-1)
     }
 }
