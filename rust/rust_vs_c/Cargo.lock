@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "c_vs_rust"
+name = "rust_vs_c"
 version = "0.1.0"
