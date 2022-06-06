@@ -1,25 +1,30 @@
+// Notes
+// - rotational + translational = total KE
+// - linear momentum, angular momentum, & total KE conserved in elastic collision
+// - collisions separate from constraint/forces? entirely force based collisions (dirac delta)?
+
 /// A 2d euclidean vector
 struct Vector {
     x: f64,
-    y: f64
+    y: f64,
 }
 
 impl Vector {
-    /// Constructor function: returns a 0 Vector
+    /// Constructor function: returns a zero Vector
     fn new() -> Vector {
         Vector {
             x: 0.0,
-            y: 0.0
+            y: 0.0,
         }
     }
 }
 
 enum Constraint {
     PinToPoint(Vector),
-    BoundaryLine(Vector, Vector),
-    RigidRod(Vector),
-    RigidRodLink(&Body),
-    ChainLink(&Body)
+    BoundaryLine { point: Vector, end: Vector }, // &Vector?
+    FixedDistance { point: Vector, length: f64 },
+    MinDistance { point: Vector, length: f64 },
+    MaxDistance { point: Vector, length: f64 },
 }
 
 struct Body {
@@ -31,7 +36,7 @@ struct Body {
     accel: Vector,
 
     constraints: Vec<Constraint>,
-    forces: Vec<Vector>
+    forces: Vec<Vector>,
 }
 
 impl Body {
@@ -46,7 +51,7 @@ impl Body {
             accel: Vector::new(),
 
             constraints: Vec::new(),
-            forces: Vec::new()
+            forces: Vec::new(),
         }
     }
 
