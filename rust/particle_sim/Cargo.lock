@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "rigid_body_sim"
+name = "particle_sim"
 version = "0.1.0"
