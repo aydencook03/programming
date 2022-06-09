@@ -58,11 +58,11 @@ enum Force {
     /// A raw 2d force
     Raw { particle: &mut Particle, force: Vec2d },
 
-    /// A general restoring force (F=-kx^n) that attempts to satisfy a given constraint. Ex:
-    /// - gravity {(Link)MaxDistance, G*mass*mass, -2}
-    /// - spring between Particles
-    /// - stiff pendulum
-    ConstraintForce { constraint_type: Constraint, k: f64, n: f64 },
+    /// A general restoring force (F = -kx^n - bv) that attempts to satisfy a given constraint. Ex:
+    /// - gravity {(Link)MaxDistance, G*mass*mass, -2, 0}
+    /// - dampened spring between Particles {LinkFixedDistance, k, 1, 0.5}
+    /// - stiff pendulum {FixedDistance, 99, 1, 99}
+    ConstraintForce { constraint_type: Constraint, k: f64, n: f64, b: f64 },
 
     /// Gravitational attraction between two Particles
     Gravity { particle1: &mut Particle, particle2: &mut Particle },
