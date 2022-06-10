@@ -14,6 +14,7 @@
 // - youtube playlist for ideas: https://youtube.com/playlist?list=PLvypLlLlZuNhcdtPKfQ25cpmhBuWWDZzR
 // - convert to lib crate type, and make it a git submodule
 // - take a snapshot of a simulation. save it in a file. load from a file.
+// - web canvas frontend
 
 struct Sim {
     updates_per_sec: u8,
@@ -53,17 +54,24 @@ impl Sim {
     fn add_body(self: &mut Self, type: Body) {
         todo!();
     }
+
+    fn run(self: &Self) {
+        todo!();
+    }
 }
 
 /// Constraint on a Particle or between linked Particles.
 /// This simply holds the data, and can be used as a static constraint or a constraint force elsewhere
 enum Constraint {
-    PinToPoint { particle: &mut Particle, point: Vec2d },
-    Polygon { points: Vec<Vec2d> },
-    //BoundaryLine?? (programming balls)
-    FixedDistance { particle: &mut Particle, point: Vec2d, dist: f64 },
-    MinDistance { particle: &mut Particle, point: Vec2d, dist: f64 },
-    MaxDistance { particle: &mut Particle, point: Vec2d, dist: f64 },
+    /// Pin a Particle to a point
+    PinToPoint { particle: &mut Particle, point: Vec2 },
+    // BoundaryLine { particle: &mut Particle, start: Vec2, end: Vec2 },
+    // InsidePolygon { particle: &mut Particle, points: Vec<Vec2> },
+    /// Keep a Particle outside of a polygon
+    OutsidePolygon { particle: &mut Particle, points: Vec<Vec2> },
+    FixedDistance { particle: &mut Particle, point: Vec2, dist: f64 },
+    MinDistance { particle: &mut Particle, point: Vec2, dist: f64 },
+    MaxDistance { particle: &mut Particle, point: Vec2, dist: f64 },
 
     LinkFixedDistance { particle1: &mut Particle, particle2: &mut Particle, dist: f64 },
     LinkMinDistance { particle1: &mut Particle, particle2: &mut Particle, dist: f64 },
@@ -80,7 +88,7 @@ impl Constraint {
 /// Force on a Particle or between interacting Particles
 enum Force {
     /// A raw 2d force
-    Raw { particle: &mut Particle, force: Vec2d },
+    Raw { particle: &mut Particle, force: Vec2 },
 
     /// A general restoring force (F = -kx^n - bv) that attempts to satisfy a given constraint. Ex:
     /// - gravity {(Link)MaxDistance, G*mass*mass, -2, 0}

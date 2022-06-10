@@ -5,10 +5,10 @@ struct Particle {
     charge: f64,
     radius: f64,
     color: (u8, u8, u8),
-    pos: Vec2d,
-    vel: Vec2d,
-    accel: Vec2d,
-    forces: Vec<Vec2d>,
+    pos: Vec2,
+    vel: Vec2,
+    accel: Vec2,
+    forces: Vec<Vec2>,
 }
 
 impl Particle {
@@ -17,7 +17,7 @@ impl Particle {
         Particle {
             mass: 10.0,
             radius: 10.0,
-            color: (220, 20, 60), //CRIMSON,
+            color: (220, 20, 60, 1), //CRIMSON,
             ..Default::default()
         }
     }
