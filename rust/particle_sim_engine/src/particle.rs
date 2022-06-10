@@ -6,10 +6,8 @@ struct Particle {
     radius: f64,
     color: (u8, u8, u8),
     pos: Vec2d,
-    prev_pos: Vec2d,
     vel: Vec2d,
     accel: Vec2d,
-
     forces: Vec<Vec2d>,
 }
 
@@ -35,31 +33,16 @@ impl Particle {
         }
     }
 
-    /// A first-order symplectic integrator (Semi-implicic/Symplectic Euler)
+    /// A first-order symplectic integrator that updates the Particle (uses Semi-implicic/Symplectic Euler)
     fn symplectic_euler_update(self: &mut Self, dt: f64) {
         self.vel.x += self.accel.x * dt;
         self.vel.y += self.accel.y * dt;
         self.pos.x += self.vel.x * dt;
         self.pos.y += self.vel.y * dt;
-
-        self.prev_pos.x = self.pos.x;
-        self.prev_pos.y = self.pos.y;
     }
 
-    /// A second-order symplectic integrator (Basic Störmer–Verlet)
+    /// A second-order symplectic integrator that updates the Particle (uses Basic Störmer–Verlet)
     fn verlet_update(self: &mut Self, dt: f64) {
-        if self.vel.mag() != 0.0 {
-            self.pos.x = self.pos.x + self.vel.x*dt + 0.5*self.accel.x*dt*dt;
-            self.pos.y = self.pos.y + self.vel.y*dt + 0.5*self.accel.y*dt*dt;
-
-            self.vel.x = 0.0;
-            self.vel.y = 0.0;
-        } else {
-            self.pos.x = 2*self.pos.x - self.prev_pos.x + self.accel.x*dt*dt;
-            self.pos.y = 2*self.pos.y - self.prev_pos.y + self.accel.y*dt*dt;
-        }
-
-        self.prev_pos.x = self.pos.x;
-        self.prev_pos.y = self.pos.y;
+        todo!();
     }
 }
