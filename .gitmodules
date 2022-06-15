@@ -1,0 +1,3 @@
+[submodule "rust/unified_particle_simulation"]
+	path = rust/unified_particle_simulation
+	url = https://github.com/aydencook03/unified_particle_simulation
