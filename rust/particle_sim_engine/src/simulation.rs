@@ -1,21 +1,3 @@
-// TODO / Ideas:
-// - add ability for constraints to break
-//       - should work in static & in force constraints
-//       - add breaking distance (0 if none)
-//       - in match statement, if over distance -> broken = true
-//       - add broken bool
-//       - in match statement, remove constraint if bool = true
-// - make completely standalone
-//       - no draw code, so that rendering can be done independently. ie, render a solid rigid/soft body, fluid, etc
-//       - implement a rendering plugin api?
-//             - send a packet of particle coordinates+radii & constraints/forces to be drawn?
-//       - this can be used to allow for both real-time and baked rendering
-// - viscosity how? want this "engine" to be general enough for fluid sim?
-// - youtube playlist for ideas: https://youtube.com/playlist?list=PLvypLlLlZuNhcdtPKfQ25cpmhBuWWDZzR
-// - convert to lib crate type, and make it a git submodule
-// - take a snapshot of a simulation. save it in a file. load from a file.
-// - web canvas frontend
-
 struct Sim {
     updates_per_sec: u8,
     constraint_passes: u8,
@@ -47,6 +29,10 @@ impl Sim {
         }
     }
 
+    fn upddate_particles(self: &Self) {
+        todo!();
+    }
+
     fn add_particle(self: &mut Self) {
         todo!();
     }
@@ -56,7 +42,12 @@ impl Sim {
     }
 
     fn run(self: &Self) {
-        todo!();
+        /*
+        self.send_forces_to_particles();
+        self.update_particles(self.dt);
+        self.delete_particle_forces();
+        self.handle_static_constraints();
+        */
     }
 }
 
@@ -101,6 +92,9 @@ enum Force {
 
     /// Newtonian gravitational attraction between two Particles
     Gravity { particle1: &mut Particle, particle2: &mut Particle },
+
+    /// Stokes drag force
+    Drag { particle: &mut Particle, strength: f64 },
 }
 
 impl Force {
