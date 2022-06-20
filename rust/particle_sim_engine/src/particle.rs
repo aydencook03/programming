@@ -5,6 +5,8 @@ struct Particle {
     charge: f64,
     radius: f64,
     color: (u8, u8, u8),
+    /// free number to use for things like render method, grouping together properties, etc
+    group_num: u8,
     pos: Vec2,
     vel: Vec2,
     accel: Vec2,

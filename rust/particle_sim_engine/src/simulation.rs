@@ -37,7 +37,7 @@ impl Sim {
         todo!();
     }
 
-    fn add_body(self: &mut Self, type: Body) {
+    fn add_body(self: &mut Self, kind: Body) {
         todo!();
     }
 
