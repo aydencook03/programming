@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, height=device-height, user-scalable=no initial-scale=1.0">
     <title>Title</title>
-<script>
+<script type="text/javascript">
 //----------------------------------------------------
 
 //----------------------------------------------------
@@ -36,7 +36,7 @@ function resize() {
 
 function reset() {
     // grab contexts and handles
-    canvas = document.getElementsByTagName('canvas')[0];
+    canvas = document.getElementById("mainCanvas");
     ctx = canvas.getContext('2d');
     body = document.getElementsByTagName('body')[0];
 
@@ -120,6 +120,6 @@ canvas {
 </style>
 </head>
 <body>
-    <canvas></canvas>
+    <canvas id="mainCanvas"></canvas>
 </body>
 </html>

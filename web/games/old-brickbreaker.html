@@ -173,14 +173,14 @@ function reset() {
     body = document.getElementsByTagName('body')[0];
     ctx = canvas.getContext('2d');
     
-    deltaT = 0;
+    fps = 60;
     running = false;
     
     variables();
 
     body.style.background = bodyC;
     
-    animation = window.requestAnimationFrame(main);
+    loop = setInterval(main, 1000/fps);
 }
 
 //////////////////////////////////////////////////////////////
@@ -216,9 +216,6 @@ function initBall() {
             ctx.closePath();
         }
         this.move = function() {
-            this.x += this.xV  * deltaT;
-            this.y += this.yV  * deltaT;
-
             if(this.x - this.r < 0) {
                 this.x = this.r;
                 this.xV *= -1;
@@ -262,10 +259,10 @@ function initBall() {
                     paddleC = 'crimson';
                 }
             }
-            if(this.x + this.r > paddleX && this.x - this.r < paddleX + paddleW) {
-                if(this.y + this.r > paddleY && this.y - this.r < paddleY + paddleH) {
-                    const prevX = this.x - this.xV * deltaT;
-                    const prevY = this.y - this.yV * deltaT;
+            if(this.x + this.r >= paddleX && this.x - this.r <= paddleX + paddleW) {
+                if(this.y + this.r >= paddleY && this.y - this.r <= paddleY + paddleH) {
+                    const prevX = this.x - this.xV/fps;
+                    const prevY = this.y - this.yV/fps;
                     
                     if(prevY + this.r < paddleY) {
                         if(bricksLeft <= 0) {
@@ -284,7 +281,7 @@ function initBall() {
                             }, 3000);
                         }
                         this.y = paddleY - this.r;
-                        this.yV = -(Math.abs(this.yV));
+                        this.yV *= -1;
                         this.xV = (this.x - (paddleX + paddleW/2)) * upper/(paddleW/2);
                         try {
                             window.navigator.vibrate(vibr);
@@ -312,6 +309,8 @@ function initBall() {
                     }
                 }
             }
+            this.x += this.xV/fps;
+            this.y += this.yV/fps;
         }
     }
 }
@@ -360,8 +359,8 @@ function getIndex(col, row) {
 }
 
 function brickCollision() {
-    const prevC = Math.floor((ball.x - ball.xV  * deltaT)/brickW);
-    const prevR = Math.floor((ball.y - ball.yV  * deltaT)/brickH);
+    const prevC = Math.floor((ball.x - ball.xV/fps)/brickW);
+    const prevR = Math.floor((ball.y - ball.yV/fps)/brickH);
     
     const ballC = Math.floor(ball.x/brickW);
     const ballR = Math.floor(ball.y/brickH);
@@ -412,13 +411,6 @@ function text() {
     ctx.textBaseline = 'middle';
     ctx.fillText(`Bricks: ${bricksLeft}`, scale/2, brickH * 1 *emptyRowCount/3);
     ctx.fillText(`Lives: ${lives}`, scale/2, brickH * 2 * emptyRowCount/3);
-
-    /* DISPLAY FPS
-    ctx.textAlign = 'left';
-    ctx.fillText(`FPS: ${Math.round(fps*10)/10}`, brickH * 1 * emptyRowCount/3 - ctx.measureText('FPS').actualBoundingBoxAscent, brickH * 1 * emptyRowCount/3);
-    ctx.textAlign = 'center';
-    */
-
     const val = scale - (scale - heightDown)/2;
     if(!running) {
         ctx.fillText('Game by Ayden Cook', scale/2, val);
@@ -446,14 +438,7 @@ function text() {
 //////////////////////////////////////////////////////////////
 // Main
 
-let prev = 0;
-
-function main(time) {
-
-    deltaT = (time - prev)/1000;
-    fps = 1/deltaT;
-    //console.log(1/deltaT) //console logs the fps
-
+function main() {
     // blank out canvas
     ctx.fillStyle = canvas.color;
     ctx.fillRect(0,0,scale,scale);
@@ -469,9 +454,6 @@ function main(time) {
     drawBricks();
     brickCollision();
     text();
-
-    prev = time;
-    loop = window.requestAnimationFrame(main)
 }
 
 //////////////////////////////////////////////////////////////
