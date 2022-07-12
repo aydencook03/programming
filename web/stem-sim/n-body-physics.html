@@ -129,22 +129,21 @@ function reset() {
     loop = setInterval(main, 1000/fps);
 
     
-    gravityOn = true // if true, objects are gravitationally attracted to each other
+    gravityOn = false // if true, objects are gravitationally attracted to each other
     gravity_c = 334000 // universe's gravitational constant
 
     boundaryCollision = true // if true, objects collide with edges of canvas
     wallDampen = 0.7 // number to multiply by when an objects hit a wall
 
     bodyCollision = true // if true, bodies will collide with each other
-    bodyDampen = 0.4 // number to multiply when two objects collide
+    bodyDampen = 1 // number to multiply when two objects collide
 
-    falling = false // if true, objects will fall to the bottom of the screen
-    acceleration = 400 // rate at which objects fall
+    falling = true // if true, objects will fall to the bottom of the screen
+    acceleration = 800 // rate at which objects fall
     
     Body.clear() // clears all bodies
     
-
-    /*
+    
     const bounds = 200;
     for(let i = 0; i<70; i++) { // randomly place bodies
         Body.create({
@@ -153,9 +152,9 @@ function reset() {
             a: Math.random()*Math.PI*2,
             xV: Math.floor(Math.random() * (bounds - -bounds)) + -bounds,
             yV: Math.floor(Math.random() * (bounds - -bounds)) + -bounds,
-            mass: Math.ceil(Math.random()*23)
+            mass: Math.ceil(Math.random()*25)
         })
-    } */
+    }
     
     /*
     Body.create({ // big first
@@ -168,16 +167,16 @@ function reset() {
         mass: 20,
         radius: 10,
         color: 'teal',
-        x: bodies[0].x + bodies[0].radius + 10
-    });
+        x: bodies[0].x + bodies[0].radius + 300
+    }); 
     */
     
     /*
     Body.create({
         x: window.innerWidth/2 - 50,
-        xV: 10,
+        xV: 20,
         yV: 0,
-        aV: 3,
+        aV: 0,
         y: window.innerHeight/2 + 0,
         mass: 10
     });
@@ -190,10 +189,7 @@ function reset() {
     });
     */
     
-    
-    
-    
-    
+    /*
     Body.create({
     x: window.innerWidth/2, 
     y: window.innerHeight/2, 
@@ -206,7 +202,7 @@ function reset() {
     mass: 1, 
     xV: 260, 
     color: 'teal'
-    });  
+    });  */
     
 }
 
@@ -216,6 +212,8 @@ function reset() {
 function Body(params) {
     this.x = params.x || window.innerWidth/2;
     this.y = params.y || window.innerHeight/2;
+    this.oldX = null;
+    this.oldY = null;
     this.a = params.a || 0;
     
     this.xV = params.xV || 0;
@@ -254,17 +252,32 @@ Body.clear = function() { // utility function
 }
 
 Body.prototype.move = function() { // available to all instances, but not a part of them
+    
+    //this.xV = (this.x - this.oldX)*fps;
+    //this.yV = (this.y - this.oldY)*fps;
     this.xV += this.xA/fps;
     this.yV += this.yA/fps;
-    this.aV += this.aA/fps;
+    this.oldX = this.x;
+    this.oldY = this.y;
     this.x += this.xV/fps;
     this.y += this.yV/fps;
-    this.a += this.aV/fps;
+    
+    /*
+    // Störmer-Verlet. Is velocity implicit.
+    const nextX = 2*this.x - this.oldX + this.xA*(1/fps)**2;
+    const nextY = 2*this.y - this.oldY + this.yA*(1/fps)**2;
+    this.xV = (nextX - this.x)*fps;
+    this.yV = (nextY - this.y)*fps;
+    this.oldX = this.x;
+    this.oldY = this.y;
+    this.x = nextX;
+    this.y = nextY;
+    */
     
     if(this.edgeBlock) {
         if(this.x + this.radius > window.innerWidth) {
             this.x = window.innerWidth - this.radius;
-            this.xV *= -wallDampen
+            this.xV *= -wallDampen;
         }
         else if(this.x - this.radius < 0) {
             this.x = this.radius;
@@ -282,10 +295,11 @@ Body.prototype.move = function() { // available to all instances, but not a part
     if(this.grabbed) {
         this.xA = 0;
         this.yA = 0;
-        this.xV = 0;
-        this.yV = 0;
+        
         this.x = mouse.x;
         this.y = mouse.y;
+        this.xV = (this.x - this.oldX)*fps;
+        this.yV = (this.y - this.oldY)*fps;
     }
 }
 
@@ -377,10 +391,21 @@ const bodyHandle = function() {
                         }
                         if(dist.mag <= rSum) { // static collision
                             const overlap = rSum - dist.mag;
-                            bodies[i].x -= overlap/2 * dist.norm.i;
-                            bodies[i].y -= overlap/2 * dist.norm.j;
-                            bodies[b].x += overlap/2 * dist.norm.i;
-                            bodies[b].y += overlap/2 * dist.norm.j;
+                            const iOldX = bodies[i].oldX;
+                            const iOldY = bodies[i].oldY;
+                            const bOldX = bodies[b].oldX;
+                            const bOldY = bodies[b].oldY;
+                            bodies[i].x -= overlap*bodies[b].mass/(bodies[i].mass+bodies[b].mass) * dist.norm.i;
+                            bodies[i].y -= overlap*bodies[b].mass/(bodies[i].mass+bodies[b].mass) * dist.norm.j;
+                            bodies[b].x += overlap*bodies[i].mass/(bodies[i].mass+bodies[b].mass) * dist.norm.i;
+                            bodies[b].y += overlap*bodies[i].mass/(bodies[i].mass+bodies[b].mass) * dist.norm.j;
+                            
+                            
+                            bodies[i].xV = (bodies[i].x - iOldX)*fps;
+                            bodies[i].yV = (bodies[i].y - iOldY)*fps;
+                            bodies[b].xV = (bodies[b].x - bOldX)*fps;
+                            bodies[b].yV = (bodies[b].y - bOldY)*fps; 
+                            
                            
                             collidingPairs.push([bodies[i], bodies[b]]);
                         }
@@ -491,11 +516,13 @@ const bodyHandle = function() {
             clearInterval(loop);
             */
             
+            /*
             collidingPairs[c][0].xV = vel1.dot(norm)*norm.i + nV1Perp*perp.i * bodyDampen;
             collidingPairs[c][0].yV = vel1.dot(norm)*norm.j + nV1Perp*perp.j * bodyDampen;
             
             collidingPairs[c][1].xV = vel2.dot(norm)*norm.i + nV2Perp*perp.i * bodyDampen;
             collidingPairs[c][1].yV = vel2.dot(norm)*norm.j + nV2Perp*perp.j * bodyDampen;
+            */
         }
         
     }
@@ -505,7 +532,11 @@ function inputHandle() {
     if(nothingGrabbed && mouse.down) {
         Body.create({
             x: mouse.x, 
-            y: mouse.y, 
+            y: mouse.y,
+            oldX: mouse.x,
+            oldY: mouse.y,
+            xV: 0,
+            yV: 0,
             mass: 90});
         bodies[bodies.length-1].move();
         bodies[bodies.length-1].draw();
