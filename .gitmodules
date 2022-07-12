@@ -1,0 +1,3 @@
+[submodule "rust/rusty_particle_physics"]
+	path = rust/rusty_particle_physics
+	url = git@github.com:aydencook03/rusty_particle_physics.git
