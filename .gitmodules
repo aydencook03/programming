@@ -1,0 +1,3 @@
+[submodule "rust/simulation_engine"]
+	path = rust/simulation_engine
+	url = git@github.com:aydencook03/simulation_engine.git
