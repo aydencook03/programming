@@ -1,3 +1,0 @@
-[submodule "rust/rusty_physics_engine"]
-	path = rust/rusty_physics_engine
-	url = git@github.com:aydencook03/rusty_physics_engine.git

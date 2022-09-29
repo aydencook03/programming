@@ -1,0 +1,14 @@
+import sympy
+sympy.init_session(auto_symbols = True)
+%matplotlib inline
+
+from scipy.stats import norm
+from scipy.special import factorial
+fact = factorial
+from scipy.special import comb
+
+def cdf(x, mu, sigma):
+    return(norm.cdf((x-mu)/sigma))
+
+def ppf(x, mu, sigma):
+    return(norm.ppf(x)*sigma + mu)
