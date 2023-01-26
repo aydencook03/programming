@@ -1,1 +1,1 @@
-This is a place for anything that I work on in my free time.
+A mono-repo for programming ideas, experiments, and projects.
