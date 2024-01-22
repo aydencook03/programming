@@ -4,3 +4,6 @@
 [submodule "web/aydencook03.github.io"]
 	path = web/aydencook03.github.io
 	url = git@github.com:aydencook03/aydencook03.github.io.git
+[submodule "python/tiling_electronic_structure"]
+	path = python/tiling_electronic_structure
+	url = git@github.com:aydencook03/tiling_electronic_structure.git
