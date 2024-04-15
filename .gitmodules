@@ -7,3 +7,6 @@
 [submodule "python/tiling_electronic_structure"]
 	path = python/tiling_electronic_structure
 	url = git@github.com:aydencook03/tiling_electronic_structure.git
+[submodule "python/schrodinger_simulation"]
+	path = python/schrodinger_simulation
+	url = git@github.com:aydencook03/schrodinger_simulation.git
