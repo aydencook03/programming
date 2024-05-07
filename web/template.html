@@ -1,125 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, height=device-height, user-scalable=no initial-scale=1.0">
     <title>Title</title>
-<script type="text/javascript">
-//----------------------------------------------------
+    <script type="text/javascript">
+        //----------------------------------------------------
 
-//----------------------------------------------------
-// Event Handling
-//----------------------------------------------------
+        //----------------------------------------------------
+        // Event Handling
 
-window.onload = () => reset();
-window.addEventListener('resize', resize);
+        window.onload = () => reset();
+        window.addEventListener('resize', resize);
 
-function resize() {
-    size = Math.min(window.innerWidth, window.innerHeight);
-    ratio = window.devicePixelRatio || 1;
+        function resize() {
+            size = Math.min(window.innerWidth, window.innerHeight);
+            ratio = window.devicePixelRatio || 1;
 
-    cWidth = size*0.95;
-    cHeight = size*0.95;
+            cWidth = size * 0.95;
+            cHeight = size * 0.95;
 
-    canvas.style.width = `${cWidth}px`;
-    canvas.style.height = `${cHeight}px`;
-    canvas.width = cWidth * ratio;
-    canvas.height = cHeight * ratio;
-    ctx.scale(ratio, ratio);
+            canvas.style.width = `${cWidth}px`;
+            canvas.style.height = `${cHeight}px`;
+            canvas.width = cWidth * ratio;
+            canvas.height = cHeight * ratio;
+            ctx.scale(ratio, ratio);
 
-    rect = canvas.getBoundingClientRect();
-}
+            rect = canvas.getBoundingClientRect();
+        }
 
-//----------------------------------------------------
-// Initialization
-//----------------------------------------------------
+        //----------------------------------------------------
+        // Initialization
 
-function reset() {
-    // grab contexts and handles
-    canvas = document.getElementById("mainCanvas");
-    ctx = canvas.getContext('2d');
-    body = document.getElementsByTagName('body')[0];
+        function reset() {
+            // grab contexts and handles
+            canvas = document.getElementById("mainCanvas");
+            ctx = canvas.getContext('2d');
+            body = document.getElementsByTagName('body')[0];
 
-    resize();
-    
-    
-    // variables
-    //
+            resize();
 
 
-    // colors
-    canvas.style.background = 'rgb(100,100,100)';
-    canvas.style.border = '2px solid black';
-    canvas.style.borderRadius = '5px';
-    body.style.background = '#37474f';
+            // variables
+            //
 
 
-    // set up the main loop
-    fps = 0;
-    prevTime = 0;
+            // colors
+            canvas.style.background = 'rgb(100,100,100)';
+            canvas.style.border = '2px solid black';
+            canvas.style.borderRadius = '5px';
+            body.style.background = '#37474f';
 
-    if(typeof loop !== 'undefined') {
-        window.cancelAnimationFrame(loop);
-    }
 
-    loop = window.requestAnimationFrame(main);
-}
+            // set up the main loop
+            fps = 0;
+            prevTime = 0;
 
-//----------------------------------------------------
-// Logic + Draw Code
-//----------------------------------------------------
+            if (typeof loop !== 'undefined') {
+                window.cancelAnimationFrame(loop);
+            }
+
+            loop = window.requestAnimationFrame(main);
+        }
+
+        //----------------------------------------------------
+        // Logic + Draw Code
 
 
 
-//----------------------------------------------------
-// Main Loop
-//----------------------------------------------------
+        //----------------------------------------------------
+        // Main Loop
 
-function main(time) {
-    // calculate framerate
-    fps = 1/( (time - prevTime)/1000 );
+        function main(time) {
+            // calculate framerate
+            fps = 1 / ((time - prevTime) / 1000);
 
-    // clear canvas
-    ctx.clearRect(0, 0, cWidth, cHeight);
-    
-    
-    // logic + draw code
-    //
-    
+            // clear canvas
+            ctx.clearRect(0, 0, cWidth, cHeight);
 
-    // set up next animation call
-    prevTime = time;
-    loop = window.requestAnimationFrame(main);
-}
 
-//----------------------------------------------------
-</script>
-<style>
+            // logic + draw code
+            //
 
-html {
-    width: 100%;
-    height: 100%;
-}
-body {
-    height: 100%;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0;
-    margin: 0;
-    overscroll-behavior: contain;
-    position: fixed;
-    overflow: hidden;
-}
-canvas {
-    padding: 0;
-    margin: 0;
-}
 
-</style>
+            // set up next animation call
+            prevTime = time;
+            loop = window.requestAnimationFrame(main);
+        }
+
+        //----------------------------------------------------
+    </script>
+    <style>
+        html {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            margin: 0;
+            overscroll-behavior: contain;
+            position: fixed;
+            overflow: hidden;
+        }
+
+        canvas {
+            padding: 0;
+            margin: 0;
+        }
+    </style>
 </head>
+
 <body>
     <canvas id="mainCanvas"></canvas>
 </body>
+
 </html>
