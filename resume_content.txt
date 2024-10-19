@@ -106,7 +106,7 @@ Projects:
         Outcome: Created a comprehensive framework for generating and analyzing tilings as atomic lattices, providing insights into their electronic structures.
         Repository: https://github.com/aydencook03/tiling_electronic_structure
     Web Experiments on GitHub Pages
-        Description: Developed a collection of web-based games and simulations, showcasing skills in HTML, CSS, and JavaScript. The projects include classic games like Snake and BrickBreaker, as well as simulations such as N-Body and Ray-Casting.
+        Description: Developed a collection of web-based games and simulations. Include classic games like Snake and BrickBreaker, as well as simulations such as N-Body, Fourier Epicycles, and Ray-Casting.
         Role: Sole Developer
         Technologies Used: HTML, CSS, JavaScript
         Outcome: Created interactive and educational web applications that demonstrate both fundamental programming concepts and advanced simulation techniques. These projects are accessible online and serve as a portfolio of web development skills.
